@@ -11,9 +11,6 @@
   # (e.g. Determinate Systems) created services with differing labels.
   # Enabling brings them under declarative control and avoids noisy errors
   # like: "boot-out failed: 3: no such process" / "Bootstrap failed: 5".
-
-  # Ensure the daemon service is explicitly enabled (older configs used this).
-  services.nix-daemon.enable = true;
   nix.enable = false;
 
   # Required with newer nix-darwin (set once and keep it)
