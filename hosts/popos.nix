@@ -15,8 +15,8 @@ let
 in
 {
   home.file.".local/share/backgrounds/w11" = {
-    source = ../media/wallpapers/w11; # ← path literal, no quotes
-    recursive = true; # ← required when source is a directory
+    source = ../media/wallpapers/w11;
+    recursive = true;
   };
 
   home.packages = lib.mkAfter (
