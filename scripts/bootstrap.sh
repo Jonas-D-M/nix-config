@@ -1,18 +1,45 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Cross-platform bootstrap for Linux (Home Manager) and macOS (nix-darwin + HM)
+#
 # Usage:
 #   ./scripts/bootstrap.sh [flakeRef] [bitwardenNoteName]
+#
 # Defaults:
-#   flakeRef: .#jonas-home
-#   bitwardenNoteName: "Nix Age Key"
+#   On Linux:     flakeRef => .#jonas-home               (homeConfigurations.*)
+#   On macOS:     flakeRef => .#jonas-mac                (darwinConfigurations.*)
+#   bitwardenNoteName => age-key
 #
 # Tip: for headless login, export BW_CLIENTID and BW_CLIENTSECRET and the script
 #      will use `bw login --apikey` automatically.
 
-FLAKE_REF="${1:-.#jonas-home}"
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+IS_DARWIN=false
+IS_LINUX=false
+
+case "$OS" in
+  darwin) IS_DARWIN=true ;;
+  linux)  IS_LINUX=true ;;
+  *) echo "❌ Unsupported OS: $OS"; exit 1 ;;
+esac
+
+DEFAULT_FLAKE_REF_LINUX=".#jonas-home"
+DEFAULT_FLAKE_REF_DARWIN=".#jonas-mac"
+
+if $IS_DARWIN; then
+  DEFAULT_FLAKE_REF="$DEFAULT_FLAKE_REF_DARWIN"
+else
+  DEFAULT_FLAKE_REF="$DEFAULT_FLAKE_REF_LINUX"
+fi
+
+FLAKE_REF="${1:-$DEFAULT_FLAKE_REF}"
 BW_NOTE_NAME="${2:-age-key}"
 AGE_KEYS_PATH="${HOME}/.config/sops/age/keys.txt"
+
+echo "ℹ️  Detected OS: $OS ($ARCH)"
+echo "ℹ️  Using flake ref: $FLAKE_REF"
 
 ensure_nix() {
   if command -v nix >/dev/null 2>&1; then
@@ -26,13 +53,10 @@ ensure_nix() {
   fi
 
   # Install Nix (Determinate Systems)
-  # Note: This may prompt for sudo on Linux/macOS to set up the multi-user daemon.
-  #       We keep going afterwards and try to source the profile so nix is usable immediately.
   curl -fsSL https://install.determinate.systems/nix | sh -s -- install --determinate
 
   echo "ℹ️  Attempting to load Nix environment for this shell…"
 
-  # Try common profile hooks to make nix available in the current process
   # Linux (daemon)
   if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
     # shellcheck disable=SC1091
@@ -49,7 +73,6 @@ ensure_nix() {
     . "/etc/profile.d/nix.sh" || true
   fi
 
-  # Final check
   if ! command -v nix >/dev/null 2>&1; then
     echo "⚠️  Nix installation finished, but nix is not yet on PATH."
     echo "    Please open a new terminal/session and re-run this script."
@@ -57,6 +80,47 @@ ensure_nix() {
   fi
 
   echo "✅ Nix installed."
+}
+
+ensure_home_manager_hint() {
+  if $IS_LINUX && ! command -v home-manager >/dev/null 2>&1; then
+    echo "ℹ️  home-manager not found; to init on Linux:"
+    echo "    nix run home-manager/master -- init --switch"
+  fi
+}
+
+apply_activation() {
+  # Apply the appropriate system config for the host
+  if $IS_DARWIN; then
+    # If darwin-rebuild is not yet available (fresh machine), build once and use the result wrapper.
+    if ! command -v darwin-rebuild >/dev/null 2>&1; then
+      echo "🔧 Building nix-darwin system (first-time on this Mac)…"
+      nix build ".#darwinConfigurations.${FLAKE_REF#.#}.system" 2>/dev/null || true
+      # Fallback: generic build in case user passed an alias like ".#jonas-mac"
+      if [ ! -e "./result/sw/bin/darwin-rebuild" ]; then
+        nix build "$FLAKE_REF" 2>/dev/null || true
+      fi
+
+      if [ -x "./result/sw/bin/darwin-rebuild" ]; then
+        echo "🚀 Activating nix-darwin via build result…"
+        ./result/sw/bin/darwin-rebuild switch --flake "$FLAKE_REF"
+      else
+        # If darwin-rebuild is still not present, try invoking directly (may work if in PATH due to prior installs)
+        if command -v darwin-rebuild >/dev/null 2>&1; then
+          darwin-rebuild switch --flake "$FLAKE_REF"
+        else
+          echo "❌ Could not find darwin-rebuild. Ensure your flake defines darwinConfigurations and try again."
+          exit 1
+        fi
+      fi
+    else
+      echo "🚀 Applying nix-darwin profile: $FLAKE_REF"
+      darwin-rebuild switch --flake "$FLAKE_REF"
+    fi
+  else
+    echo "🚀 Applying Home Manager profile: $FLAKE_REF"
+    home-manager switch --flake "$FLAKE_REF"
+  fi
 }
 
 # --- sanity checks -----------------------------------------------------------
@@ -68,13 +132,11 @@ fi
 # Ensure nix is available (installs if missing)
 ensure_nix
 
-# home-manager must exist; if HM missing, suggest init
-if ! command -v home-manager >/dev/null 2>&1; then
-  echo "ℹ️ home-manager not found; you can install it with:"
-  echo "   nix run home-manager/master -- init --switch"
-fi
+# Helpful hint for Linux HM init if needed
+ensure_home_manager_hint
 
 # --- ephemeral shell: bitwarden + age + (optional) sops ----------------------
+# Works on both Linux and macOS since we're using nixpkgs
 nix shell nixpkgs#bitwarden-cli nixpkgs#age nixpkgs#sops -c bash -lc "
   set -euo pipefail
 
@@ -107,8 +169,12 @@ nix shell nixpkgs#bitwarden-cli nixpkgs#age nixpkgs#sops -c bash -lc "
   fi
 "
 
-# --- run HM once (keys are present now, sops-nix can decrypt) ----------------
-echo "🚀 Applying Home Manager profile: ${FLAKE_REF}"
-home-manager switch --flake "${FLAKE_REF}"
+# --- activate (HM on Linux, nix-darwin on macOS) -----------------------------
+apply_activation
 
-echo "✅ Done. If shell functions (e.g. bw-unlock) were added, run:  exec zsh"
+echo "✅ Done."
+if $IS_LINUX; then
+  echo "   If shell functions were added, run:  exec \$SHELL"
+else
+  echo "   If shell functions were added, restart your terminal."
+fi
