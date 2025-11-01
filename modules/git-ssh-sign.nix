@@ -1,5 +1,5 @@
 # modules/git-ssh-sign.nix
-{ config, ... }:
+{ config, lib, ... }:
 {
   programs.ssh = {
     enable = true;
@@ -25,10 +25,11 @@
 
     # SSH signing globally
     extraConfig = {
-      user.signingKey = "${config.home.homeDirectory}/.ssh/id_ed25519.pub";
+      user.signingKey = "${config.home.homeDirectory}/.ssh/id_ed25519";
       tag.gpgSign = true;
       init.defaultBranch = "master";
       gpg.format = "ssh";
+      gpg.ssh.allowedSignersFile = "${config.home.homeDirectory}/.ssh/allowed_signers";
       commit.gpgSign = true;
     };
 
@@ -46,8 +47,27 @@
     [user]
       name = Jonas De Meyer
       email = 144120822+Jonas-PRF@users.noreply.github.com
-      signingkey = ~/.ssh/id_ed25519_work.pub
+      signingkey = ~/.ssh/id_ed25519_work
     [gpg]
       format = ssh
   '';
+
+  home.activation.generateAllowedSigners =
+    lib.hm.dag.entryAfter [ "writeBoundary" "ensurePubKeys" ]
+      ''
+        set -eu
+        mkdir -p "$HOME/.ssh"
+        tmp="$(mktemp)"
+        if [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
+          printf "jonas.personal " >> "$tmp"; cat "$HOME/.ssh/id_ed25519.pub" >> "$tmp"; printf "\n" >> "$tmp"
+        fi
+        if [ -f "$HOME/.ssh/id_ed25519_work.pub" ]; then
+          printf "jonas.work " >> "$tmp"; cat "$HOME/.ssh/id_ed25519_work.pub" >> "$tmp"; printf "\n" >> "$tmp"
+        fi
+        if [ -s "$tmp" ]; then
+          mv "$tmp" "$HOME/.ssh/allowed_signers"; chmod 600 "$HOME/.ssh/allowed_signers"
+        else
+          rm -f "$tmp"
+        fi
+      '';
 }

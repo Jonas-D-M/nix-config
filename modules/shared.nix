@@ -35,6 +35,7 @@
     fzf
     zoxide
     tree
+    openssh
 
     # tools we used for secrets
     age
