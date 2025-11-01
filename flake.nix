@@ -8,31 +8,36 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix.url = "github:Mic92/sops-nix";
   };
 
   outputs =
-    { nixpkgs, home-manager, ... }:
+    { nixpkgs, home-manager, sops-nix,... }:
     let
-      mkHome = { system, username, homeDir, modules }:
-      let pkgs = import nixpkgs { inherit system; };
-      in home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = { inherit username homeDir; isDarwin = pkgs.stdenv.isDarwin; };
-        modules = modules;
-      };
-    in
-    {
-      homeConfigurations."jonas-home" = home-manager.lib.homeManagerConfiguration {
-        popos = mkHome {
-          system = "x86_64-linux";
-          username = "jonas";
-          homeDir = "/home/jonas";
-          modules = [ 
-            ./modules/shared.nix
-            ./modules/popos.nix
-            ./hosts/popos.nix
-           ];
+      system = "x86_64-linux";
+      pkgs = import nixpkgs { inherit system; };
+
+      mkHome = modules:
+        home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          # pass sops-nix to your modules (secrets.nix imports it)
+          extraSpecialArgs = { inherit sops-nix; };
+          modules = modules;
         };
-      };
+    in {
+      homeConfigurations."jonas-home" = mkHome [
+        # If shared.nix is an aggregator that imports zsh/wezterm/git-ssh-sign/secrets:
+        ./modules/shared.nix
+        ./modules/linux.nix
+        ./hosts/popos-laptop.nix
+
+        # If shared.nix is NOT an aggregator, instead list each:
+        # ./modules/zsh.nix
+        # ./modules/wezterm.nix
+        # ./modules/git-ssh-sign.nix
+        # ./modules/secrets.nix
+        # ./modules/linux.nix
+        # ./hosts/popos-laptop.nix
+      ];
     };
-}
+  }

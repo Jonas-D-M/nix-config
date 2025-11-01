@@ -1,0 +1,29 @@
+# --- Sensitive files ---
+# Never commit private keys or local age config
+secrets/ssh.id_*         # plaintext keys (before encryption)
+!secrets/*.enc           # allow encrypted files
+
+# Local sops and age key store
+.config/sops/
+**/keys.txt
+
+# --- Nix build artifacts ---
+result
+result-*
+*.drv
+*.lock
+*.log
+
+# --- Home Manager / Nix temp dirs ---
+.nix-defexpr/
+.nix-profile
+.cache/
+.hm-build
+.tmp/
+
+# --- macOS/Linux system clutter ---
+.DS_Store
+.Trash-*
+*.swp
+*.swo
+*~
