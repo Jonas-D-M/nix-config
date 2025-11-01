@@ -89,14 +89,14 @@
             home-manager.extraSpecialArgs = { inherit sops-nix; };
 
             # User module + imports
-            home-manager.users.jonas = {
+            home-manager.users.jonasdemeyer = {
               imports = [
                 ./home.nix
                 ./modules/shared.nix
               ];
 
               # Force the path so null/optional defaults can't win
-              home.homeDirectory = nixpkgs.lib.mkForce "/Users/jonas";
+              home.homeDirectory = nixpkgs.lib.mkForce "/Users/jonasdemeyer";
             };
 
             # sops-nix (darwin key location)
