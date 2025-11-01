@@ -5,15 +5,15 @@
   lib,
   ...
 }:
-    # Let nix-darwin manage the nix installation & daemon. Disabling this can
-    # lead to launchctl bootout/bootstrap warnings if an external installer
-    # (e.g. Determinate Systems) created services with differing labels.
-    # Enabling brings them under declarative control and avoids noisy errors
-    # like: "boot-out failed: 3: no such process" / "Bootstrap failed: 5".
-    nix.enable = true;
+{
+  # Let nix-darwin manage the nix installation & daemon. Disabling this can
+  # lead to launchctl bootout/bootstrap warnings if an external installer
+  # (e.g. Determinate Systems) created services with differing labels.
+  # Enabling brings them under declarative control and avoids noisy errors
+  # like: "boot-out failed: 3: no such process" / "Bootstrap failed: 5".
 
-    # Ensure the daemon service is explicitly enabled (older configs used this).
-    services.nix-daemon.enable = true;
+  # Ensure the daemon service is explicitly enabled (older configs used this).
+  services.nix-daemon.enable = true;
   nix.enable = false;
 
   # Required with newer nix-darwin (set once and keep it)
