@@ -12,24 +12,31 @@
   };
 
   outputs =
-    { nixpkgs, home-manager, sops-nix,... }:
+    {
+      nixpkgs,
+      home-manager,
+      sops-nix,
+      ...
+    }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
 
-      mkHome = modules:
+      mkHome =
+        modules:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           # pass sops-nix to your modules (secrets.nix imports it)
           extraSpecialArgs = { inherit sops-nix; };
           modules = modules;
         };
-    in {
+    in
+    {
       homeConfigurations."jonas-home" = mkHome [
         # If shared.nix is an aggregator that imports zsh/wezterm/git-ssh-sign/secrets:
+        ./home.nix
         ./modules/shared.nix
-        ./modules/linux.nix
-        ./hosts/popos-laptop.nix
+        # ./hosts/popos.nix
 
         # If shared.nix is NOT an aggregator, instead list each:
         # ./modules/zsh.nix
@@ -40,4 +47,4 @@
         # ./hosts/popos-laptop.nix
       ];
     };
-  }
+}

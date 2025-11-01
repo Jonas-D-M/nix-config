@@ -3,7 +3,7 @@
 {
   programs.ssh = {
     enable = true;
-    forwardAgent = true;  # safe for trusted hosts; set per-host otherwise
+    forwardAgent = true; # safe for trusted hosts; set per-host otherwise
     extraConfig = ''
       Host github.com
         HostName github.com
@@ -20,19 +20,16 @@
     enable = true;
 
     # Personal defaults
-    userName  = "Jonas De Meyer";
+    userName = "Jonas De Meyer";
     userEmail = "43569205+Jonas-D-M@users.noreply.github.com";
 
     # SSH signing globally
     extraConfig = {
       user.signingKey = "${config.home.homeDirectory}/.ssh/id_ed25519.pub";
-      tag.gpgSign    = true;
+      tag.gpgSign = true;
       init.defaultBranch = "master";
       gpg.format = "ssh";
       commit.gpgSign = true;
-      tag.gpgSign = true;
-
-      init.defaultBranch = "master";
     };
 
     # Switch to work identity + work signing key under ~/work/**

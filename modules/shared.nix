@@ -17,27 +17,42 @@
     ./secrets.nix
   ];
 
-
   home.packages = with pkgs; [
     nixfmt-rfc-style
     # essentials
-    git gh curl wget gnupg
-    unzip zip p7zip
-    jq yq
-    eza ripgrep fzf zoxide tree
+    git
+    gh
+    curl
+    wget
+    gnupg
+    unzip
+    zip
+    p7zip
+    jq
+    yq
+    eza
+    ripgrep
+    fzf
+    zoxide
+    tree
 
     # tools we used for secrets
-    age sops
+    age
+    sops
 
     # containers / k8s
-    kubectl kubectx kubernetes-helm k9s stern
+    kubectl
+    kubectx
+    kubernetes-helm
+    k9s
+    stern
 
     # extras
     krew
     jetbrains-mono
 
     # programs
-    vscode
+    # vscode
 
   ];
 
@@ -47,7 +62,7 @@
   };
 
   home.shellAliases = {
-    dps  = "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'";
+    dps = "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'";
     sail = "bash vendor/bin/sail";
   };
 }

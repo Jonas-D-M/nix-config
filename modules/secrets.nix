@@ -1,5 +1,11 @@
 # modules/secrets.nix
-{ config, pkgs, lib, sops-nix, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  sops-nix,
+  ...
+}:
 {
   # bring in the sops Home Manager module
   imports = [ sops-nix.homeManagerModules.sops ];
@@ -22,6 +28,8 @@
 
   sops.secrets."ssh/id_ed25519_work" = {
     sopsFile = ./../secrets/ssh.id_ed25519_work.enc;
+    format = "json";
+    key = "data";
     path = "${config.home.homeDirectory}/.ssh/id_ed25519_work";
     mode = "0600";
   };

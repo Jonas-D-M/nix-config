@@ -1,13 +1,11 @@
 { pkgs, ... }:
 {
-  # Make common paths available globally (instead of exporting PATH manually)
   home.sessionPath = [
     "$HOME/.local/bin"
     "$HOME/bin"
     "$HOME/.krew/bin"
   ];
 
-  # Vars your old zshrc relied on
   home.sessionVariables = {
     NVM_DIR = "$HOME/.nvm";
     PNPM_HOME = "$HOME/.local/share/pnpm";
@@ -17,31 +15,30 @@
   programs.zsh = {
     enable = true;
     enableCompletion = true;
-    autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
 
-    initExtra = ''
+    initContent = ''
       # --- NVM bootstrap ---
       [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
       [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
 
-      # --- pnpm path (as in your zshrc) ---
+      # --- pnpm path ---
       case ":$PATH:" in
         *":$PNPM_HOME:"*) ;;
         *) export PATH="$PNPM_HOME:$PATH" ;;
       esac
 
-      # --- direnv hook (HM enables direnv, but we keep the shell hook here) ---
+      # --- direnv hook ---
       eval "$(direnv hook zsh)"
 
-      # --- Auto use Node from .nvmrc (your function) ---
+      # --- Auto use Node from .nvmrc ---
       autoload -U add-zsh-hook
       load-nvmrc() {
         local nvmrc_path
         nvmrc_path="$(nvm_find_nvmrc)"
         if [ -n "$nvmrc_path" ]; then
           local nvmrc_node_version
-          nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
+          nvmrc_node_version=$(nvm version "$(cat "''${nvmrc_path}")")
           if [ "$nvmrc_node_version" = "N/A" ]; then
             nvm install
           elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
@@ -60,12 +57,12 @@
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
       fi
 
-      # --- fzf keybindings/completion (explicit, like your zshrc) ---
+      # --- fzf keybindings/completion ---
       if command -v fzf >/dev/null 2>&1; then
         eval "$(fzf --zsh)"
       fi
 
-      # --- Zinit bootstrap (as in your zshrc) ---
+      # --- Zinit bootstrap ---
       if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
           print -P "%F{33}Installing Zinit…%f"
           command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
@@ -74,9 +71,9 @@
       fi
       source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
       autoload -Uz _zinit
-      (( ${+_comps} )) && _comps[zinit]=_zinit
+      (( ''${+_comps} )) && _comps[zinit]=_zinit
 
-      # Annexes + plugins you used
+      # Annexes + plugins
       zinit light-mode for \
           zdharma-continuum/zinit-annex-as-monitor \
           zdharma-continuum/zinit-annex-bin-gem-node \
@@ -91,7 +88,7 @@
       # Completions
       autoload -U compinit && compinit
 
-      # Keymap & history (ported)
+      # Keymap & history
       bindkey -e
       bindkey '^p' history-search-backward
       bindkey '^n' history-search-forward
@@ -110,7 +107,7 @@
 
       # Completion styling
       zstyle ':completion:*' matcher-list 'm:{a-z}-={A-Za-z}'
-      zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+      zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
       zstyle ':completion:*' menu no
       zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 
@@ -129,20 +126,40 @@
     '';
   };
 
-  # Prompt + smarter cd
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
     settings = {
-      add_newline = false;
-      php = { disabled = false; };
-      nodejs = { disabled = false; };
-      kubernetes = { disabled = false; };
+      "$schema" = "https://starship.rs/config-schema.json";
+      right_format = "$time";
+
+      # Matches your TOML
+      add_newline = true;
+
+      character = {
+        success_symbol = "[➜](bold green)";
+      };
+
+      package = {
+        disabled = true;
+      };
+      time = {
+        disabled = false;
+      };
+      direnv = {
+        disabled = false;
+      };
     };
   };
 
   programs.zoxide = {
     enable = true;
     enableZshIntegration = true;
+  };
+
+  # Nice-to-have if you're using direnv and Nix together:
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
   };
 }
