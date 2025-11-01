@@ -7,7 +7,7 @@
 }:
 {
   # nix-darwin now manages nix-daemon automatically when nix.enable = true
-  nix.enable = true;
+  nix.enable = false;
 
   # Required with newer nix-darwin (set once and keep it)
   system.stateVersion = 6;
