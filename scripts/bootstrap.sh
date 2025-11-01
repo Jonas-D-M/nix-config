@@ -27,7 +27,6 @@ esac
 
 DEFAULT_FLAKE_REF_LINUX=".#jonas-home"
 DEFAULT_FLAKE_REF_DARWIN=".#jonas-mac"
-
 if $IS_DARWIN; then
   DEFAULT_FLAKE_REF="$DEFAULT_FLAKE_REF_DARWIN"
 else
@@ -41,8 +40,53 @@ AGE_KEYS_PATH="${HOME}/.config/sops/age/keys.txt"
 echo "ℹ️  Detected OS: $OS ($ARCH)"
 echo "ℹ️  Using flake ref: $FLAKE_REF"
 
-ensure_nix() {
+# --- helpers to make Nix usable in THIS process --------------------------------
+set_nix_env_for_current_shell() {
+  local daemon_profile="/nix/var/nix/profiles/default"
+  local bin1="$daemon_profile/bin"
+  local bin2="$daemon_profile/sw/bin"
+
+  # Prefer deterministic dirs first
+  if [ -d "$bin1" ] || [ -d "$bin2" ]; then
+    export PATH="${bin1}:${bin2}:${PATH}"
+  fi
+
+  # Profile scripts (daemon / user / macOS)
+  if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+    # shellcheck disable=SC1091
+    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh || true
+  fi
+  if [ -f /etc/profile.d/nix.sh ]; then
+    # shellcheck disable=SC1091
+    . /etc/profile.d/nix.sh || true
+  fi
+  if [ -f "${HOME}/.nix-profile/etc/profile.d/nix.sh" ]; then
+    # shellcheck disable=SC1091
+    . "${HOME}/.nix-profile/etc/profile.d/nix.sh" || true
+  fi
+
+  # On macOS with zsh, Determinate may place snippets in /etc/zshrc(.d)
+  if $IS_DARWIN && [ -n "${ZSH_VERSION:-}" ]; then
+    if [ -f /etc/zshrc ]; then . /etc/zshrc || true; fi
+    if [ -d /etc/zshrc.d ]; then
+      for f in /etc/zshrc.d/*.zsh; do . "$f" || true; done
+    fi
+  fi
+}
+
+pick_nix_cmd() {
   if command -v nix >/dev/null 2>&1; then
+    echo "nix"; return
+  fi
+  if [ -x /nix/var/nix/profiles/default/bin/nix ]; then
+    echo "/nix/var/nix/profiles/default/bin/nix"; return
+  fi
+  echo "nix" # last resort: hope PATH gets fixed later
+}
+
+ensure_nix() {
+  if command -v nix >/dev/null 2>&1 || [ -x /nix/var/nix/profiles/default/bin/nix ]; then
+    set_nix_env_for_current_shell
     return 0
   fi
 
@@ -55,28 +99,13 @@ ensure_nix() {
   # Install Nix (Determinate Systems)
   curl -fsSL https://install.determinate.systems/nix | sh -s -- install --determinate
 
-  echo "ℹ️  Attempting to load Nix environment for this shell…"
+  echo "ℹ️  Loading Nix environment for this shell…"
+  set_nix_env_for_current_shell
 
-  # Linux (daemon)
-  if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
-    # shellcheck disable=SC1091
-    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh || true
-  fi
-  # Per-user profile (fallback)
-  if [ -f "${HOME}/.nix-profile/etc/profile.d/nix.sh" ]; then
-    # shellcheck disable=SC1091
-    . "${HOME}/.nix-profile/etc/profile.d/nix.sh" || true
-  fi
-  # macOS (daemon)
-  if [ -f "/etc/profile.d/nix.sh" ]; then
-    # shellcheck disable=SC1091
-    . "/etc/profile.d/nix.sh" || true
-  fi
-
-  if ! command -v nix >/dev/null 2>&1; then
-    echo "⚠️  Nix installation finished, but nix is not yet on PATH."
-    echo "    Please open a new terminal/session and re-run this script."
-    exit 1
+  if ! command -v nix >/dev/null 2>&1 && [ ! -x /nix/var/nix/profiles/default/bin/nix ]; then
+    echo "⚠️  Nix installed, but not on PATH yet."
+    echo "   Open a new terminal OR run:  exec \$SHELL -l"
+    # Continue anyway; we’ll call the absolute nix path if available.
   fi
 
   echo "✅ Nix installed."
@@ -90,22 +119,22 @@ ensure_home_manager_hint() {
 }
 
 apply_activation() {
-  # Apply the appropriate system config for the host
   if $IS_DARWIN; then
     # If darwin-rebuild is not yet available (fresh machine), build once and use the result wrapper.
     if ! command -v darwin-rebuild >/dev/null 2>&1; then
-      echo "🔧 Building nix-darwin system (first-time on this Mac)…"
-      nix build ".#darwinConfigurations.${FLAKE_REF#.#}.system" 2>/dev/null || true
-      # Fallback: generic build in case user passed an alias like ".#jonas-mac"
+      local host_attr="${FLAKE_REF#.#}"
+      echo "🔧 Building nix-darwin system attr: .#darwinConfigurations.${host_attr}.system"
+      "${NIX_CMD}" build ".#darwinConfigurations.${host_attr}.system" 2>/dev/null || true
+
+      # Fallback: build the provided flake ref directly if the attr above failed
       if [ ! -e "./result/sw/bin/darwin-rebuild" ]; then
-        nix build "$FLAKE_REF" 2>/dev/null || true
+        "${NIX_CMD}" build "$FLAKE_REF" 2>/dev/null || true
       fi
 
       if [ -x "./result/sw/bin/darwin-rebuild" ]; then
         echo "🚀 Activating nix-darwin via build result…"
         ./result/sw/bin/darwin-rebuild switch --flake "$FLAKE_REF"
       else
-        # If darwin-rebuild is still not present, try invoking directly (may work if in PATH due to prior installs)
         if command -v darwin-rebuild >/dev/null 2>&1; then
           darwin-rebuild switch --flake "$FLAKE_REF"
         else
@@ -131,50 +160,80 @@ fi
 
 # Ensure nix is available (installs if missing)
 ensure_nix
+# Make sure PATH is good for THIS process and record a reliable nix command
+set_nix_env_for_current_shell
+NIX_CMD="$(pick_nix_cmd)"
 
 # Helpful hint for Linux HM init if needed
 ensure_home_manager_hint
 
 # --- ephemeral shell: bitwarden + age + (optional) sops ----------------------
-# Works on both Linux and macOS since we're using nixpkgs
-nix shell nixpkgs#bitwarden-cli nixpkgs#age nixpkgs#sops -c bash -lc "
+# Idempotent Bitwarden flow using status/unlock checks
+"${NIX_CMD}" shell nixpkgs#bitwarden-cli nixpkgs#age nixpkgs#sops nixpkgs#jq -c bash -lc '
   set -euo pipefail
 
-  # 1) Bitwarden login (API key if provided, else interactive)
-  if [ -n \"\${BW_CLIENTID:-}\" ] && [ -n \"\${BW_CLIENTSECRET:-}\" ]; then
-    echo '🔐 Logging in to Bitwarden with API key...'
-    bw login --apikey >/dev/null
+  bw_status="$(bw status --raw || echo "{\"status\":\"unknown\"}")"
+  status="$(printf "%s" "$bw_status" | jq -r ".status")"
+
+  case "$status" in
+    unauthenticated|unknown)
+      if [ -n "${BW_CLIENTID:-}" ] && [ -n "${BW_CLIENTSECRET:-}" ]; then
+        echo "🔐 Logging in to Bitwarden with API key…"
+        bw login --apikey >/dev/null
+      else
+        echo "🔐 Logging in to Bitwarden…"
+        bw login >/dev/null
+      fi
+      ;;
+    locked)
+      echo "🔓 Vault is locked; will unlock…"
+      ;;
+    unlocked)
+      echo "✅ Bitwarden already unlocked."
+      ;;
+    *)
+      echo "ℹ️ Bitwarden status: $status"
+      ;;
+  esac
+
+  # Ensure unlocked; capture BW_SESSION (don’t fail if already unlocked)
+  if [ "$status" != "unlocked" ]; then
+    echo "🔓 Unlocking Bitwarden vault…"
+    export BW_SESSION="$(bw unlock --raw)"
   else
-    echo '🔐 Logging in to Bitwarden...'
-    bw login >/dev/null
+    export BW_SESSION="$(bw unlock --raw || true)"
   fi
 
-  # 2) Unlock and export BW_SESSION for this subshell only
-  echo '🔓 Unlocking Bitwarden vault...'
-  export BW_SESSION=\"\$(bw unlock --raw)\"
-
   # 3) Restore Age key from Secure Note into ~/.config/sops/age/keys.txt
-  echo '📥 Restoring Age key from Bitwarden note: \"${BW_NOTE_NAME}\"'
-  mkdir -p \"$(dirname "${AGE_KEYS_PATH}")\"
-  bw get notes \"${BW_NOTE_NAME}\" > \"${AGE_KEYS_PATH}\"
-  chmod 600 \"${AGE_KEYS_PATH}\"
+  echo "📥 Restoring Age key from Bitwarden note: "'"'"${BW_NOTE_NAME}"'"'"
+  mkdir -p "'"$(dirname "${AGE_KEYS_PATH}")"'"
+  bw get notes "'"${BW_NOTE_NAME}"'" > "'"${AGE_KEYS_PATH}"'"
+  chmod 600 "'"${AGE_KEYS_PATH}"'"
 
-  echo '🔎 Age public recipient:'
-  age-keygen -y \"${AGE_KEYS_PATH}\" || true
+  echo "🔎 Age public recipient:"
+  age-keygen -y "'"${AGE_KEYS_PATH}"'" || true
 
   # 4) Optional quick validation: try to decrypt one secret if present
   if [ -f secrets/ssh.id_ed25519.enc ]; then
-    echo '🧪 Testing decryption of secrets/ssh.id_ed25519.enc ...'
-    sops -d secrets/ssh.id_ed25519.enc >/dev/null && echo '✅ Decryption OK'
+    echo "🧪 Testing decryption of secrets/ssh.id_ed25519.enc …"
+    if sops -d secrets/ssh.id_ed25519.enc >/dev/null; then
+      echo "✅ Decryption OK"
+    else
+      echo "⚠️  Decryption failed (check keys / recipients)."
+    fi
   fi
-"
+'
 
 # --- activate (HM on Linux, nix-darwin on macOS) -----------------------------
 apply_activation
 
 echo "✅ Done."
-if $IS_LINUX; then
-  echo "   If shell functions were added, run:  exec \$SHELL"
+if $IS_DARWIN; then
+  # Optional: auto-reload login shell so nix/darwin env is available immediately
+  if [ -t 1 ]; then
+    echo "🔄 Reloading your login shell so Nix/nix-darwin are on PATH…"
+    exec "$SHELL" -l
+  fi
 else
-  echo "   If shell functions were added, restart your terminal."
+  echo "   If shell functions were added, run:  exec \$SHELL -l"
 fi
