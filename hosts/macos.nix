@@ -13,7 +13,7 @@
   system.stateVersion = 6;
 
   # Needed because you set user-scoped system.defaults.* options
-  system.primaryUser = "jonas";
+  system.primaryUser = "jonasdemeyer";
 
   # Shells
   programs.zsh.enable = true;

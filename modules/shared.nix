@@ -57,7 +57,7 @@
     vscode
     spotify
     dbeaver-bin
-    clockify
+    # clockify -> doesnt work on macos
     google-chrome
     postman
     openfortivpn
