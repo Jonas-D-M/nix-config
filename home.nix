@@ -1,10 +1,14 @@
 { config, pkgs, ... }:
+let
+  username = "jonas";
+  isDarwin = pkgs.stdenv.isDarwin;
+in
 
 {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
-  home.username = "jonas";
-  home.homeDirectory = "/home/jonas";
+  home.username = username;
+  home.homeDirectory = if isDarwin then "/Users/${username}" else "/home/${username}";
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -34,7 +38,7 @@
     # (pkgs.writeShellScriptBin "my-hello" ''
     #   echo "Hello, ${config.home.username}!"
     # '')
-    pkgs.cowsay
+    # pkgs.cowsay
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
