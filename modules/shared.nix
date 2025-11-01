@@ -54,8 +54,14 @@
     jetbrains-mono
 
     # programs
-    # vscode
-
+    vscode
+    spotify
+    dbeaver-bin
+    clockify
+    google-chrome
+    postman
+    openfortivpn
+    slack
   ];
 
   programs.direnv = {

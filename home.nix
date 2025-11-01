@@ -76,4 +76,6 @@
   programs.home-manager.enable = true;
 
   news.display = "silent";
+
+  nixpkgs.config.allowUnfree = true;
 }

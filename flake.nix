@@ -33,18 +33,9 @@
     in
     {
       homeConfigurations."jonas-home" = mkHome [
-        # If shared.nix is an aggregator that imports zsh/wezterm/git-ssh-sign/secrets:
         ./home.nix
         ./modules/shared.nix
-        # ./hosts/popos.nix
-
-        # If shared.nix is NOT an aggregator, instead list each:
-        # ./modules/zsh.nix
-        # ./modules/wezterm.nix
-        # ./modules/git-ssh-sign.nix
-        # ./modules/secrets.nix
-        # ./modules/linux.nix
-        # ./hosts/popos-laptop.nix
+        ./hosts/popos.nix
       ];
     };
 }
