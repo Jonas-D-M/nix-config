@@ -13,8 +13,8 @@
   imports = [
     ./zsh.nix
     ./wezterm.nix
-    ./git-ssh-sign.nix
     ./secrets.nix
+    ./git-ssh-sign.nix
   ];
 
   home.packages = with pkgs; [

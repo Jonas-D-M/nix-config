@@ -57,8 +57,8 @@
 
     includes = [
       {
-        condition = "gitdir:~/work/**";
-        path = "~/.gitconfig-work-ssh";
+        condition = "gitdir:${config.home.homeDirectory}/work/**";
+        path = "${config.home.homeDirectory}/.gitconfig-work-ssh";
       }
     ];
   };
@@ -73,22 +73,5 @@
       format = ssh
   '';
 
-  home.activation.generateAllowedSigners =
-    lib.hm.dag.entryAfter [ "writeBoundary" "ensurePubKeys" ]
-      ''
-        set -eu
-        mkdir -p "$HOME/.ssh"
-        tmp="$(mktemp)"
-        if [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
-          printf "jonas.personal " >> "$tmp"; cat "$HOME/.ssh/id_ed25519.pub" >> "$tmp"; printf "\n" >> "$tmp"
-        fi
-        if [ -f "$HOME/.ssh/id_ed25519_work.pub" ]; then
-          printf "jonas.work " >> "$tmp"; cat "$HOME/.ssh/id_ed25519_work.pub" >> "$tmp"; printf "\n" >> "$tmp"
-        fi
-        if [ -s "$tmp" ]; then
-          mv "$tmp" "$HOME/.ssh/allowed_signers"; chmod 600 "$HOME/.ssh/allowed_signers"
-        else
-          rm -f "$tmp"
-        fi
-      '';
+  # allowed_signers is now generated in secrets.nix ensurePubKeys activation step.
 }
