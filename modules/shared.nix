@@ -40,6 +40,7 @@
     # tools we used for secrets
     age
     sops
+    bitwarden-cli
 
     # containers / k8s
     kubectl
