@@ -71,41 +71,29 @@
       # MACOS (nix-darwin + HM) CONFIG
       #
       darwinConfigurations."jonas-mac" = nix-darwin.lib.darwinSystem {
-        system = darwinSystem;
-
+        system = "aarch64-darwin";
         modules = [
           ./hosts/macos.nix
           home-manager.darwinModules.home-manager
           sops-nix.darwinModules.sops
-
           {
-            nixpkgs.hostPlatform = darwinSystem;
+            nixpkgs.hostPlatform = "aarch64-darwin";
 
-            # Home Manager integration
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-
-            # Provide sops-nix to HM modules
             home-manager.extraSpecialArgs = { inherit sops-nix; };
 
-            # User module + imports
+            # IMPORTANT: attr key and values match your mac user
             home-manager.users.jonasdemeyer = {
               imports = [
                 ./home.nix
                 ./modules/shared.nix
               ];
-
-              # Force the path so null/optional defaults can't win
+              home.username = nixpkgs.lib.mkForce "jonasdemeyer";
               home.homeDirectory = nixpkgs.lib.mkForce "/Users/jonasdemeyer";
             };
 
-            # sops-nix (darwin key location)
-            sops.age.keyFile = "/Users/jonas/.config/sops/age/keys.txt";
-
-            # Keep unfree on the darwin side too
             nixpkgs.config.allowUnfree = true;
-
-            # Nix features for darwin
             nix.settings.experimental-features = [
               "nix-command"
               "flakes"
@@ -113,5 +101,6 @@
           }
         ];
       };
+
     };
 }

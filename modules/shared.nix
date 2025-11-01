@@ -73,4 +73,12 @@
     dps = "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'";
     sail = "bash vendor/bin/sail";
   };
+
+  home.activation.ensureLaunchAgentsDir = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+    if [ "$(uname -s)" = "Darwin" ]; then
+      mkdir -p "$HOME/Library/LaunchAgents"
+      chown "$USER":staff "$HOME/Library/LaunchAgents" 2>/dev/null || true
+      chmod 755 "$HOME/Library" "$HOME/Library/LaunchAgents" 2>/dev/null || true
+    fi
+  '';
 }

@@ -12,8 +12,6 @@ in
 {
   # Bring in sops-nix for Home Manager
   imports = [ sops-nix.homeManagerModules.sops ];
-
-  # Default location for your age key — host modules can override it
   sops.age.keyFile = lib.mkDefault "${homeDir}/.config/sops/age/keys.txt";
 
   # Example wiring for future secrets
