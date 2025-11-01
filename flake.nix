@@ -61,6 +61,7 @@
         (
           { lib, ... }:
           {
+            home.username = lib.mkForce "jonas";
             home.homeDirectory = lib.mkForce "/home/jonas";
           }
         )

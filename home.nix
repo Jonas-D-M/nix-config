@@ -1,13 +1,5 @@
 { config, pkgs, ... }:
-let
-  username = "jonasdemeyer";
-  isDarwin = pkgs.stdenv.isDarwin;
-in
-
 {
-  # Home Manager needs a bit of information about you and the paths it should
-  # manage.
-  home.username = username;
   # home.homeDirectory = if isDarwin then "/Users/${username}" else "/home/${username}";
 
   # This value determines the Home Manager release that your configuration is
