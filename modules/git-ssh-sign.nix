@@ -3,37 +3,58 @@
 {
   programs.ssh = {
     enable = true;
-    forwardAgent = true; # safe for trusted hosts; set per-host otherwise
-    extraConfig = ''
-      Host github.com
-        HostName github.com
-        User git
-        AddKeysToAgent yes
-        # Uncomment if you want to force specific identities:
-        # IdentityFile ~/.ssh/id_ed25519
-        # IdentityFile ~/.ssh/id_ed25519_work
-        # IdentitiesOnly yes
-    '';
+    # HM defaults will be removed; explicitly set what you want.
+    enableDefaultConfig = false;
+
+    # Safer default: don't forward the agent everywhere.
+    matchBlocks = {
+      "*" = {
+        forwardAgent = false;
+      };
+
+      "github.com" = {
+        hostname = "github.com";
+        user = "git";
+
+        # If you want to force specific identities, uncomment below
+        # identityFile = [
+        #   "~/.ssh/id_ed25519"
+        #   "~/.ssh/id_ed25519_work"
+        # ];
+        # identitiesOnly = true;
+
+        # OpenSSH option not modeled as a boolean in HM; set via extraOptions.
+        extraOptions = {
+          AddKeysToAgent = "yes";
+        };
+
+        # Forward the agent only for GitHub (replaces the old global forwardAgent).
+        forwardAgent = true;
+      };
+    };
   };
 
   programs.git = {
     enable = true;
 
-    # Personal defaults
-    userName = "Jonas De Meyer";
-    userEmail = "43569205+Jonas-D-M@users.noreply.github.com";
+    settings = {
+      user = {
+        name = "Jonas De Meyer";
+        email = "43569205+Jonas-D-M@users.noreply.github.com";
+        signingKey = "${config.home.homeDirectory}/.ssh/id_ed25519";
+      };
 
-    # SSH signing globally
-    extraConfig = {
-      user.signingKey = "${config.home.homeDirectory}/.ssh/id_ed25519";
-      tag.gpgSign = true;
       init.defaultBranch = "master";
-      gpg.format = "ssh";
-      gpg.ssh.allowedSignersFile = "${config.home.homeDirectory}/.ssh/allowed_signers";
+
+      gpg = {
+        format = "ssh";
+        ssh.allowedSignersFile = "${config.home.homeDirectory}/.ssh/allowed_signers";
+      };
+
       commit.gpgSign = true;
+      tag.gpgSign = true;
     };
 
-    # Switch to work identity + work signing key under ~/work/**
     includes = [
       {
         condition = "gitdir:~/work/**";
