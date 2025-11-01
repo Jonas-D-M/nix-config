@@ -6,7 +6,8 @@
   ...
 }:
 let
-  homeDir = if pkgs.stdenv.isDarwin then "/Users/jonas" else "/home/jonas";
+  # Align Darwin home path with flake (jonasdemeyer) to avoid path mismatches during activation.
+  homeDir = if pkgs.stdenv.isDarwin then "/Users/jonasdemeyer" else "/home/jonas";
 in
 {
   # Bring in sops-nix for Home Manager

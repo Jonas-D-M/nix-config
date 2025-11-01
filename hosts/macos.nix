@@ -5,8 +5,15 @@
   lib,
   ...
 }:
-{
-  # nix-darwin now manages nix-daemon automatically when nix.enable = true
+    # Let nix-darwin manage the nix installation & daemon. Disabling this can
+    # lead to launchctl bootout/bootstrap warnings if an external installer
+    # (e.g. Determinate Systems) created services with differing labels.
+    # Enabling brings them under declarative control and avoids noisy errors
+    # like: "boot-out failed: 3: no such process" / "Bootstrap failed: 5".
+    nix.enable = true;
+
+    # Ensure the daemon service is explicitly enabled (older configs used this).
+    services.nix-daemon.enable = true;
   nix.enable = false;
 
   # Required with newer nix-darwin (set once and keep it)
@@ -14,6 +21,13 @@
 
   # Needed because you set user-scoped system.defaults.* options
   system.primaryUser = "jonasdemeyer";
+
+  # Declare the primary user so launchd user agents and paths resolve cleanly.
+  # This prevents bootstrap errors when user contexts are missing.
+  users.users.jonasdemeyer = {
+    home = "/Users/jonasdemeyer";
+    shell = pkgs.zsh;
+  };
 
   # Shells
   programs.zsh.enable = true;
@@ -84,4 +98,8 @@
     taps = [ "homebrew/cask" ];
     casks = [ ];
   };
+
+  # Correct sops age key path (flake used /Users/jonas earlier). Keep mkDefault so
+  # user-level overrides are still possible in other modules.
+  sops.age.keyFile = lib.mkDefault "/Users/jonasdemeyer/.config/sops/age/keys.txt";
 }
