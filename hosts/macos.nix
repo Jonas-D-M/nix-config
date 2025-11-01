@@ -1,3 +1,4 @@
+# hosts/macos.nix
 {
   config,
   pkgs,
@@ -5,26 +6,37 @@
   ...
 }:
 {
-  # Combined Darwin host-specific settings (merged duplicate blocks).
-  services.nix-daemon.enable = true;
+  # nix-darwin now manages nix-daemon automatically when nix.enable = true
+  nix.enable = true;
+
+  # Required with newer nix-darwin (set once and keep it)
+  system.stateVersion = 6;
+
+  # Needed because you set user-scoped system.defaults.* options
+  system.primaryUser = "jonas";
+
+  # Shells
   programs.zsh.enable = true;
   programs.fish.enable = false;
-  security.pam.enableSudoTouchIdAuth = true;
 
+  # New Touch ID option path
+  security.pam.services.sudo_local.touchIdAuth = true;
+
+  # Nix settings
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
   nixpkgs.config.allowUnfree = true;
 
-  # Host naming (computerName used for UI; host/local host names for networking).
+  # Host naming
   networking = {
     computerName = "Jonas's MacBook Pro";
     hostName = "Jonas-MacBook-Pro";
     localHostName = "jonas-mac";
   };
 
-  # System defaults consolidated (retain extended settings from first block + second block additions).
+  # System defaults (these now apply cleanly with system.primaryUser set)
   system.defaults = {
     NSGlobalDomain = {
       AppleShowAllExtensions = true;
@@ -47,26 +59,25 @@
     };
   };
 
-  # System-level packages (keep lean; GUI/apps via Home Manager or Homebrew if enabled).
-  environment.systemPackages = with pkgs; [
-    git
-    curl
-    wget
-    jq
-    ripgrep
-    eza
-    fzf
-    zoxide
-    direnv
-    age
-    sops
-    bitwarden-cli
-    openssh
-    # Add macOS-only tools below (uncomment as needed):
-    # terminal-notifier
-  ];
+  # # System-level packages (keep lean; GUI via HM)
+  # environment.systemPackages = with pkgs; [
+  #   git
+  #   curl
+  #   wget
+  #   jq
+  #   ripgrep
+  #   eza
+  #   fzf
+  #   zoxide
+  #   direnv
+  #   age
+  #   sops
+  #   bitwarden-cli
+  #   openssh
+  #   # terminal-notifier # <- uncomment if you want it
+  # ];
 
-  # Homebrew layer disabled by default (enable if you need casks not yet in nixpkgs).
+  # Homebrew layer (off by default)
   homebrew = {
     enable = false;
     onActivation.cleanup = "zap";
