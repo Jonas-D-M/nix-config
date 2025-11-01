@@ -1,9 +1,9 @@
 {
-  description = "Jonas Home Manager";
+  description = "Jonas Home Manager (darwin + linux)";
 
   inputs = {
-    # Specify the source of Home Manager and Nixpkgs.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -30,10 +30,14 @@
       ...
     }:
     let
-      # Linux
+      # Target systems
       linuxSystem = "x86_64-linux";
+      darwinSystem = "aarch64-darwin";
+
+      # pkgs per-system
       linuxPkgs = import nixpkgs { system = linuxSystem; };
 
+      # Small helper for Linux HM configs
       mkHome =
         modules:
         home-manager.lib.homeManagerConfiguration {
@@ -41,46 +45,70 @@
           extraSpecialArgs = { inherit sops-nix; };
           modules = modules;
         };
-
-      # macOS
-      darwinSystem = "aarch64-darwin";
     in
     {
+      #
+      # LINUX HOME-MANAGER CONFIG
+      #
+      # NOTE: We force home.homeDirectory here so you don't have to change other files.
+      #
       homeConfigurations."jonas-home" = mkHome [
         ./home.nix
         ./modules/shared.nix
         ./hosts/popos.nix
+
+        # Inline module to force the home directory on Linux
+        (
+          { lib, ... }:
+          {
+            home.homeDirectory = lib.mkForce "/home/jonas";
+          }
+        )
       ];
+
+      #
+      # MACOS (nix-darwin + HM) CONFIG
+      #
       darwinConfigurations."jonas-mac" = nix-darwin.lib.darwinSystem {
         system = darwinSystem;
 
         modules = [
-          # Your host-specific darwin config
           ./hosts/macos.nix
-
-          # Home Manager as a nix-darwin module
           home-manager.darwinModules.home-manager
-
-          # sops-nix for darwin
           sops-nix.darwinModules.sops
 
-          # Plumbing to hook your existing Home Manager config for user "jonas"
           {
-            # Make sure darwin knows the platform and where your home is
             nixpkgs.hostPlatform = darwinSystem;
 
-            # Home Manager options
+            # Home Manager integration
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
 
-            # Reuse your existing HM config on macOS
-            home-manager.users."jonas" = import ./home.nix;
+            # Provide sops-nix to HM modules
+            home-manager.extraSpecialArgs = { inherit sops-nix; };
 
-            # sops-nix minimal defaults (adapt to your secrets workflow)
-            sops = {
-              defaultSopsFile = ./secrets/secrets.yaml; # optional
-              age.keyFile = "/Users/jonas/.config/sops/age/keys.txt"; # optional
+            # User module + imports
+            home-manager.users.jonas = {
+              imports = [
+                ./home.nix
+                ./modules/shared.nix
+              ];
+
+              # Force the path so null/optional defaults can't win
+              home.homeDirectory = nixpkgs.lib.mkForce "/Users/jonas";
             };
+
+            # sops-nix (darwin key location)
+            sops.age.keyFile = "/Users/jonas/.config/sops/age/keys.txt";
+
+            # Keep unfree on the darwin side too
+            nixpkgs.config.allowUnfree = true;
+
+            # Nix features for darwin
+            nix.settings.experimental-features = [
+              "nix-command"
+              "flakes"
+            ];
           }
         ];
       };

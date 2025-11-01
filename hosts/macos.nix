@@ -1,44 +1,76 @@
-# hosts/macos.nix
-{ config, pkgs, ... }:
 {
-  # Basic nix-darwin settings
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+{
+  # Combined Darwin host-specific settings (merged duplicate blocks).
   services.nix-daemon.enable = true;
-  programs.zsh.enable = true; # default macOS shell
+  programs.zsh.enable = true;
+  programs.fish.enable = false;
+  security.pam.enableSudoTouchIdAuth = true;
+
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
+  nixpkgs.config.allowUnfree = true;
 
-  # Example: set your hostname, enable TouchID for sudo, etc.
+  # Host naming (computerName used for UI; host/local host names for networking).
   networking = {
     computerName = "Jonas's MacBook Pro";
     hostName = "Jonas-MacBook-Pro";
-    localHostName = "jonas-mac"; # used for Bonjour (e.g. jonas-mac.local)
+    localHostName = "jonas-mac";
   };
-  security.pam.enableSudoTouchIdAuth = true;
 
-  # Example: sensible defaults for macOS (tweak as you like)
+  # System defaults consolidated (retain extended settings from first block + second block additions).
   system.defaults = {
-    dock.autohide = true;
-    dock.mru-spaces = false;
-    finder.AppleShowAllExtensions = true;
-    NSGlobalDomain.AppleShowAllExtensions = true;
+    NSGlobalDomain = {
+      AppleShowAllExtensions = true;
+      InitialKeyRepeat = 15;
+      KeyRepeat = 2;
+    };
+    dock = {
+      autohide = true;
+      show-recents = false;
+      mru-spaces = false;
+      tilesize = 48;
+    };
+    finder = {
+      AppleShowAllExtensions = true;
+      ShowPathbar = true;
+      _FXShowPosixPathInTitle = true;
+    };
+    trackpad = {
+      Clicking = true;
+    };
   };
 
-  # Example: packages that are macOS-only (leave cross-platform stuff in home.nix)
+  # System-level packages (keep lean; GUI/apps via Home Manager or Homebrew if enabled).
   environment.systemPackages = with pkgs; [
-    # macOS-specific tools
+    git
+    curl
+    wget
+    jq
+    ripgrep
+    eza
+    fzf
+    zoxide
+    direnv
+    age
+    sops
+    bitwarden-cli
+    openssh
+    # Add macOS-only tools below (uncomment as needed):
     # terminal-notifier
   ];
 
-  # Optional: Homebrew layer managed by nix-darwin (if you still want casks)
+  # Homebrew layer disabled by default (enable if you need casks not yet in nixpkgs).
   homebrew = {
-    enable = false; # set true if you want it
+    enable = false;
     onActivation.cleanup = "zap";
     taps = [ "homebrew/cask" ];
-    casks = [
-      # "raycast"
-      # "visual-studio-code"
-    ];
+    casks = [ ];
   };
 }

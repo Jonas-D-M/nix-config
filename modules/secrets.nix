@@ -5,10 +5,19 @@
   sops-nix,
   ...
 }:
+let
+  homeDir = if pkgs.stdenv.isDarwin then "/Users/jonas" else "/home/jonas";
+in
 {
+  # Bring in sops-nix for Home Manager
   imports = [ sops-nix.homeManagerModules.sops ];
 
-  sops.age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+  # Default location for your age key — host modules can override it
+  sops.age.keyFile = lib.mkDefault "${homeDir}/.config/sops/age/keys.txt";
+
+  # Example wiring for future secrets
+  # sops.defaultSopsFile = ./secrets.yaml;
+  # sops.secrets."gh_token".path = "${homeDir}/.config/github/token";
 
   home.activation.ensureSshDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     mkdir -p "$HOME/.ssh"

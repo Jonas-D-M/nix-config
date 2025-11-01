@@ -37,6 +37,26 @@
 - Dry-run build: `nix build ~/nix-home`
 - Update inputs: `nix flake update`
 
+### macOS (nix-darwin) Usage
+
+This flake also defines a Darwin system configuration under `darwinConfigurations.jonas-mac` using [nix-darwin](https://github.com/lnl7/nix-darwin) plus Home Manager:
+
+Evaluate (sanity check):
+
+```sh
+nix eval .#darwinConfigurations.jonas-mac.system
+```
+
+Build & activate on macOS (after installing nix-darwin):
+
+```sh
+darwin-rebuild switch --flake .#jonas-mac
+```
+
+Your Home Manager user config is imported with `home.homeDirectory = /Users/jonas`. Secrets still use Age + Bitwarden; ensure the Age key is restored to `~/.config/sops/age/keys.txt` (see `bw-age-restore`).
+
+Host overrides live in `hosts/macos.nix` (Dock/Finder defaults etc.). Extend there for additional macOS-specific behavior (fonts, services, system.defaults).
+
 ## Extending the Configuration
 
 - Add new features by creating a module in `modules/` and importing it in `modules/shared.nix`.
