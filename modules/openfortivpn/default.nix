@@ -1,4 +1,4 @@
-# modules/openfortivpn.nix
+# modules/openfortivpn/default.nix
 {
   config,
   lib,
@@ -20,72 +20,55 @@ let
 in
 {
   options.programs.openfortivpn = {
-    enable = lib.mkEnableOption "install openfortivpn and write a default config";
-
-    # Where to write the config: system (/etc) or user (~/.openfortivpn/config)
-    scope = lib.mkOption {
-      type = lib.types.enum [
-        "system"
-        "user"
-      ];
-      default = "user";
-      description = "Write config to /etc/openfortivpn/config (system) or ~/.openfortivpn/config (user).";
-    };
-
-    # Required only when scope = "user"
-    user = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "Username for per-user config (required when scope = \"user\").";
-    };
+    enable = lib.mkEnableOption "Install openfortivpn and seed a default user config once";
 
     package = lib.mkOption {
       type = lib.types.package;
       default = pkgs.openfortivpn;
-      description = "The openfortivpn package to install.";
+      description = "openfortivpn package to install.";
     };
 
+    # Path relative to $HOME
+    configFile = lib.mkOption {
+      type = lib.types.str;
+      default = ".config/openfortivpn/config";
+      description = "Config file path relative to $HOME.";
+    };
+
+    # Initial file content (used only when the file doesn't exist yet)
     content = lib.mkOption {
       type = lib.types.lines;
       default = defaultTemplate;
-      description = "Config file content to write.";
+      description = "Template content for first-time config creation.";
+    };
+
+    createAlias = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Add a 'vpn' alias that runs openfortivpn with this config.";
     };
   };
 
-  config = lib.mkIf cfg.enable (
-    if cfg.scope == "system" then
-      {
-        # Install the binary
-        environment.systemPackages = [ cfg.package ];
+  # This is a Home Manager module: don't reference home-manager.users.* here.
+  config = lib.mkIf cfg.enable {
+    home.packages = [ cfg.package ];
 
-        # /etc/openfortivpn/config (owned by root)
-        environment.etc."openfortivpn/config".text = cfg.content;
-      }
-    else
-      # Per-user via Home Manager
-      lib.mkIf (cfg.user != null) {
-        # Make sure the package is available for the user as well
-        home-manager.users.${cfg.user} =
-          { ... }:
-          {
-            home.packages = [ cfg.package ];
-            home.activation.ensureOpenfortivpnConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-              CONFIG_PATH="$HOME/.openfortivpn/config"
-              if [ ! -f "$CONFIG_PATH" ]; then
-                mkdir -p "$(dirname "$CONFIG_PATH")"
-                cat > "$CONFIG_PATH" <<'EOF'
-                ### configuration file for openfortivpn, see man openfortivpn(1) ###
-                # host = vpn.example.org
-                # port = 443
-                # username = vpnuser
-                # password = VPNpassw0rd
-                EOF
-                echo "Created default openfortivpn config at $CONFIG_PATH"
-              else
-                echo "Preserving existing openfortivpn config"
-              fi
-            '';
-          };
-      }
-  );
+    # Create the file once if missing; preserve manual edits thereafter.
+    home.activation.ensureOpenfortivpnConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            CONFIG_PATH="$HOME/${cfg.configFile}"
+            if [ ! -f "$CONFIG_PATH" ]; then
+              mkdir -p "$(dirname "$CONFIG_PATH")"
+              cat > "$CONFIG_PATH" <<'EOF'
+      ${cfg.content}
+      EOF
+              echo "Created default openfortivpn config at $CONFIG_PATH"
+            else
+              echo "Preserving existing openfortivpn config at $CONFIG_PATH"
+            fi
+    '';
+
+    programs.zsh.shellAliases = lib.mkIf cfg.createAlias {
+      vpn = "sudo openfortivpn -c \"$HOME/${cfg.configFile}\"";
+    };
+  };
 }
