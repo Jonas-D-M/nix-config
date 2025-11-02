@@ -44,6 +44,7 @@ in
     ./zsh
     ./git
     ./wezterm
+    ./openfortivpn
     ./ssh/ssh-sign.nix
     ./ssh/ssh-gen.nix
   ];
@@ -109,5 +110,8 @@ in
         mkdir -p "$HOME/work"
       fi
     '';
+    programs.openfortivpn = {
+      enable = true;
+    }
   };
 }
