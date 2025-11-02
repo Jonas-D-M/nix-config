@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   home.sessionPath = [
     "$HOME/.local/bin"
@@ -7,7 +7,7 @@
   ];
 
   home.sessionVariables = {
-    NVM_DIR = "$HOME/.nvm";
+    NVM_DIR = "$HOME/.node-version";
     PNPM_HOME = "$HOME/.local/share/pnpm";
     DIRENV_LOG_FORMAT = "";
   };
@@ -38,24 +38,36 @@
       # --- direnv hook ---
       eval "$(direnv hook zsh)"
 
-      # --- Auto use Node from .nvmrc ---
-      autoload -U add-zsh-hook
+      # --- fnm (Fast Node Manager) ---
+      eval "$(fnm env --use-on-cd --shell zsh)"
+
       load-nvmrc() {
-        local nvmrc_path
-        nvmrc_path="$(nvm_find_nvmrc)"
-        if [ -n "$nvmrc_path" ]; then
-          local nvmrc_node_version
-          nvmrc_node_version=$(nvm version "$(cat "''${nvmrc_path}")")
-          if [ "$nvmrc_node_version" = "N/A" ]; then
-            nvm install
-          elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
-            nvm use
+        DEFAULT_NODE_VERSION="$(fnm ls | awk '/default/{print $2}')"
+        CURRENT_NODE_VERSION="$(fnm current)"
+        REQUIRED_NODE_VERSION=""
+
+        if [[ -f .nvmrc && -r .nvmrc ]]; then
+          REQUIRED_NODE_VERSION="$(cat .nvmrc)"
+
+          if [[ $CURRENT_NODE_VERSION != $REQUIRED_NODE_VERSION ]]; then
+            echo "Reverting to node from \"$CURRENT_NODE_VERSION\" to \"$REQUIRED_NODE_VERSION\""
+
+            if fnm ls | grep -q $REQUIRED_NODE_VERSION; then
+              fnm use $REQUIRED_NODE_VERSION
+            else
+              echo "Node version $REQUIRED_NODE_VERSION not found. Installing..."
+              fnm install $REQUIRED_NODE_VERSION
+              fnm use $REQUIRED_NODE_VERSION
+            fi
           fi
-        elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc)" ] && [ "$(nvm version)" != "$(nvm version default)" ]; then
-          echo "Reverting to nvm default version"
-          nvm use default
+        else
+          if [[ $CURRENT_NODE_VERSION != $DEFAULT_NODE_VERSION ]]; then
+            echo "Reverting to default node version: $DEFAULT_NODE_VERSION"
+            fnm use $DEFAULT_NODE_VERSION
+          fi
         fi
       }
+
       add-zsh-hook chpwd load-nvmrc
       load-nvmrc
 
@@ -78,6 +90,18 @@
       bindkey '^H' backward-kill-word
       bindkey '^[[Z' undo
     '';
+  };
+
+  home.packages = with pkgs; [
+    fnm
+    pnpm
+  ];
+
+  home.file = {
+    ".nvmrc" = {
+      text = "20\n";
+      target = "${config.home.homeDirectory}/.nvmrc";
+    };
   };
 
   programs.fzf = {
