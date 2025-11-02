@@ -43,16 +43,20 @@
         ];
       };
 
-      #
-      # MACOS (nix-darwin + HM) CONFIG
-      #
       darwinConfigurations."jonas-mac" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
+        
         modules = [
           ./hosts/macos.nix
           home-manager.darwinModules.home-manager
           {
             nixpkgs.hostPlatform = "aarch64-darwin";
+            nix = {
+            settings.experimental-features = [
+              "nix-command"
+              "flakes"
+            ];
+          };
 
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
