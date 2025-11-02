@@ -57,6 +57,7 @@
       "google-chrome"
       "dbeaver-community"
       "postman"
+      "microsoft-teams"
     ];
     onActivation.cleanup = "zap";
   };

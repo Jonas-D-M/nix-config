@@ -25,7 +25,6 @@
     yq
     ripgrep
 
-    openssh
 
     # containers / k8s
     kubectl
@@ -51,9 +50,9 @@
   };
 
   home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if [ ! -d "$HOME/Work" ]; then
-      echo "Creating ~/Work directory..."
-      mkdir -p "$HOME/Work"
+    if [ ! -d "$HOME/work" ]; then
+      echo "Creating ~/work directory..."
+      mkdir -p "$HOME/work"
     fi
   '';
 }
