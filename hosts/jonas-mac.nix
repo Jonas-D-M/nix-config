@@ -46,6 +46,9 @@
         "/Applications/Microsoft Teams.app"
         "/Applications/WezTerm.app"
         "/Applications/DBeaver.app"
+        "/Applications/Clockify Desktop.app"
+        "/Applications/Microsoft Outlook.app"
+        "/Applications/Slack.app"
       ];
       persistent-others = [];
     };
@@ -69,6 +72,9 @@
       "dbeaver-community"
       "postman"
       "microsoft-teams"
+      "clockify"
+      "slack"
+      "microsoft-outlook"
     ];
     onActivation.cleanup = "zap";
   };
