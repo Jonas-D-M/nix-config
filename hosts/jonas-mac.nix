@@ -2,6 +2,7 @@
 {
   # nix-darwin owns nix-daemon
   nix.enable = true;
+  startup.chime = false;
 
   # set once; keep stable
   system.stateVersion = 6;
