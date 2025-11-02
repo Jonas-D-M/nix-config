@@ -41,6 +41,7 @@ in
   # So define ONLY user-level options here.
 
   imports = [
+    ./kubectl.nix
     ./zsh.nix
     ./wezterm
     ./ssh/ssh-sign.nix
