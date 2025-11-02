@@ -35,12 +35,7 @@
     jetbrains-mono
 
     # programs
-    vscode
-    spotify
-    dbeaver-bin
     # clockify -> doesnt work on macos
-    google-chrome
-    postman
     openfortivpn
     slack
   ];

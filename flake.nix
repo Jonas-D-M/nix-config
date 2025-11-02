@@ -14,7 +14,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixgl.url = "github:nix-community/nixGL";
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
   };
 
@@ -24,7 +24,7 @@
       nixpkgs,
       home-manager,
       nix-darwin,
-      nixgl,
+      nix-homebrew,
       ...
     }:
     let
@@ -49,6 +49,7 @@
         modules = [
           ./hosts/jonas-mac.nix
           home-manager.darwinModules.home-manager
+          nix-homebrew.darwinModules.nix-homebrew
           ({ lib, ... }: {
             nixpkgs.hostPlatform = "aarch64-darwin";
             nix.settings.experimental-features = [ "nix-command" "flakes" ];

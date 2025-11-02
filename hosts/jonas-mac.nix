@@ -13,12 +13,12 @@
 
   # renamed path for Touch ID
   security.pam.services.sudo_local.touchIdAuth = true;
+  security.pam.services.sudo_local.reattach = true;
 
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
-  nixpkgs.config.allowUnfree = true;
 
   networking = {
     computerName = "Jonas's MacBook Pro";
@@ -47,4 +47,17 @@
 
   # keep system packages empty; you install via Home Manager
   environment.systemPackages = [ ];
+
+  homebrew = {
+    enable = true;
+    casks = [
+      "wezterm"
+      "visual-studio-code"
+      "spotify"
+      "google-chrome"
+      "dbeaver-community"
+      "postman"
+    ];
+    onActivation.cleanup = "zap";
+  };
 }
