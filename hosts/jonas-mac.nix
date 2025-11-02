@@ -29,6 +29,12 @@
   system = {
     startup.chime = false;
     defaults = {
+      CustomUserPreferences = {
+        "com.apple.Siri" = {
+          StatusMenuVisible = false; # hide Siri icon
+        };
+
+      };
       controlcenter = {
         BatteryShowPercentage = true;
       };
