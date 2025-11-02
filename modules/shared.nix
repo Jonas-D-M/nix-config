@@ -41,12 +41,12 @@ in
   # So define ONLY user-level options here.
 
   imports = [
-    ./kubectl.nix
-    ./zsh.nix
+    ./kubectl
+    ./zsh
+    ./git
     ./wezterm
     ./ssh/ssh-sign.nix
     ./ssh/ssh-gen.nix
-    ./git.nix
   ];
 
   # Provide a small API to override/extend from the host file.
