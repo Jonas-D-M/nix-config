@@ -29,6 +29,9 @@
   system = {
     startup.chime = false;
     defaults = {
+      controlcenter = {
+        BatteryShowPercentage = true;
+      };
       NSGlobalDomain = {
         AppleShowAllExtensions = true;
         InitialKeyRepeat = 15;
