@@ -59,9 +59,9 @@
   };
 
   home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if [ ! -d "$HOME/work" ]; then
-      echo "Creating ~/work directory..."
-      mkdir -p "$HOME/work"
+    if [ ! -d "$HOME/Work" ]; then
+      echo "Creating ~/Work directory..."
+      mkdir -p "$HOME/Work"
     fi
   '';
 
