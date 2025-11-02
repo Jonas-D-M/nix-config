@@ -2,7 +2,7 @@
 {
   imports = [./modules/zsh.nix];
   home.username = "jonas";
-  home.homeDirectory = "/home/${config.home.username}"; 
+  home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/jonas" else "/home/jonas";
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
