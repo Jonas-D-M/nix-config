@@ -92,6 +92,14 @@
     onActivation.cleanup = "zap";
   };
 
+  power.sleep = {
+    computer = "never"; # keep the Mac awake when on power
+    display = "never"; # prevent screen sleep
+    harddisk = "never"; # avoid spinning down disks
+  };
+
+  power.restartAfterFreeze = true;
+
   home-manager.users.jonas = {
     custom.extraHomePackages = with pkgs; [
       colima
