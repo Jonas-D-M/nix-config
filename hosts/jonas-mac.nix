@@ -87,6 +87,7 @@
       "clockify"
       "slack"
       "microsoft-outlook"
+      "font-jetbrains-mono-nerd-font"
     ];
     onActivation.cleanup = "zap";
   };

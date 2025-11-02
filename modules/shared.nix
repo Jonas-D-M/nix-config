@@ -29,7 +29,6 @@ let
 
     # extras
     krew
-    jetbrains-mono
 
     # programs
     # clockify -> doesn't work on macOS
