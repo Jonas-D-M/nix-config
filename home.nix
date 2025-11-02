@@ -74,6 +74,4 @@
 
   news.display = "silent";
 
-  nixpkgs.config.allowUnfree = true;
-
 }

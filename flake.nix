@@ -31,7 +31,11 @@
       # Target systems
       linuxSystem = "x86_64-linux";
       darwinSystem = "aarch64-darwin";
-      pkgs = nixpkgs.legacyPackages.${linuxSystem};
+      # Import pkgs for Linux with unfree enabled (outside Home Manager config to avoid warning with useGlobalPkgs)
+      pkgs = import nixpkgs {
+        system = linuxSystem;
+        config.allowUnfree = true;
+      };
     in
     {
       homeConfigurations."jonas" = home-manager.lib.homeManagerConfiguration {
@@ -72,7 +76,6 @@
                 ];
               };
 
-              nixpkgs.config.allowUnfree = true;
             }
           )
         ];
