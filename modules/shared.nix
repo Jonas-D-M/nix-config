@@ -64,12 +64,4 @@
       mkdir -p "$HOME/Work"
     fi
   '';
-
-  home.activation.ensureLaunchAgentsDir = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
-    if [ "$(uname -s)" = "Darwin" ]; then
-      mkdir -p "$HOME/Library/LaunchAgents"
-      chown "$USER":staff "$HOME/Library/LaunchAgents" 2>/dev/null || true
-      chmod 755 "$HOME/Library" "$HOME/Library/LaunchAgents" 2>/dev/null || true
-    fi
-  '';
 }
