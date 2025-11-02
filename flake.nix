@@ -34,7 +34,7 @@
       pkgs = nixpkgs.legacyPackages.${linuxSystem};
     in
     {
-       homeConfigurations."jonas" = home-manager.lib.homeManagerConfiguration {
+      homeConfigurations."jonas" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
 
         modules = [
@@ -45,30 +45,36 @@
 
       darwinConfigurations."jonas-mac" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
-        
+
         modules = [
           ./hosts/jonas-mac.nix
           home-manager.darwinModules.home-manager
           nix-homebrew.darwinModules.nix-homebrew
-          ({ lib, ... }: {
-            nixpkgs.hostPlatform = "aarch64-darwin";
-            nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-
-            # Hard override to avoid null merges from other modules
-            home-manager.users.jonas.home.homeDirectory = lib.mkForce "/Users/jonas";
-
-            home-manager.users.jonas = {
-              imports = [
-                ./home.nix
-                ./modules/shared.nix
+          (
+            { lib, ... }:
+            {
+              nixpkgs.hostPlatform = "aarch64-darwin";
+              nix.settings.experimental-features = [
+                "nix-command"
+                "flakes"
               ];
-            };
 
-            nixpkgs.config.allowUnfree = true;
-          })
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+
+              # Hard override to avoid null merges from other modules
+              home-manager.users.jonas.home.homeDirectory = lib.mkForce "/Users/jonas";
+
+              home-manager.users.jonas = {
+                imports = [
+                  ./home.nix
+                  ./modules/shared.nix
+                ];
+              };
+
+              nixpkgs.config.allowUnfree = true;
+            }
+          )
         ];
       };
     };

@@ -25,58 +25,58 @@
       drb = "sudo darwin-rebuild switch --flake ~/nix-config";
     };
     initContent = ''
-              # --- NVM bootstrap ---
-              [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-              [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+      # --- NVM bootstrap ---
+      [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
 
-              # --- pnpm path ---
-              case ":$PATH:" in
-                *":$PNPM_HOME:"*) ;;
-                *) export PATH="$PNPM_HOME:$PATH" ;;
-              esac
+      # --- pnpm path ---
+      case ":$PATH:" in
+        *":$PNPM_HOME:"*) ;;
+        *) export PATH="$PNPM_HOME:$PATH" ;;
+      esac
 
-              # --- direnv hook ---
-              eval "$(direnv hook zsh)"
+      # --- direnv hook ---
+      eval "$(direnv hook zsh)"
 
-              # --- Auto use Node from .nvmrc ---
-              autoload -U add-zsh-hook
-              load-nvmrc() {
-                local nvmrc_path
-                nvmrc_path="$(nvm_find_nvmrc)"
-                if [ -n "$nvmrc_path" ]; then
-                  local nvmrc_node_version
-                  nvmrc_node_version=$(nvm version "$(cat "''${nvmrc_path}")")
-                  if [ "$nvmrc_node_version" = "N/A" ]; then
-                    nvm install
-                  elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
-                    nvm use
-                  fi
-                elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc)" ] && [ "$(nvm version)" != "$(nvm version default)" ]; then
-                  echo "Reverting to nvm default version"
-                  nvm use default
-                fi
-              }
-              add-zsh-hook chpwd load-nvmrc
-              load-nvmrc
+      # --- Auto use Node from .nvmrc ---
+      autoload -U add-zsh-hook
+      load-nvmrc() {
+        local nvmrc_path
+        nvmrc_path="$(nvm_find_nvmrc)"
+        if [ -n "$nvmrc_path" ]; then
+          local nvmrc_node_version
+          nvmrc_node_version=$(nvm version "$(cat "''${nvmrc_path}")")
+          if [ "$nvmrc_node_version" = "N/A" ]; then
+            nvm install
+          elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
+            nvm use
+          fi
+        elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc)" ] && [ "$(nvm version)" != "$(nvm version default)" ]; then
+          echo "Reverting to nvm default version"
+          nvm use default
+        fi
+      }
+      add-zsh-hook chpwd load-nvmrc
+      load-nvmrc
 
-              # Keymap & history
-              bindkey -e
-              bindkey '^p' history-search-backward
-              bindkey '^n' history-search-forward
+      # Keymap & history
+      bindkey -e
+      bindkey '^p' history-search-backward
+      bindkey '^n' history-search-forward
 
-              # Completion styling
-              zstyle ':completion:*' matcher-list 'm:{a-z}-={A-Za-z}'
-              zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
-              zstyle ':completion:*' menu no
-              zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+      # Completion styling
+      zstyle ':completion:*' matcher-list 'm:{a-z}-={A-Za-z}'
+      zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
+      zstyle ':completion:*' menu no
+      zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 
-              # Word navigation / undo
-              bindkey '^[Oc' forward-word
-              bindkey '^[Od' backward-word
-              bindkey '^[[1;5D' backward-word
-              bindkey '^[[1;5C' forward-word
-              bindkey '^H' backward-kill-word
-              bindkey '^[[Z' undo
+      # Word navigation / undo
+      bindkey '^[Oc' forward-word
+      bindkey '^[Od' backward-word
+      bindkey '^[[1;5D' backward-word
+      bindkey '^[[1;5C' forward-word
+      bindkey '^H' backward-kill-word
+      bindkey '^[[Z' undo
     '';
   };
 

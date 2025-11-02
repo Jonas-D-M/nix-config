@@ -25,7 +25,6 @@
     yq
     ripgrep
 
-
     # containers / k8s
     kubectl
     kubernetes-helm

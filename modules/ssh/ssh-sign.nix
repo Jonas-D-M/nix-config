@@ -35,26 +35,26 @@
       #   hostname = "github.com";
       #   user = "git";
 
-        # If you want to force specific identities, uncomment below
-        # identityFile = [
-        #   "~/.ssh/id_ed25519"
-        #   "~/.ssh/id_ed25519_work"
-        # ];
-        # identitiesOnly = true;
+      # If you want to force specific identities, uncomment below
+      # identityFile = [
+      #   "~/.ssh/id_ed25519"
+      #   "~/.ssh/id_ed25519_work"
+      # ];
+      # identitiesOnly = true;
 
-        # OpenSSH option not modeled as a boolean in HM; set via extraOptions.
-        # extraOptions = {
-        #   AddKeysToAgent = "yes";
-        # };
+      # OpenSSH option not modeled as a boolean in HM; set via extraOptions.
+      # extraOptions = {
+      #   AddKeysToAgent = "yes";
+      # };
 
-        # identitiesOnly = true;
-        # identityFile = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
+      # identitiesOnly = true;
+      # identityFile = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
 
-        # # Forward the agent only for GitHub (replaces the old global forwardAgent).
-        # forwardAgent = true;
+      # # Forward the agent only for GitHub (replaces the old global forwardAgent).
+      # forwardAgent = true;
       # };
     };
-    
+
   };
 
 }

@@ -2,7 +2,6 @@
 {
   # nix-darwin owns nix-daemon
   nix.enable = true;
-  startup.chime = false;
 
   # set once; keep stable
   system.stateVersion = 6;
@@ -27,37 +26,45 @@
     localHostName = "jonas-mac";
   };
 
-  system.defaults = {
-    NSGlobalDomain = {
-      AppleShowAllExtensions = true;
-      InitialKeyRepeat = 15;
-      KeyRepeat = 2;
+  system = {
+
+    startup.chime = false;
+    defaults = {
+      NSGlobalDomain = {
+        AppleShowAllExtensions = true;
+        InitialKeyRepeat = 15;
+        KeyRepeat = 2;
+      };
+      dock = {
+        autohide = true;
+        showhidden = true;
+        show-recents = false;
+        static-only = false;
+        launchanim = false;
+        mineffect = "scale";
+        appswitcher-all-displays = true;
+        minimize-to-application = true;
+        persistent-apps = [
+          "/Applications/Google Chrome.app"
+          "/Applications/Visual Studio Code.app"
+          "/Applications/Spotify.app"
+          "/Applications/Microsoft Teams.app"
+          "/Applications/WezTerm.app"
+          "/Applications/DBeaver.app"
+          "/Applications/Clockify Desktop.app"
+          "/Applications/Microsoft Outlook.app"
+          "/Applications/Slack.app"
+        ];
+        persistent-others = [ ];
+      };
+      finder = {
+        AppleShowAllExtensions = true;
+        ShowPathbar = true;
+      };
+      trackpad.Clicking = true;
+      loginwindow.GuestEnabled = false;
     };
-    dock = {
-      autohide = true;
-      showhidden = true;
-      show-recents = false;
-      static-only = false;
-      launchanim = false;
-      mineffect = "scale";
-      persistent-apps = [
-         "/Applications/Google Chrome.app"
-        "/Applications/Visual Studio Code.app"
-        "/Applications/Spotify.app"
-        "/Applications/Microsoft Teams.app"
-        "/Applications/WezTerm.app"
-        "/Applications/DBeaver.app"
-        "/Applications/Clockify Desktop.app"
-        "/Applications/Microsoft Outlook.app"
-        "/Applications/Slack.app"
-      ];
-      persistent-others = [];
-    };
-    finder = {
-      AppleShowAllExtensions = true;
-      ShowPathbar = true;
-    };
-    trackpad.Clicking = true;
+
   };
 
   # keep system packages empty; you install via Home Manager

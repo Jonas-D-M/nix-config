@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 {
-  imports = [./modules/zsh.nix];
+  imports = [ ./modules/zsh.nix ];
   home.username = "jonas";
   home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/jonas" else "/home/jonas";
 
