@@ -34,6 +34,8 @@
         AppleShowAllExtensions = true;
         InitialKeyRepeat = 15;
         KeyRepeat = 2;
+        "com.apple.mouse.tapBehavior" = 1;
+        "com.apple.trackpad.forceClick" = false;
       };
       dock = {
         autohide = true;
@@ -61,7 +63,10 @@
         AppleShowAllExtensions = true;
         ShowPathbar = true;
       };
-      trackpad.Clicking = true;
+      trackpad = {
+        Clicking = true;
+        FirstClickThreshold = 0;
+      };
       loginwindow.GuestEnabled = false;
     };
 
