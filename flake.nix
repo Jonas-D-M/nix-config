@@ -49,17 +49,15 @@
         modules = [
           ./hosts/jonas-mac.nix
           home-manager.darwinModules.home-manager
-          {
+          ({ lib, ... }: {
             nixpkgs.hostPlatform = "aarch64-darwin";
-            nix = {
-            settings.experimental-features = [
-              "nix-command"
-              "flakes"
-            ];
-          };
+            nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+
+            # Hard override to avoid null merges from other modules
+            home-manager.users.jonas.home.homeDirectory = lib.mkForce "/Users/jonas";
 
             home-manager.users.jonas = {
               imports = [
@@ -69,10 +67,8 @@
             };
 
             nixpkgs.config.allowUnfree = true;
-          }
+          })
         ];
       };
-     
-
     };
 }
