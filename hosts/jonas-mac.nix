@@ -27,7 +27,6 @@
   };
 
   system = {
-
     startup.chime = false;
     defaults = {
       NSGlobalDomain = {
@@ -90,5 +89,13 @@
       "microsoft-outlook"
     ];
     onActivation.cleanup = "zap";
+  };
+
+  home-manager.users.jonas = {
+    custom.extraHomePackages = with pkgs; [
+      colima
+      docker
+      docker-compose
+    ];
   };
 }
