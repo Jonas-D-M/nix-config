@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   # nix-darwin owns nix-daemon
   nix.enable = true;
@@ -34,9 +34,20 @@
     };
     dock = {
       autohide = true;
+      showhidden = true;
       show-recents = false;
-      mru-spaces = false;
-      tilesize = 48;
+      static-only = false;
+      launchanim = false;
+      mineffect = "scale";
+      persistent-apps = [
+         "/Applications/Google Chrome.app"
+        "/Applications/Visual Studio Code.app"
+        "/Applications/Spotify.app"
+        "/Applications/Microsoft Teams.app"
+        "/Applications/WezTerm.app"
+        "/Applications/DBeaver.app"
+      ];
+      persistent-others = [];
     };
     finder = {
       AppleShowAllExtensions = true;
