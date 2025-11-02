@@ -57,14 +57,11 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
 
-            # IMPORTANT: attr key and values match your mac user
-            home-manager.users.jonasdemeyer = {
+            home-manager.users.jonas = {
               imports = [
                 ./home.nix
                 ./modules/shared.nix
               ];
-              home.username = nixpkgs.lib.mkForce "jonasdemeyer";
-              home.homeDirectory = nixpkgs.lib.mkForce "/Users/jonasdemeyer";
             };
 
             nixpkgs.config.allowUnfree = true;

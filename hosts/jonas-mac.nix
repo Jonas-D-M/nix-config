@@ -7,10 +7,9 @@
   system.stateVersion = 6;
 
   # must match your Mac short username
-  system.primaryUser = "jonasdemeyer";
+  system.primaryUser = "jonas";
 
   programs.zsh.enable = true;
-  programs.fish.enable = false;
 
   # renamed path for Touch ID
   security.pam.services.sudo_local.touchIdAuth = true;
@@ -42,7 +41,6 @@
     finder = {
       AppleShowAllExtensions = true;
       ShowPathbar = true;
-      _FXShowPosixPathInTitle = true;
     };
     trackpad.Clicking = true;
   };
