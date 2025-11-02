@@ -47,7 +47,7 @@
         system = "aarch64-darwin";
         
         modules = [
-          ./hosts/macos.nix
+          ./hosts/jonas-mac.nix
           home-manager.darwinModules.home-manager
           {
             nixpkgs.hostPlatform = "aarch64-darwin";
