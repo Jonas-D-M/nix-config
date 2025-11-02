@@ -14,10 +14,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixgl.url = "github:nix-community/nixGL";
+
   };
 
   outputs =
@@ -26,7 +24,7 @@
       nixpkgs,
       home-manager,
       nix-darwin,
-      sops-nix,
+      nixgl,
       ...
     }:
     let
@@ -53,13 +51,11 @@
         modules = [
           ./hosts/macos.nix
           home-manager.darwinModules.home-manager
-          sops-nix.darwinModules.sops
           {
             nixpkgs.hostPlatform = "aarch64-darwin";
 
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = { inherit sops-nix; };
 
             # IMPORTANT: attr key and values match your mac user
             home-manager.users.jonasdemeyer = {

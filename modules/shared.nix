@@ -54,6 +54,10 @@
     enable = true;
   };
 
+  programs.vscode = {
+    enable = true;
+  };
+
   home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ ! -d "$HOME/work" ]; then
       echo "Creating ~/work directory..."

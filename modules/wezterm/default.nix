@@ -1,10 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
-  home.packages = [ pkgs.wezterm ];
-
-  programs.wezterm = {
-    enable = true;
-    enableZshIntegration = true;
-    extraConfig = builtins.readFile ./wezterm.lua;
-  };
+  xdg.configFile."wezterm/wezterm.lua".source = ./wezterm.lua;
 }
