@@ -8,6 +8,7 @@
     ./wezterm
     ./ssh/ssh-sign.nix
     ./ssh/ssh-gen.nix
+    ./git.nix
   ];
 
   home.packages = with pkgs; [
@@ -46,10 +47,6 @@
   };
 
   programs.k9s = {
-    enable = true;
-  };
-
-  programs.vscode = {
     enable = true;
   };
 
