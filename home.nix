@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 {
-  # home.homeDirectory = if isDarwin then "/Users/${username}" else "/home/${username}";
+  imports = [./modules/zsh.nix];
+  home.username = "jonas";
+  home.homeDirectory = "/home/${config.home.username}"; 
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -74,4 +76,5 @@
   news.display = "silent";
 
   nixpkgs.config.allowUnfree = true;
+
 }

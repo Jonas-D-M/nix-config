@@ -33,39 +33,17 @@
       # Target systems
       linuxSystem = "x86_64-linux";
       darwinSystem = "aarch64-darwin";
-
-      # pkgs per-system
-      linuxPkgs = import nixpkgs { system = linuxSystem; };
-
-      # Small helper for Linux HM configs
-      mkHome =
-        modules:
-        home-manager.lib.homeManagerConfiguration {
-          pkgs = linuxPkgs;
-          extraSpecialArgs = { inherit sops-nix; };
-          modules = modules;
-        };
+      pkgs = nixpkgs.legacyPackages.${linuxSystem};
     in
     {
-      #
-      # LINUX HOME-MANAGER CONFIG
-      #
-      # NOTE: We force home.homeDirectory here so you don't have to change other files.
-      #
-      homeConfigurations."jonas-home" = mkHome [
-        ./home.nix
-        ./modules/shared.nix
-        ./hosts/popos.nix
+       homeConfigurations."jonas" = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
 
-        # Inline module to force the home directory on Linux
-        (
-          { lib, ... }:
-          {
-            home.username = lib.mkForce "jonas";
-            home.homeDirectory = lib.mkForce "/home/jonas";
-          }
-        )
-      ];
+        modules = [
+          ./home.nix
+          ./modules/shared.nix
+        ];
+      };
 
       #
       # MACOS (nix-darwin + HM) CONFIG
@@ -101,6 +79,7 @@
           }
         ];
       };
+     
 
     };
 }

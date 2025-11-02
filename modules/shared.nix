@@ -3,25 +3,17 @@
   home.stateVersion = "25.05";
   programs.home-manager.enable = true;
 
-  home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if [ ! -d "$HOME/work" ]; then
-      echo "Creating ~/work directory..."
-      mkdir -p "$HOME/work"
-    fi
-  '';
-
   imports = [
     ./zsh.nix
-    ./wezterm.nix
-    ./secrets.nix
-    ./git-ssh-sign.nix
+    ./wezterm
+    # ./ssh/ssh-sign.nix
+    # ./ssh/ssh-gen.nix
   ];
 
   home.packages = with pkgs; [
     nixfmt-rfc-style
     # essentials
     git
-    gh
     curl
     wget
     gnupg
@@ -30,24 +22,13 @@
     p7zip
     jq
     yq
-    eza
     ripgrep
-    fzf
-    zoxide
-    tree
-    openssh
 
-    # tools we used for secrets
-    age
-    sops
-    bitwarden-cli
+    openssh
 
     # containers / k8s
     kubectl
-    kubectx
     kubernetes-helm
-    k9s
-    stern
 
     # extras
     krew
@@ -64,15 +45,21 @@
     slack
   ];
 
-  programs.direnv = {
+  programs.kubeswitch = {
     enable = true;
-    nix-direnv.enable = true;
+    enableZshIntegration = true;
   };
 
-  home.shellAliases = {
-    dps = "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'";
-    sail = "bash vendor/bin/sail";
+  programs.k9s = {
+    enable = true;
   };
+
+  home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ ! -d "$HOME/work" ]; then
+      echo "Creating ~/work directory..."
+      mkdir -p "$HOME/work"
+    fi
+  '';
 
   home.activation.ensureLaunchAgentsDir = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
     if [ "$(uname -s)" = "Darwin" ]; then
