@@ -22,6 +22,7 @@
       sail = "sh $([ -f sail ] && echo sail || echo vendor/bin/sail)";
       ls = "eza";
       cd = "z";
+      drb = "sudo darwin-rebuild switch --flake ~/nix-config";
     };
     initContent = ''
               # --- NVM bootstrap ---
