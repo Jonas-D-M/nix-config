@@ -6,8 +6,8 @@
   imports = [
     ./zsh.nix
     ./wezterm
-    # ./ssh/ssh-sign.nix
-    # ./ssh/ssh-gen.nix
+    ./ssh/ssh-sign.nix
+    ./ssh/ssh-gen.nix
   ];
 
   home.packages = with pkgs; [
