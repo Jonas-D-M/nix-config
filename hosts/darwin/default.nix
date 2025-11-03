@@ -1,6 +1,8 @@
 { pkgs, lib, ... }:
 {
-
+  imports = [
+    ./linearmouse
+  ];
   # nix-darwin owns nix-daemon
   nix.enable = true;
 
@@ -116,7 +118,8 @@
       docker
       docker-compose
     ];
-
   };
+
+  services.linearmouse.enable = true;
 
 }

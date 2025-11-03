@@ -5,24 +5,34 @@
   ...
 }:
 let
-  cfg = config.profiles.linearmouse;
+  cfg = config.services.linearmouse;
+  user = config.system.primaryUser;
 in
 {
-  options.profiles.linearmouse.enable = lib.mkEnableOption "LinearMouse setup";
+  options.services.linearmouse.enable = lib.mkEnableOption "LinearMouse (install + natural scroll + LaunchAgent)";
 
   config = lib.mkIf cfg.enable {
+    # Install via Homebrew without self-referencing -> no recursion
     homebrew.enable = true;
-    homebrew.casks = (config.homebrew.casks or [ ]) ++ [ "linearmouse" ];
+    homebrew.casks = lib.mkAfter [ "linearmouse" ];
 
-    # # start at login as a user agent
-    # launchd.user.agents.linearmouse = {
-    #   enable = true;
-    #   program = "/Applications/LinearMouse.app/Contents/MacOS/LinearMouse";
-    #   runAtLoad = true;
-    #   keepAlive = true;
-    # };
-
-    # keep global on “natural” (trackpad happy)
+    # Keep trackpad 'natural'
     system.defaults.NSGlobalDomain."com.apple.swipescrolldirection" = true;
+
+    # Launch at login (Home Manager uses `config` for plist keys)
+    home-manager.users.${user}.launchd.agents.linearmouse = {
+      enable = true;
+      config = {
+        Label = "dev.${user}.linearmouse";
+        ProgramArguments = [
+          "/Applications/LinearMouse.app/Contents/MacOS/LinearMouse"
+        ];
+        RunAtLoad = true;
+        KeepAlive = true;
+        ProcessType = "Interactive";
+        StandardOutPath = "/tmp/linearmouse.out.log";
+        StandardErrorPath = "/tmp/linearmouse.err.log";
+      };
+    };
   };
 }
