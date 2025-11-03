@@ -26,7 +26,7 @@
       {
         # Match any repo whose working tree is under ~/work/** (Git >= 2.36).
         # If your Git is older, switch to: "gitdir/i:${config.home.homeDirectory}/work/**"
-        condition = "worktree:${config.home.homeDirectory}/work/**";
+        condition = "gitdir:${config.home.homeDirectory}/work/**";
         path = "${config.home.homeDirectory}/.gitconfig-work-ssh";
       }
     ];
