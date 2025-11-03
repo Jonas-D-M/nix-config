@@ -1,8 +1,6 @@
 { pkgs, lib, ... }:
 {
-  imports = [
-    ../modules/linearmouse
-  ];
+
   # nix-darwin owns nix-daemon
   nix.enable = true;
 
@@ -118,21 +116,7 @@
       docker
       docker-compose
     ];
-    launchd.agents.linearmouse = {
-      enable = true;
-      serviceConfig = {
-        Label = "dev.jonas.linearmouse";
-        ProgramArguments = [
-          "/Applications/LinearMouse.app/Contents/MacOS/LinearMouse"
-        ];
-        RunAtLoad = true;
-        KeepAlive = true; # or { SuccessfulExit = false; }
-        ProcessType = "Interactive";
-        StandardOutPath = "/tmp/linearmouse.out.log";
-        StandardErrorPath = "/tmp/linearmouse.err.log";
-      };
-    };
+
   };
 
-  profiles.linearmouse.enable = true;
 }
