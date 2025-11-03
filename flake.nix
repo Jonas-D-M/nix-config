@@ -51,7 +51,7 @@
         system = "aarch64-darwin";
 
         modules = [
-          ./hosts/jonas-mac.nix
+          ./hosts/darwin
           home-manager.darwinModules.home-manager
           nix-homebrew.darwinModules.nix-homebrew
           (
