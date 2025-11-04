@@ -1,7 +1,7 @@
 { pkgs, lib, ... }:
 {
   imports = [
-    ./linearmouse
+    ../../modules/linearmouse
   ];
   # nix-darwin owns nix-daemon
   nix.enable = true;
