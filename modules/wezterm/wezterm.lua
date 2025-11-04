@@ -5,9 +5,9 @@ local action                                       = wezterm.action
 config.font                                        = wezterm.font {
   family = 'JetBrains Mono',
   weight = 'Medium',
-  harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }, -- disable ligatures
+  -- harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }, -- disable ligatures
 }
-config.font_size                                   = 12.0
+config.font_size                                   = 14.0
 config.line_height                                 = 1.0
 config.window_padding                              = {
   left = '0.5cell',
