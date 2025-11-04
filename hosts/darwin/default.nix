@@ -120,6 +120,8 @@
     ];
   };
 
-  services.linearmouse.enable = true;
-
+  services.linearmouse = {
+    enable = true;
+    defaultConfig = ./linearmouse/config.json;
+  };
 }

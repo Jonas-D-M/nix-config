@@ -9,7 +9,14 @@ let
   user = config.system.primaryUser;
 in
 {
-  options.services.linearmouse.enable = lib.mkEnableOption "LinearMouse (install + natural scroll + LaunchAgent)";
+  options.services.linearmouse = {
+    enable = lib.mkEnableOption "LinearMouse (install + natural scroll + LaunchAgent)";
+    defaultConfig = lib.mkOption {
+      type = lib.types.path;
+      default = ./config.json;
+      description = "Path to LinearMouse configuration file.";
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     # Install via Homebrew without self-referencing -> no recursion
@@ -33,6 +40,18 @@ in
         StandardOutPath = "/tmp/linearmouse.out.log";
         StandardErrorPath = "/tmp/linearmouse.err.log";
       };
+    };
+    # Copy default config if user doesn't have one yet
+    system.activationScripts.linearmouse = {
+      text = ''
+        CONFIG_DIR="/Users/${user}/.config/linearmouse"
+        CONFIG_FILE="$CONFIG_DIR/linearmouse.json"
+        mkdir -p "$CONFIG_DIR"
+        if [ ! -f "$CONFIG_FILE" ]; then
+          echo "Copying default LinearMouse config to $CONFIG_FILE"
+          cp "${cfg.defaultConfig}" "$CONFIG_FILE"
+        fi
+      '';
     };
   };
 }
