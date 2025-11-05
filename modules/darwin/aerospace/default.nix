@@ -17,58 +17,67 @@ in
 
   config = mkIf cfg.enable {
     services.aerospace = {
-      enable = true;
+      enable = false;
       settings = {
         mode.main.binding = {
-          alt-enter = "exec-and-forget open -n -a /Applications/Ghostty.app";
-          alt-w = "exec-and-forget open -n -a '/Users/branco/Applications/Home Manager Apps/Firefox.app'";
+          cmd-enter = "exec-and-forget open -n -a /Applications/WezTerm.app";
+          cmd-b = "exec-and-forget open -n -a '/Applications/Google Chrome.app'";
 
-          alt-c = "close --quit-if-last-window";
+          # Close window (Windows = Alt+F4). We provide both:
+          alt-f4 = "close --quit-if-last-window";
 
-          alt-h = "focus left";
-          alt-j = "focus down";
-          alt-k = "focus up";
-          alt-l = "focus right";
+          # Focus with Win+Arrows
+          cmd-left = "focus left";
+          cmd-down = "focus down";
+          cmd-up = "focus up";
+          cmd-right = "focus right";
 
-          alt-shift-h = "move left";
-          alt-shift-j = "move down";
-          alt-shift-k = "move up";
-          alt-shift-l = "move right";
+          # Move window with Win+Shift+Arrows (like Windows snapping/move between zones)
+          cmd-shift-left = "move left";
+          cmd-shift-down = "move down";
+          cmd-shift-up = "move up";
+          cmd-shift-right = "move right";
 
-          alt-ctrl-h = "join-with left";
-          alt-ctrl-l = "join-with right";
-          alt-ctrl-k = "join-with up";
-          alt-ctrl-j = "join-with down";
+          # Join containers (advanced tiling), Win+Ctrl+Arrows
+          cmd-ctrl-left = "join-with left";
+          cmd-ctrl-right = "join-with right";
+          cmd-ctrl-up = "join-with up";
+          cmd-ctrl-down = "join-with down";
 
-          alt-minus = "resize smart -50";
-          alt-equal = "resize smart +50";
+          # Resize (keep it simple)
+          cmd-minus = "resize smart -50";
+          cmd-equal = "resize smart +50";
 
-          alt-period = "focus-monitor right";
-          alt-comma = "focus-monitor left";
+          # Monitor focus (Win+, / Win+.)
+          cmd-comma = "focus-monitor left";
+          cmd-period = "focus-monitor right";
 
-          alt-1 = "workspace 1";
-          alt-2 = "workspace 2";
-          alt-3 = "workspace 3";
-          alt-4 = "workspace 4";
-          alt-5 = "workspace 5";
-          alt-6 = "workspace 6";
-          alt-7 = "workspace 7";
-          alt-8 = "workspace 8";
-          alt-9 = "workspace 9";
-          alt-0 = "workspace 0";
+          # Workspaces on F-keys to dodge AZERTY number-row:
+          cmd-f1 = "workspace 1";
+          cmd-f2 = "workspace 2";
+          cmd-f3 = "workspace 3";
+          cmd-f4 = "workspace 4";
+          cmd-f5 = "workspace 5";
+          cmd-f6 = "workspace 6";
+          cmd-f7 = "workspace 7";
+          cmd-f8 = "workspace 8";
+          cmd-f9 = "workspace 9";
+          cmd-f10 = "workspace 0";
 
-          alt-shift-1 = "move-node-to-workspace 1";
-          alt-shift-2 = "move-node-to-workspace 2";
-          alt-shift-3 = "move-node-to-workspace 3";
-          alt-shift-4 = "move-node-to-workspace 4";
-          alt-shift-5 = "move-node-to-workspace 5";
-          alt-shift-6 = "move-node-to-workspace 6";
-          alt-shift-7 = "move-node-to-workspace 7";
-          alt-shift-8 = "move-node-to-workspace 8";
-          alt-shift-9 = "move-node-to-workspace 9";
-          alt-shift-0 = "move-node-to-workspace 0";
+          # Move window to workspace (Shift like Windows’ Win+Shift+Num)
+          cmd-shift-f1 = "move-node-to-workspace 1";
+          cmd-shift-f2 = "move-node-to-workspace 2";
+          cmd-shift-f3 = "move-node-to-workspace 3";
+          cmd-shift-f4 = "move-node-to-workspace 4";
+          cmd-shift-f5 = "move-node-to-workspace 5";
+          cmd-shift-f6 = "move-node-to-workspace 6";
+          cmd-shift-f7 = "move-node-to-workspace 7";
+          cmd-shift-f8 = "move-node-to-workspace 8";
+          cmd-shift-f9 = "move-node-to-workspace 9";
+          cmd-shift-f10 = "move-node-to-workspace 0";
         };
 
+        # Keep your workspace-to-monitor assignment
         workspace-to-monitor-force-assignment = {
           "1" = "main";
           "2" = "main";
