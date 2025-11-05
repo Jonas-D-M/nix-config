@@ -73,7 +73,6 @@
                 imports = [
                   ./home.nix
                   ./modules/shared.nix
-                  ./modules/darwin/aerospace
                 ];
               };
 
