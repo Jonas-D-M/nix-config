@@ -77,6 +77,9 @@
                 ];
               };
 
+              # Enable the darwin aerospace module
+              custom.graphical.aerospace.enable = false;
+
             }
           )
         ];
