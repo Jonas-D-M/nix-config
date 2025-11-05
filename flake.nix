@@ -52,6 +52,7 @@
 
         modules = [
           ./hosts/darwin
+          ./modules/darwin/aerospace
           home-manager.darwinModules.home-manager
           nix-homebrew.darwinModules.nix-homebrew
           (
