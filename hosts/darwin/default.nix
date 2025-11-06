@@ -100,6 +100,7 @@
       "slack"
       "microsoft-outlook"
       "font-jetbrains-mono-nerd-font"
+      "figma"
     ];
     onActivation.cleanup = "zap";
   };
