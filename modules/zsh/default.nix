@@ -23,6 +23,7 @@
       ls = "eza";
       cd = "z";
       drb = "sudo darwin-rebuild switch --flake ~/nix-config";
+      neofetch = "fastfetch";
     };
     initContent = ''
       # --- NVM bootstrap ---

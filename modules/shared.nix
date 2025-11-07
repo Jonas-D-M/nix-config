@@ -29,6 +29,7 @@ let
 
     # extras
     krew
+    fastfetch
 
     # programs
     mysql80
