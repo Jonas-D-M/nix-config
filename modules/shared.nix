@@ -31,7 +31,7 @@ let
     krew
 
     # programs
-    # clockify -> doesn't work on macOS
+    mysql80
     openfortivpn
   ];
 in
