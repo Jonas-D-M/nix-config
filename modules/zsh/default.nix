@@ -22,7 +22,9 @@
       sail = "sh $([ -f sail ] && echo sail || echo vendor/bin/sail)";
       ls = "eza";
       cd = "z";
+      hms = "home-manager switch --flake ~/nix-config";
       drb = "sudo darwin-rebuild switch --flake ~/nix-config";
+
       neofetch = "fastfetch";
     };
     initContent = ''
