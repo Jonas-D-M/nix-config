@@ -101,6 +101,7 @@
       "microsoft-outlook"
       "font-jetbrains-mono-nerd-font"
       "figma"
+      "windows-app"
     ];
     onActivation.cleanup = "zap";
   };
