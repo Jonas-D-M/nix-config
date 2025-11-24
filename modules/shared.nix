@@ -20,7 +20,7 @@ let
     zip
     p7zip
     jq
-    yq
+    yq-go
     ripgrep
 
     # containers / k8s
