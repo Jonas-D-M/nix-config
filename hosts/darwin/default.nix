@@ -99,6 +99,7 @@
       "clockify"
       "slack"
       "microsoft-outlook"
+      "microsoft-excel"
       "font-jetbrains-mono-nerd-font"
       "figma"
       "windows-app"
