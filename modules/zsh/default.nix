@@ -7,7 +7,6 @@
   ];
 
   home.sessionVariables = {
-    NVM_DIR = "$HOME/.node-version";
     PNPM_HOME = "$HOME/.local/share/pnpm";
     DIRENV_LOG_FORMAT = "";
   };
@@ -24,14 +23,9 @@
       cd = "z";
       hms = "home-manager switch --flake ~/nix-config";
       drb = "sudo darwin-rebuild switch --flake ~/nix-config";
-
       neofetch = "fastfetch";
     };
     initContent = ''
-      # --- NVM bootstrap ---
-      [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-      [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
-
       # --- pnpm path ---
       case ":$PATH:" in
         *":$PNPM_HOME:"*) ;;
@@ -43,36 +37,6 @@
 
       # --- fnm (Fast Node Manager) ---
       eval "$(fnm env --use-on-cd --shell zsh)"
-
-      load-nvmrc() {
-        DEFAULT_NODE_VERSION="$(fnm ls | awk '/default/{print $2}')"
-        CURRENT_NODE_VERSION="$(fnm current)"
-        REQUIRED_NODE_VERSION=""
-
-        if [[ -f .nvmrc && -r .nvmrc ]]; then
-          REQUIRED_NODE_VERSION="$(cat .nvmrc)"
-
-          if [[ $CURRENT_NODE_VERSION != $REQUIRED_NODE_VERSION ]]; then
-            echo "Reverting to node from \"$CURRENT_NODE_VERSION\" to \"$REQUIRED_NODE_VERSION\""
-
-            if fnm ls | grep -q $REQUIRED_NODE_VERSION; then
-              fnm use $REQUIRED_NODE_VERSION
-            else
-              echo "Node version $REQUIRED_NODE_VERSION not found. Installing..."
-              fnm install $REQUIRED_NODE_VERSION
-              fnm use $REQUIRED_NODE_VERSION
-            fi
-          fi
-        else
-          if [[ $CURRENT_NODE_VERSION != $DEFAULT_NODE_VERSION ]]; then
-            echo "Reverting to default node version: $DEFAULT_NODE_VERSION"
-            fnm use $DEFAULT_NODE_VERSION
-          fi
-        fi
-      }
-
-      add-zsh-hook chpwd load-nvmrc
-      load-nvmrc
 
       # Keymap & history
       # bindkey -e
