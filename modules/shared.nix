@@ -105,6 +105,12 @@ in
 
     programs.k9s = {
       enable = true;
+
+      settings.k9s = {
+        k9s.ui.skin = "transparent";
+      };
+
+      skins.transparent = ./k9s/transparent.yaml;
     };
 
     home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
