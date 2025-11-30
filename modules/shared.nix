@@ -103,7 +103,9 @@ in
       enableZshIntegration = true;
     };
 
-    programs.k9s.enable = true;
+    programs.k9s = {
+      enable = true;
+    };
 
     home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       if [ ! -d "$HOME/work" ]; then
