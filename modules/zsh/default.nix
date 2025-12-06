@@ -1,15 +1,14 @@
 { pkgs, config, ... }:
 {
+  home.sessionVariables = {
+    PNPM_HOME = "${config.home.homeDirectory}/.local/share/pnpm";
+  };
+
   home.sessionPath = [
     "$HOME/.local/bin"
     "$HOME/bin"
     "$HOME/.krew/bin"
   ];
-
-  home.sessionVariables = {
-    PNPM_HOME = "$HOME/.local/share/pnpm";
-    DIRENV_LOG_FORMAT = "";
-  };
 
   programs.zsh = {
     enable = true;
@@ -17,6 +16,11 @@
     enableCompletion = true;
     autosuggestion.enable = true;
     history.ignoreDups = true;
+    sessionVariables = {
+      PNPM_HOME = "$HOME/.local/share/pnpm";
+      DIRENV_LOG_FORMAT = "";
+      SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.sops/age-key.txt";
+    };
     shellAliases = {
       sail = "sh $([ -f sail ] && echo sail || echo vendor/bin/sail)";
       ls = "eza";
@@ -26,15 +30,6 @@
       neofetch = "fastfetch";
     };
     initContent = ''
-      # --- pnpm path ---
-      case ":$PATH:" in
-        *":$PNPM_HOME:"*) ;;
-        *) export PATH="$PNPM_HOME:$PATH" ;;
-      esac
-
-      # --- direnv hook ---
-      eval "$(direnv hook zsh)"
-
       # --- fnm (Fast Node Manager) ---
       eval "$(fnm env --use-on-cd --shell zsh)"
 
