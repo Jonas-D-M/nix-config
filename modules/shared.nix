@@ -30,6 +30,7 @@ let
     # extras
     krew
     fastfetch
+    sops
 
     # programs
     mysql80
