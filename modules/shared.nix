@@ -31,6 +31,7 @@ let
     krew
     fastfetch
     sops
+    age
 
     # programs
     mysql80
