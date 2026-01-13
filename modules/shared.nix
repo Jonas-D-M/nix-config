@@ -23,6 +23,10 @@ let
     yq-go
     ripgrep
 
+    # Dev
+    php83
+    php83Packages.composer
+
     # containers / k8s
     kubectl
     kubernetes-helm
