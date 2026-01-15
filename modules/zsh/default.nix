@@ -8,6 +8,7 @@
     "$HOME/.local/bin"
     "$HOME/bin"
     "$HOME/.krew/bin"
+    "$HOME/.local/share/pnpm"
   ];
 
   programs.zsh = {
