@@ -103,6 +103,7 @@
       "font-jetbrains-mono-nerd-font"
       "figma"
       "windows-app"
+      "obsidian"
     ];
     onActivation.cleanup = "zap";
   };

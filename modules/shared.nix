@@ -9,7 +9,7 @@ let
   cfg = config.custom;
 
   baseHomePackages = with pkgs; [
-    nixfmt-rfc-style
+    nixfmt
 
     # essentials
     git
