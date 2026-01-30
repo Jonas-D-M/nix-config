@@ -104,6 +104,7 @@
       "figma"
       "windows-app"
       "obsidian"
+      "chatgpt"
     ];
     onActivation.cleanup = "zap";
   };
