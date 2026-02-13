@@ -12,6 +12,8 @@
 
       init.defaultBranch = "master";
 
+      pull.ff = true;
+
       # SSH commit signing (global)
       gpg = {
         format = "ssh";
