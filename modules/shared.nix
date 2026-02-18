@@ -37,6 +37,7 @@ let
     fastfetch
     sops
     age
+    pass
 
     # programs
     mysql80
