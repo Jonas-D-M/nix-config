@@ -55,7 +55,7 @@
         static-only = false;
         launchanim = false;
         mineffect = "scale";
-        appswitcher-all-displays = true;
+        appswitcher-all-displays = false;
         minimize-to-application = true;
         persistent-apps = [
           "/Applications/Google Chrome.app"
