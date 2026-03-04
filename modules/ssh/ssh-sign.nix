@@ -24,6 +24,14 @@
         IdentityFile ${config.home.homeDirectory}/.ssh/id_ed25519
         AddKeysToAgent yes
         ForwardAgent no
+
+      Host ssh.dev.azure.com
+        HostName ssh.dev.azure.com
+        User git
+        IdentitiesOnly yes
+        IdentityFile ${config.home.homeDirectory}/.ssh/id_rsa_azure_devops
+        AddKeysToAgent yes
+        ForwardAgent no
     '';
 
     matchBlocks = {
