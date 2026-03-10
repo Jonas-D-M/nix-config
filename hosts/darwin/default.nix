@@ -110,6 +110,7 @@
       "windows-app"
       "obsidian"
       "chatgpt"
+      "claude"
     ];
     onActivation.cleanup = "zap";
   };
