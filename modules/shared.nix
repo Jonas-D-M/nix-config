@@ -42,6 +42,7 @@ let
     # programs
     mysql80
     openfortivpn
+    claude-code
   ];
 in
 {
