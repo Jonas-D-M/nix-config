@@ -27,6 +27,7 @@ let
     # Dev
     php83
     php83Packages.composer
+    bun
 
     # containers / k8s
     kubectl
@@ -43,6 +44,7 @@ let
     mysql80
     openfortivpn
     claude-code
+
   ];
 in
 {

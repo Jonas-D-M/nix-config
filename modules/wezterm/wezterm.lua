@@ -7,10 +7,13 @@ end
 local appearance = wezterm.gui.get_appearance()
 
 local config     = {
-  font                                        = wezterm.font {
+  font = wezterm.font {
     family = "JetBrains Mono",
     weight = "Medium",
   },
+
+  -- audible_bell = "SystemBeep",
+
 
   font_size                                   = 14.0,
   line_height                                 = 1.0,
