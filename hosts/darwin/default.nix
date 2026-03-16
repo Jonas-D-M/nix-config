@@ -1,139 +1,160 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
+let
+  cfg = config.custom.darwin.homebrew;
+in
 {
   imports = [
     ../../modules/darwin/linearmouse
   ];
-  # nix-darwin owns nix-daemon
-  nix.enable = true;
-  nixpkgs.config.allowUnfreePredicate =
-    pkg:
-    builtins.elem (lib.getName pkg) [
-      "claude-code"
-    ];
 
-  # set once; keep stable
-  system.stateVersion = 6;
-
-  # must match your Mac short username
-  system.primaryUser = "jonas";
-
-  programs.zsh.enable = true;
-
-  # renamed path for Touch ID
-  security.pam.services.sudo_local.touchIdAuth = true;
-  security.pam.services.sudo_local.reattach = true;
-
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
-
-  networking = {
-    computerName = "Jonas's MacBook Pro";
-    hostName = "Jonas-MacBook-Pro";
-    localHostName = "jonas-mac";
+  options.custom.darwin.homebrew = {
+    microsoft-office.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether to install Microsoft Excel and Word via Homebrew casks.";
+    };
   };
 
-  system = {
-    startup.chime = false;
-    defaults = {
-      CustomUserPreferences = {
-        "com.apple.Siri" = {
-          StatusMenuVisible = false; # hide Siri icon
-        };
+  config = {
+    # nix-darwin owns nix-daemon
+    nix.enable = true;
+    nixpkgs.config.allowUnfreePredicate =
+      pkg:
+      builtins.elem (lib.getName pkg) [
+        "claude-code"
+      ];
 
-      };
-      controlcenter = {
-        BatteryShowPercentage = true;
-      };
-      NSGlobalDomain = {
-        AppleShowAllExtensions = true;
-        InitialKeyRepeat = 15;
-        KeyRepeat = 2;
-        "com.apple.mouse.tapBehavior" = 1;
-        "com.apple.trackpad.forceClick" = false;
-      };
-      dock = {
-        autohide = true;
-        showhidden = true;
-        show-recents = false;
-        static-only = false;
-        launchanim = false;
-        mineffect = "scale";
-        appswitcher-all-displays = false;
-        minimize-to-application = true;
-        persistent-apps = [
-          "/Applications/Google Chrome.app"
-          "/Applications/Visual Studio Code.app"
-          "/Applications/Spotify.app"
-          "/Applications/Microsoft Teams.app"
-          "/Applications/WezTerm.app"
-          "/Applications/DBeaver.app"
-          "/Applications/Clockify Desktop.app"
-          "/Applications/Microsoft Outlook.app"
-          "/Applications/Slack.app"
-        ];
-        persistent-others = [ ];
-      };
-      finder = {
-        AppleShowAllExtensions = true;
-        ShowPathbar = true;
-      };
-      trackpad = {
-        Clicking = true;
-        FirstClickThreshold = 0;
-      };
-      loginwindow.GuestEnabled = false;
+    # set once; keep stable
+    system.stateVersion = 6;
+
+    # must match your Mac short username
+    system.primaryUser = "jonas";
+
+    programs.zsh.enable = true;
+
+    # renamed path for Touch ID
+    security.pam.services.sudo_local.touchIdAuth = true;
+    security.pam.services.sudo_local.reattach = true;
+
+    nix.settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+
+    networking = {
+      computerName = "Jonas's MacBook Pro";
+      hostName = "Jonas-MacBook-Pro";
+      localHostName = "jonas-mac";
     };
 
-  };
+    system = {
+      startup.chime = false;
+      defaults = {
+        CustomUserPreferences = {
+          "com.apple.Siri" = {
+            StatusMenuVisible = false; # hide Siri icon
+          };
 
-  # keep system packages empty; you install via Home Manager
-  environment.systemPackages = [ ];
+        };
+        controlcenter = {
+          BatteryShowPercentage = true;
+        };
+        NSGlobalDomain = {
+          AppleShowAllExtensions = true;
+          InitialKeyRepeat = 15;
+          KeyRepeat = 2;
+          "com.apple.mouse.tapBehavior" = 1;
+          "com.apple.trackpad.forceClick" = false;
+        };
+        dock = {
+          autohide = true;
+          showhidden = true;
+          show-recents = false;
+          static-only = false;
+          launchanim = false;
+          mineffect = "scale";
+          appswitcher-all-displays = false;
+          minimize-to-application = true;
+          persistent-apps = [
+            "/Applications/Google Chrome.app"
+            "/Applications/Visual Studio Code.app"
+            "/Applications/Spotify.app"
+            "/Applications/Microsoft Teams.app"
+            "/Applications/WezTerm.app"
+            "/Applications/DBeaver.app"
+            "/Applications/Clockify Desktop.app"
+            "/Applications/Microsoft Outlook.app"
+            "/Applications/Slack.app"
+          ];
+          persistent-others = [ ];
+        };
+        finder = {
+          AppleShowAllExtensions = true;
+          ShowPathbar = true;
+        };
+        trackpad = {
+          Clicking = true;
+          FirstClickThreshold = 0;
+        };
+        loginwindow.GuestEnabled = false;
+      };
 
-  homebrew = {
-    enable = true;
-    casks = [
-      "wezterm"
-      "visual-studio-code"
-      "spotify"
-      "google-chrome"
-      "dbeaver-community"
-      "postman"
-      "microsoft-teams"
-      "clockify"
-      "slack"
-      "microsoft-outlook"
-      "microsoft-excel"
-      "microsoft-word"
-      "font-jetbrains-mono-nerd-font"
-      "figma"
-      "windows-app"
-      "obsidian"
-      "chatgpt"
-      "claude"
-    ];
-    onActivation.cleanup = "zap";
-  };
+    };
 
-  power.sleep = {
-    computer = "never"; # keep the Mac awake when on power
-    display = "never"; # prevent screen sleep
-    harddisk = "never"; # avoid spinning down disks
-  };
+    # keep system packages empty; you install via Home Manager
+    environment.systemPackages = [ ];
 
-  power.restartAfterFreeze = true;
+    homebrew = {
+      enable = true;
+      casks = [
+        "wezterm"
+        "visual-studio-code"
+        "spotify"
+        "google-chrome"
+        "dbeaver-community"
+        "postman"
+        "microsoft-teams"
+        "clockify"
+        "slack"
+        "microsoft-outlook"
+        "font-jetbrains-mono-nerd-font"
+        "figma"
+        "windows-app"
+        "obsidian"
+        "chatgpt"
+        "claude"
+      ]
+      ++ lib.optionals cfg.microsoft-office.enable [
+        "microsoft-excel"
+        "microsoft-word"
+      ];
+      onActivation.cleanup = "zap";
+    };
 
-  home-manager.users.jonas = {
-    custom.extraHomePackages = with pkgs; [
-      colima
-      docker
-      docker-compose
-    ];
-  };
+    power.sleep = {
+      computer = "never"; # keep the Mac awake when on power
+      display = "never"; # prevent screen sleep
+      harddisk = "never"; # avoid spinning down disks
+    };
 
-  services.linearmouse = {
-    enable = true;
-    defaultConfig = ./linearmouse/config.json;
+    power.restartAfterFreeze = true;
+
+    home-manager.users.jonas = {
+      custom.extraHomePackages = with pkgs; [
+        colima
+        docker
+        docker-compose
+      ];
+    };
+
+    services.linearmouse = {
+      enable = true;
+      defaultConfig = ./linearmouse/config.json;
+    };
   };
 }
