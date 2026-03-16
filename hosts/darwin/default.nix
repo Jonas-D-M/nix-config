@@ -105,6 +105,7 @@
       "slack"
       "microsoft-outlook"
       "microsoft-excel"
+      "microsoft-word"
       "font-jetbrains-mono-nerd-font"
       "figma"
       "windows-app"
