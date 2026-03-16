@@ -12,7 +12,6 @@ let
     nixfmt
 
     # essentials
-    git
     curl
     wget
     gnupg
@@ -22,7 +21,6 @@ let
     jq
     yq-go
     ripgrep
-    gh
 
     # Dev
     php83
@@ -42,7 +40,6 @@ let
 
     # programs
     mysql80
-    openfortivpn
     claude-code
 
   ];
@@ -68,12 +65,6 @@ in
       description = "Primary username for Home Manager profile.";
     };
 
-    extraSystemPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
-      default = [ ];
-      example = [ pkgs.unzip ];
-    };
-
     extraHomePackages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [ ];
@@ -88,14 +79,23 @@ in
       description = "Base state version for both system/home unless overridden.";
     };
 
-    homeStateVersion = lib.mkOption { default = config.custom.stateVersion; };
-    systemStateVersion = lib.mkOption { default = config.custom.stateVersion; };
+    homeStateVersion = lib.mkOption {
+      type = lib.types.str;
+      default = config.custom.stateVersion;
+    };
+    systemStateVersion = lib.mkOption {
+      type = lib.types.str;
+      default = config.custom.stateVersion;
+    };
   };
 
   config = {
     # User-level config only
     home.stateVersion = cfg.homeStateVersion;
-    home.sessionVariables.KUBECONFIG = "$HOME/.config/kube/config";
+    home.sessionVariables = {
+      KUBECONFIG = "$HOME/.config/kube/config";
+      SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.sops/age-key.txt";
+    };
     programs.home-manager.enable = true;
 
     # Merge base + per-host extras
@@ -127,6 +127,10 @@ in
         mkdir -p "$HOME/work"
       fi
     '';
+    programs.gh = {
+      enable = true;
+    };
+
     programs.openfortivpn = {
       enable = true;
       createAlias = true;

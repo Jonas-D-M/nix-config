@@ -34,7 +34,11 @@
       # Import pkgs for Linux with unfree enabled (outside Home Manager config to avoid warning with useGlobalPkgs)
       pkgs = import nixpkgs {
         system = linuxSystem;
-        config.allowUnfree = true;
+        config.allowUnfreePredicate =
+          pkg:
+          builtins.elem (nixpkgs.lib.getName pkg) [
+            "claude-code"
+          ];
       };
     in
     {
@@ -44,6 +48,7 @@
         modules = [
           ./home.nix
           ./modules/shared.nix
+          ./hosts/popos.nix
         ];
       };
 
@@ -65,6 +70,7 @@
 
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.backupFileExtension = "hm-backup";
 
               # Hard override to avoid null merges from other modules
               home-manager.users.jonas.home.homeDirectory = lib.mkForce "/Users/jonas";
