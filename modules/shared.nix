@@ -56,8 +56,7 @@ in
     ./git
     ./wezterm
     ./openfortivpn
-    ./ssh/ssh-sign.nix
-    ./ssh/ssh-gen.nix
+    ./ssh
   ];
 
   # Provide a small API to override/extend from the host file.

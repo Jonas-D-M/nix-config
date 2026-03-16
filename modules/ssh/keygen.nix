@@ -4,19 +4,12 @@
   lib,
   ...
 }:
-let
-  homeDir = config.home.homeDirectory;
-in
 {
-  # Ensure ~/.ssh exists
-  home.activation.ensureSshDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  # Generate keys if they don't exist (never overwrite)
+  home.activation.generateSshKeys = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    set -euo pipefail
     mkdir -p "$HOME/.ssh"
     chmod 700 "$HOME/.ssh"
-  '';
-
-  # Generate keys if they don't exist (never overwrite)
-  home.activation.generateSshKeys = lib.hm.dag.entryAfter [ "ensureSshDir" ] ''
-    set -euo pipefail
 
     gen_key() {
       keyfile="$1"
