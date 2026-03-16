@@ -24,6 +24,7 @@
       hms = "home-manager switch --flake ~/nix-config";
       drb = "sudo darwin-rebuild switch --flake ~/nix-config";
       neofetch = "fastfetch";
+      nix-cleanup = "nix-collect-garbage --delete-older-than 30d";
     };
     initContent = ''
       # --- fnm (Fast Node Manager) ---
