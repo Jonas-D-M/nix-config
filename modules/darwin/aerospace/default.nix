@@ -3,19 +3,15 @@
   lib,
   ...
 }:
-with lib;
 let
   cfg = config.custom.graphical.aerospace;
 in
 {
   options.custom.graphical.aerospace = {
-    enable = lib.mkOption {
-      default = false;
-      example = true;
-    };
+    enable = lib.mkEnableOption "AeroSpace tiling window manager";
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     services.aerospace = {
       enable = false;
       settings = {

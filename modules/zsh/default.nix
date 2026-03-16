@@ -18,8 +18,6 @@
     autosuggestion.enable = true;
     history.ignoreDups = true;
     sessionVariables = {
-      PNPM_HOME = "$HOME/.local/share/pnpm";
-      DIRENV_LOG_FORMAT = "";
       SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.sops/age-key.txt";
     };
     shellAliases = {
@@ -67,7 +65,6 @@
   home.file = {
     ".nvmrc" = {
       text = "20\n";
-      target = "${config.home.homeDirectory}/.nvmrc";
     };
   };
 
@@ -113,8 +110,4 @@
     enableZshIntegration = true;
   };
 
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
-  };
 }

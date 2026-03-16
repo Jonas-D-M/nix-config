@@ -52,7 +52,6 @@ in
   # So define ONLY user-level options here.
 
   imports = [
-    ./kubectl
     ./zsh
     ./git
     ./wezterm
@@ -97,6 +96,7 @@ in
   config = {
     # User-level config only
     home.stateVersion = cfg.homeStateVersion;
+    home.sessionVariables.KUBECONFIG = "$HOME/.config/kube/config";
     programs.home-manager.enable = true;
 
     # Merge base + per-host extras
@@ -117,9 +117,7 @@ in
     programs.k9s = {
       enable = true;
 
-      settings.k9s = {
-        k9s.ui.skin = "transparent";
-      };
+      settings.k9s.ui.skin = "transparent";
 
       skins.transparent = ./k9s/transparent.yaml;
     };

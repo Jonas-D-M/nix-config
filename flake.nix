@@ -52,7 +52,6 @@
 
         modules = [
           ./hosts/darwin
-          # ./modules/darwin/aerospace
           home-manager.darwinModules.home-manager
           nix-homebrew.darwinModules.nix-homebrew
           (
@@ -76,9 +75,6 @@
                   ./modules/shared.nix
                 ];
               };
-
-              # Enable the darwin aerospace module
-              # custom.graphical.aerospace.enable = false;
 
             }
           )

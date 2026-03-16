@@ -55,16 +55,16 @@ in
 
     # Create the file once if missing; preserve manual edits thereafter.
     home.activation.ensureOpenfortivpnConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-            CONFIG_PATH="$HOME/${cfg.configFile}"
-            if [ ! -f "$CONFIG_PATH" ]; then
-              mkdir -p "$(dirname "$CONFIG_PATH")"
-              cat > "$CONFIG_PATH" <<'EOF'
+      CONFIG_PATH="$HOME/${cfg.configFile}"
+      if [ ! -f "$CONFIG_PATH" ]; then
+        mkdir -p "$(dirname "$CONFIG_PATH")"
+        cat > "$CONFIG_PATH" <<'EOF'
       ${cfg.content}
       EOF
-              echo "Created default openfortivpn config at $CONFIG_PATH"
-            else
-              echo "Preserving existing openfortivpn config at $CONFIG_PATH"
-            fi
+        echo "Created default openfortivpn config at $CONFIG_PATH"
+      else
+        echo "Preserving existing openfortivpn config at $CONFIG_PATH"
+      fi
     '';
 
     programs.zsh.shellAliases = lib.mkIf cfg.createAlias {
