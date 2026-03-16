@@ -13,11 +13,11 @@ The bootstrap script installs Nix, restores your Age key from Bitwarden, and run
 
 ## Daily Commands
 
-| Action | Command | Alias |
-|---|---|---|
-| Rebuild (Linux) | `home-manager switch --flake ~/nix-config` | `hms` |
-| Rebuild (macOS) | `darwin-rebuild switch --flake ~/nix-config` | `drb` |
-| Update all inputs | `nix flake update` | — |
+| Action            | Command                                      | Alias |
+| ----------------- | -------------------------------------------- | ----- |
+| Rebuild (Linux)   | `home-manager switch --flake ~/nix-config`   | `hms` |
+| Rebuild (macOS)   | `darwin-rebuild switch --flake ~/nix-config` | `drb` |
+| Update all inputs | `nix flake update`                           | —     |
 
 ## Updating Packages
 
