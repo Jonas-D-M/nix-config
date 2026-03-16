@@ -23,12 +23,6 @@ in
   config = {
     # nix-darwin owns nix-daemon
     nix.enable = true;
-    nixpkgs.config.allowUnfreePredicate =
-      pkg:
-      builtins.elem (lib.getName pkg) [
-        "claude-code"
-      ];
-
     # set once; keep stable
     system.stateVersion = 6;
 

@@ -31,14 +31,11 @@
       # Target systems
       linuxSystem = "x86_64-linux";
       darwinSystem = "aarch64-darwin";
-      # Import pkgs for Linux with unfree enabled (outside Home Manager config to avoid warning with useGlobalPkgs)
+      nixpkgsConfig = { allowUnfree = true; };
+      # Import pkgs for Linux (outside Home Manager config to avoid warning with useGlobalPkgs)
       pkgs = import nixpkgs {
         system = linuxSystem;
-        config.allowUnfreePredicate =
-          pkg:
-          builtins.elem (nixpkgs.lib.getName pkg) [
-            "claude-code"
-          ];
+        config = nixpkgsConfig;
       };
     in
     {
@@ -63,6 +60,7 @@
             { lib, ... }:
             {
               nixpkgs.hostPlatform = "aarch64-darwin";
+              nixpkgs.config = nixpkgsConfig;
               nix.settings.experimental-features = [
                 "nix-command"
                 "flakes"
