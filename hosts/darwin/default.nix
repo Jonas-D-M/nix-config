@@ -9,6 +9,7 @@ let
 in
 {
   imports = [
+    ../../modules/darwin/colima
     ../../modules/darwin/linearmouse
   ];
 
@@ -133,13 +134,7 @@ in
 
     power.restartAfterFreeze = true;
 
-    home-manager.users.jonas = {
-      custom.extraHomePackages = with pkgs; [
-        colima
-        docker
-        docker-compose
-      ];
-    };
+    services.colima.enable = true;
 
     services.linearmouse = {
       enable = true;
