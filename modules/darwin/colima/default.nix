@@ -29,6 +29,9 @@ in
         enable = true;
         config = {
           Label = "dev.${user}.colima";
+          EnvironmentVariables = {
+            PATH = "/etc/profiles/per-user/${user}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+          };
           ProgramArguments = [
             "${pkgs.colima}/bin/colima"
             "start"
