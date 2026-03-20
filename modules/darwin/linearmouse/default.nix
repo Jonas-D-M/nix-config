@@ -7,6 +7,11 @@
 let
   cfg = config.services.linearmouse;
   user = config.system.primaryUser;
+  linearmouseStartScript = pkgs.writeShellScript "linearmouse-start" ''
+    # Wait for WindowServer and accessibility to be ready
+    sleep 5
+    exec /Applications/LinearMouse.app/Contents/MacOS/LinearMouse
+  '';
 in
 {
   options.services.linearmouse = {
@@ -32,7 +37,7 @@ in
       config = {
         Label = "dev.${user}.linearmouse";
         ProgramArguments = [
-          "/Applications/LinearMouse.app/Contents/MacOS/LinearMouse"
+          "${linearmouseStartScript}"
         ];
         RunAtLoad = true;
         KeepAlive = true;
