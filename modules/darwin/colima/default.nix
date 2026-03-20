@@ -7,6 +7,11 @@
 let
   cfg = config.services.colima;
   user = config.system.primaryUser;
+  colimaStartScript = pkgs.writeShellScript "colima-start" ''
+    # Clean up stale VM state from unclean shutdown before starting
+    ${pkgs.colima}/bin/colima stop --force 2>/dev/null || true
+    exec ${pkgs.colima}/bin/colima start --foreground
+  '';
 in
 {
   options.services.colima = {
@@ -33,9 +38,7 @@ in
             PATH = "/etc/profiles/per-user/${user}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
           };
           ProgramArguments = [
-            "${pkgs.colima}/bin/colima"
-            "start"
-            "--foreground"
+            "${colimaStartScript}"
           ];
           RunAtLoad = true;
           KeepAlive = true;
