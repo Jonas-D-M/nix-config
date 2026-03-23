@@ -54,6 +54,7 @@ in
     ./wezterm
     ./openfortivpn
     ./ssh
+    ./ralph
   ];
 
   # Provide a small API to override/extend from the host file.
