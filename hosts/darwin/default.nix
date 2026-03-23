@@ -85,6 +85,7 @@ in
         };
         finder = {
           AppleShowAllExtensions = true;
+          FXPreferredViewStyle = "Nlsv";
           ShowPathbar = true;
         };
         trackpad = {
