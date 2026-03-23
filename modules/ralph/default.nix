@@ -12,6 +12,9 @@
 # Both scripts expect a PRD.md in the current directory.
 # progress.txt is created automatically if missing.
 #
+# Sail projects (vendor/bin/sail present) are auto-detected — srt gets
+# relaxed network settings and the prompt switches to Sail commands.
+#
 # Sandbox settings can be customised in ~/.srt-settings.json
 { pkgs, lib, ... }:
 
@@ -39,25 +42,67 @@ let
     };
   };
 
+  # Helper sourced by both scripts: detects Sail, swaps srt settings, restores on exit.
+  ralph-lib = ''
+    RALPH_SETTINGS="$HOME/.srt-settings.json"
+    RALPH_SETTINGS_BACKUP=""
+
+    ralph_setup() {
+      if [ -f "vendor/bin/sail" ]; then
+        RALPH_IS_SAIL=1
+        echo "[ralph] Sail project detected — using relaxed sandbox settings."
+        RALPH_SETTINGS_BACKUP=$(mktemp)
+        cp "$RALPH_SETTINGS" "$RALPH_SETTINGS_BACKUP"
+        cp "$HOME/.srt-settings-sail.json" "$RALPH_SETTINGS"
+        trap ralph_teardown EXIT INT TERM
+      else
+        RALPH_IS_SAIL=0
+      fi
+    }
+
+    ralph_teardown() {
+      if [ -n "$RALPH_SETTINGS_BACKUP" ] && [ -f "$RALPH_SETTINGS_BACKUP" ]; then
+        cp "$RALPH_SETTINGS_BACKUP" "$RALPH_SETTINGS"
+        rm -f "$RALPH_SETTINGS_BACKUP"
+      fi
+    }
+
+    ralph_tool_hint() {
+      if [ "$RALPH_IS_SAIL" = "1" ]; then
+        echo "Use ./vendor/bin/sail artisan, ./vendor/bin/sail composer, and ./vendor/bin/sail php instead of bare php/composer. Sail services (MySQL, Redis, etc.) are only reachable from inside the container."
+      else
+        echo "Use php, composer, and vendor/bin/* directly. NEVER use Docker or Sail."
+      fi
+    }
+  '';
+
   ralph-once = pkgs.writeShellScriptBin "ralph-once" ''
     #!/usr/bin/env bash
+    ${ralph-lib}
+
     if [ ! -f "PRD.md" ]; then
       echo "Error: PRD.md not found in current directory."
       echo "Create a PRD.md with your project requirements, then run ralph-once."
       exit 1
     fi
     touch progress.txt
-    srt claude --dangerously-skip-permissions "@PRD.md @progress.txt \
+
+    ralph_setup
+    tool_hint=$(ralph_tool_hint)
+
+    srt claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
     1. Read the PRD and progress file. \
     2. Find the next incomplete task and implement it. \
     3. Commit your changes. \
     4. Update progress.txt with what you did. \
-    ONLY DO ONE TASK AT A TIME."
+    ONLY DO ONE TASK AT A TIME. \
+    $tool_hint"
   '';
 
   ralph = pkgs.writeShellScriptBin "ralph" ''
     #!/usr/bin/env bash
     set -e
+    ${ralph-lib}
 
     if [ -z "$1" ]; then
       echo "Usage: ralph <iterations>"
@@ -72,6 +117,9 @@ let
 
     touch progress.txt
 
+    ralph_setup
+    tool_hint=$(ralph_tool_hint)
+
     for ((i=1; i<=$1; i++)); do
       echo ""
       echo "=== Ralph iteration $i/$1 ==="
@@ -82,6 +130,7 @@ let
       4. Append your progress to progress.txt. \
       5. Commit your changes. \
       ONLY WORK ON A SINGLE TASK. \
+      $tool_hint \
       If the PRD is complete, output <promise>COMPLETE</promise>.")
 
       echo "$result"
@@ -102,4 +151,5 @@ in
   ];
 
   home.file.".srt-settings.json".source = ./srt-settings.json;
+  home.file.".srt-settings-sail.json".source = ./srt-settings-sail.json;
 }
