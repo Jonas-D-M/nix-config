@@ -55,6 +55,7 @@ in
     ./openfortivpn
     ./ssh
     ./ralph
+    ./claude-code
   ];
 
   # Provide a small API to override/extend from the host file.

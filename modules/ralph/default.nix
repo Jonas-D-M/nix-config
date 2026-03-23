@@ -42,34 +42,45 @@ let
     };
   };
 
-  # Helper sourced by both scripts: detects Sail, swaps srt settings, restores on exit.
+  # Helper sourced by both scripts: detects Sail, builds srt settings, provides tool hints.
   ralph-lib = ''
-    RALPH_SETTINGS="$HOME/.srt-settings.json"
-    RALPH_SETTINGS_BACKUP=""
+    RALPH_SRT_SETTINGS=""
 
     ralph_setup() {
       if [ -f "vendor/bin/sail" ]; then
         RALPH_IS_SAIL=1
         echo "[ralph] Sail project detected — using relaxed sandbox settings."
-        RALPH_SETTINGS_BACKUP=$(mktemp)
-        cp "$RALPH_SETTINGS" "$RALPH_SETTINGS_BACKUP"
-        cp "$HOME/.srt-settings-sail.json" "$RALPH_SETTINGS"
-        trap ralph_teardown EXIT INT TERM
+
+        # Inject the Docker socket from DOCKER_HOST into the sail settings.
+        local docker_sock=""
+        if [ -n "$DOCKER_HOST" ]; then
+          docker_sock="''${DOCKER_HOST#unix://}"
+        elif [ -S /var/run/docker.sock ]; then
+          docker_sock="/var/run/docker.sock"
+        fi
+
+        RALPH_SRT_SETTINGS=$(mktemp)
+        if [ -n "$docker_sock" ]; then
+          ${pkgs.jq}/bin/jq --arg sock "$docker_sock" \
+            '.network.allowUnixSockets = [$sock]' \
+            "$HOME/.srt-settings-sail.json" > "$RALPH_SRT_SETTINGS"
+          echo "[ralph] Docker socket: $docker_sock"
+          echo "[ralph] Settings:" && cat "$RALPH_SRT_SETTINGS"
+        else
+          cp "$HOME/.srt-settings-sail.json" "$RALPH_SRT_SETTINGS"
+          echo "[ralph] Warning: no Docker socket found — Sail commands may fail."
+        fi
+
+        trap 'rm -f "$RALPH_SRT_SETTINGS"' EXIT INT TERM
       else
         RALPH_IS_SAIL=0
-      fi
-    }
-
-    ralph_teardown() {
-      if [ -n "$RALPH_SETTINGS_BACKUP" ] && [ -f "$RALPH_SETTINGS_BACKUP" ]; then
-        cp "$RALPH_SETTINGS_BACKUP" "$RALPH_SETTINGS"
-        rm -f "$RALPH_SETTINGS_BACKUP"
+        RALPH_SRT_SETTINGS="$HOME/.srt-settings.json"
       fi
     }
 
     ralph_tool_hint() {
       if [ "$RALPH_IS_SAIL" = "1" ]; then
-        echo "Use ./vendor/bin/sail artisan, ./vendor/bin/sail composer, and ./vendor/bin/sail php instead of bare php/composer. Sail services (MySQL, Redis, etc.) are only reachable from inside the container."
+        echo "Use ./vendor/bin/sail artisan, ./vendor/bin/sail composer, and ./vendor/bin/sail php instead of bare php/composer. Sail services like MySQL and Redis are only reachable from inside the container."
       else
         echo "Use php, composer, and vendor/bin/* directly. NEVER use Docker or Sail."
       fi
@@ -90,7 +101,7 @@ let
     ralph_setup
     tool_hint=$(ralph_tool_hint)
 
-    srt claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
+    srt --debug --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
     1. Read the PRD and progress file. \
     2. Find the next incomplete task and implement it. \
     3. Commit your changes. \
@@ -123,7 +134,7 @@ let
     for ((i=1; i<=$1; i++)); do
       echo ""
       echo "=== Ralph iteration $i/$1 ==="
-      result=$(srt claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
+      result=$(srt --debug --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
       1. Find the highest-priority incomplete task and implement it. \
       2. Run your tests and type checks. \
       3. Update the PRD with what was done. \

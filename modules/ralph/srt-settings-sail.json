@@ -1,4 +1,6 @@
 {
+  "allowPty": true,
+  "enableWeakerNestedSandbox": true,
   "network": {
     "allowedDomains": [
       "*.anthropic.com",
@@ -14,7 +16,8 @@
   },
   "filesystem": {
     "denyRead": ["~/.ssh", "~/.gnupg", "~/.sops"],
-    "allowWrite": [".", "/tmp"],
+    "allowRead": ["~/.colima", "~/.docker"],
+    "allowWrite": [".", "/tmp", "/private/tmp", "/var/folders"],
     "denyWrite": [".env", ".env.local", ".env.production"]
   }
 }
