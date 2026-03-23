@@ -4,10 +4,10 @@
   ...
 }:
 let
-  cfg = config.custom.graphical.aerospace;
+  cfg = config.custom.services.aerospace;
 in
 {
-  options.custom.graphical.aerospace = {
+  options.custom.services.aerospace = {
     enable = lib.mkEnableOption "AeroSpace tiling window manager";
   };
 

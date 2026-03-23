@@ -135,9 +135,9 @@ in
 
     power.restartAfterFreeze = true;
 
-    services.colima.enable = true;
+    custom.services.colima.enable = true;
 
-    services.linearmouse = {
+    custom.services.linearmouse = {
       enable = true;
       defaultConfig = ./linearmouse/config.json;
     };

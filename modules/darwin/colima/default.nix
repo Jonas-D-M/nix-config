@@ -5,7 +5,7 @@
   ...
 }:
 let
-  cfg = config.services.colima;
+  cfg = config.custom.services.colima;
   user = config.system.primaryUser;
   colimaStartScript = pkgs.writeShellScript "colima-start" ''
     # Clean up stale VM state from unclean shutdown before starting
@@ -14,7 +14,7 @@ let
   '';
 in
 {
-  options.services.colima = {
+  options.custom.services.colima = {
     enable = lib.mkEnableOption "Colima (Docker runtime via Lima VM + auto-start)";
   };
 

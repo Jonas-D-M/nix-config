@@ -1,4 +1,9 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 {
   home.sessionVariables = {
     PNPM_HOME = "${config.home.homeDirectory}/.local/share/pnpm";
@@ -10,6 +15,9 @@
     "$HOME/bin"
     "$HOME/.krew/bin"
     "$HOME/.local/share/pnpm"
+  ]
+  ++ lib.optionals pkgs.stdenv.isDarwin [
+    "/Applications/Obsidian.app/Contents/MacOS"
   ];
 
   programs.zsh = {

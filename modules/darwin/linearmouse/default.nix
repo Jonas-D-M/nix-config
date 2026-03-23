@@ -5,7 +5,7 @@
   ...
 }:
 let
-  cfg = config.services.linearmouse;
+  cfg = config.custom.services.linearmouse;
   user = config.system.primaryUser;
   linearmouseStartScript = pkgs.writeShellScript "linearmouse-start" ''
     # Wait for WindowServer and accessibility to be ready
@@ -14,7 +14,7 @@ let
   '';
 in
 {
-  options.services.linearmouse = {
+  options.custom.services.linearmouse = {
     enable = lib.mkEnableOption "LinearMouse (install + natural scroll + LaunchAgent)";
     defaultConfig = lib.mkOption {
       type = lib.types.path;
