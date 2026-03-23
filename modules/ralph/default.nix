@@ -45,13 +45,33 @@ let
   # Helper sourced by both scripts: detects Sail, builds srt settings, provides tool hints.
   ralph-lib = ''
     RALPH_SRT_SETTINGS=""
+    RALPH_ADD_DIR_FLAGS=()
 
+    # ralph_setup [extra-dir...]
+    # Resolves extra dirs, patches srt settings, and populates RALPH_ADD_DIR_FLAGS.
     ralph_setup() {
+      # Resolve extra dirs to absolute paths.
+      local extra_abs=()
+      for dir in "$@"; do
+        extra_abs+=("$(cd "$dir" && pwd)")
+      done
+
+      # Build --add-dir flags for Claude.
+      RALPH_ADD_DIR_FLAGS=()
+      for abs in "''${extra_abs[@]}"; do
+        RALPH_ADD_DIR_FLAGS+=(--add-dir "$abs")
+      done
+
+      # Build jq filter to inject extra write paths.
+      local extra_json
+      extra_json=$(printf '%s\n' "''${extra_abs[@]}" | ${pkgs.jq}/bin/jq -R . | ${pkgs.jq}/bin/jq -sc .)
+
+      local base_settings
       if [ -f "vendor/bin/sail" ]; then
         RALPH_IS_SAIL=1
         echo "[ralph] Sail project detected — using relaxed sandbox settings."
 
-        # Inject the Docker socket from DOCKER_HOST into the sail settings.
+        # Inject the Docker socket from DOCKER_HOST.
         local docker_sock=""
         if [ -n "$DOCKER_HOST" ]; then
           docker_sock="''${DOCKER_HOST#unix://}"
@@ -59,22 +79,37 @@ let
           docker_sock="/var/run/docker.sock"
         fi
 
-        RALPH_SRT_SETTINGS=$(mktemp)
         if [ -n "$docker_sock" ]; then
-          ${pkgs.jq}/bin/jq --arg sock "$docker_sock" \
+          base_settings=$(${pkgs.jq}/bin/jq --arg sock "$docker_sock" \
             '.network.allowUnixSockets = [$sock]' \
-            "$HOME/.srt-settings-sail.json" > "$RALPH_SRT_SETTINGS"
+            "$HOME/.srt-settings-sail.json")
           echo "[ralph] Docker socket: $docker_sock"
         else
-          cp "$HOME/.srt-settings-sail.json" "$RALPH_SRT_SETTINGS"
+          base_settings=$(cat "$HOME/.srt-settings-sail.json")
           echo "[ralph] Warning: no Docker socket found — Sail commands may fail."
         fi
-
-        trap 'rm -f "$RALPH_SRT_SETTINGS"' EXIT INT TERM
       else
         RALPH_IS_SAIL=0
-        RALPH_SRT_SETTINGS="$HOME/.srt-settings.json"
+        base_settings=$(cat "$HOME/.srt-settings.json")
       fi
+
+      # Collect runtime sockets: SSH agent + any already in base settings.
+      local ssh_sock="''${SSH_AUTH_SOCK:-}"
+
+      RALPH_SRT_SETTINGS=$(mktemp)
+      echo "$base_settings" | ${pkgs.jq}/bin/jq \
+        --argjson extra "$extra_json" \
+        --arg ssh_sock "$ssh_sock" \
+        '
+          .filesystem.allowWrite += $extra |
+          .allowGitConfig = true |
+          if $ssh_sock != "" then
+            .network.allowUnixSockets = ((.network.allowUnixSockets // []) + [$ssh_sock] | unique)
+          else . end
+        ' \
+        > "$RALPH_SRT_SETTINGS"
+
+      trap 'rm -f "$RALPH_SRT_SETTINGS"' EXIT INT TERM
     }
 
     ralph_tool_hint() {
@@ -97,10 +132,10 @@ let
     fi
     touch progress.txt
 
-    ralph_setup
+    ralph_setup "$@"
     tool_hint=$(ralph_tool_hint)
 
-    srt --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
+    srt --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions "''${RALPH_ADD_DIR_FLAGS[@]}" -p "@PRD.md @progress.txt \
     1. Read the PRD and progress file. \
     2. Find the next incomplete task and implement it. \
     3. Commit your changes. \
@@ -115,9 +150,12 @@ let
     ${ralph-lib}
 
     if [ -z "$1" ]; then
-      echo "Usage: ralph <iterations>"
+      echo "Usage: ralph <iterations> [extra-dir...]"
       exit 1
     fi
+
+    iterations=$1
+    shift
 
     if [ ! -f "PRD.md" ]; then
       echo "Error: PRD.md not found in current directory."
@@ -127,13 +165,16 @@ let
 
     touch progress.txt
 
-    ralph_setup
+    ralph_setup "$@"
     tool_hint=$(ralph_tool_hint)
 
-    for ((i=1; i<=$1; i++)); do
+    tmpout=$(mktemp)
+    trap 'rm -f "$tmpout"' EXIT INT TERM
+
+    for ((i=1; i<=iterations; i++)); do
       echo ""
-      echo "=== Ralph iteration $i/$1 ==="
-      result=$(srt --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
+      echo "=== Ralph iteration $i/$iterations ==="
+      srt --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions "''${RALPH_ADD_DIR_FLAGS[@]}" -p "@PRD.md @progress.txt \
       1. Find the highest-priority incomplete task and implement it. \
       2. Run your tests and type checks. \
       3. Update the PRD with what was done. \
@@ -141,11 +182,9 @@ let
       5. Commit your changes. \
       ONLY WORK ON A SINGLE TASK. \
       $tool_hint \
-      If the PRD is complete, output <promise>COMPLETE</promise>.")
+      If the PRD is complete, output \<promise\>COMPLETE\</promise\>." | tee "$tmpout"
 
-      echo "$result"
-
-      if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
+      if grep -q "<promise>COMPLETE</promise>" "$tmpout"; then
         echo ""
         echo "PRD complete after $i iterations."
         exit 0
