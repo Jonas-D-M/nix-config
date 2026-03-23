@@ -2,6 +2,7 @@
 {
   home.sessionVariables = {
     PNPM_HOME = "${config.home.homeDirectory}/.local/share/pnpm";
+    _ZO_DOCTOR = "0";
   };
 
   home.sessionPath = [
@@ -52,6 +53,7 @@
       bindkey '^[[Z' undo
       bindkey '^[[3~' delete-char
       bindkey '^[[3;3~' kill-word
+
     '';
   };
 
