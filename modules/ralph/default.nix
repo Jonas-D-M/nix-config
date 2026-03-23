@@ -157,6 +157,7 @@ in
 {
   home.packages = [
     sandbox-runtime
+    pkgs.ripgrep
     ralph-once
     ralph
   ];
