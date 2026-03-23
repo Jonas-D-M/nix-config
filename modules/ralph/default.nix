@@ -15,7 +15,7 @@
 # Sail projects (vendor/bin/sail present) are auto-detected — srt gets
 # relaxed network settings and the prompt switches to Sail commands.
 #
-# Sandbox settings can be customised in ~/.srt-settings.json
+# Sandbox settings are generated from commonSettings in this file.
 { pkgs, lib, ... }:
 
 let
@@ -65,7 +65,6 @@ let
             '.network.allowUnixSockets = [$sock]' \
             "$HOME/.srt-settings-sail.json" > "$RALPH_SRT_SETTINGS"
           echo "[ralph] Docker socket: $docker_sock"
-          echo "[ralph] Settings:" && cat "$RALPH_SRT_SETTINGS"
         else
           cp "$HOME/.srt-settings-sail.json" "$RALPH_SRT_SETTINGS"
           echo "[ralph] Warning: no Docker socket found — Sail commands may fail."
@@ -101,7 +100,7 @@ let
     ralph_setup
     tool_hint=$(ralph_tool_hint)
 
-    srt --debug --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
+    srt --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
     1. Read the PRD and progress file. \
     2. Find the next incomplete task and implement it. \
     3. Commit your changes. \
@@ -134,7 +133,7 @@ let
     for ((i=1; i<=$1; i++)); do
       echo ""
       echo "=== Ralph iteration $i/$1 ==="
-      result=$(srt --debug --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
+      result=$(srt --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
       1. Find the highest-priority incomplete task and implement it. \
       2. Run your tests and type checks. \
       3. Update the PRD with what was done. \
@@ -153,6 +152,47 @@ let
       fi
     done
   '';
+
+  commonSettings = {
+    ripgrep.command = "${pkgs.ripgrep}/bin/rg";
+    network = {
+      allowedDomains = [
+        "*.anthropic.com"
+        "*.claude.ai"
+        "api.github.com"
+        "github.com"
+        "*.githubusercontent.com"
+        "*.npmjs.org"
+        "registry.npmjs.org"
+      ];
+      deniedDomains = [ ];
+    };
+    filesystem = {
+      denyRead = [
+        "~/.ssh"
+        "~/.gnupg"
+        "~/.sops"
+      ];
+      allowRead = [
+        "~/.ssh/known_hosts"
+        "~/.ssh/config"
+        "~/.ssh/allowed_signers"
+        "~/.ssh/*.pub"
+      ];
+      allowWrite = [
+        "."
+        "/tmp"
+        "/private/tmp"
+        "/var/folders"
+        "~/.claude"
+      ];
+      denyWrite = [
+        ".env"
+        ".env.local"
+        ".env.production"
+      ];
+    };
+  };
 in
 {
   home.packages = [
@@ -162,6 +202,29 @@ in
     ralph
   ];
 
-  home.file.".srt-settings.json".source = ./srt-settings.json;
-  home.file.".srt-settings-sail.json".source = ./srt-settings-sail.json;
+  home.file.".srt-settings.json".text = builtins.toJSON (
+    commonSettings
+    // {
+      network = commonSettings.network // {
+        allowLocalBinding = false;
+      };
+    }
+  );
+
+  home.file.".srt-settings-sail.json".text = builtins.toJSON (
+    commonSettings
+    // {
+      allowPty = true;
+      enableWeakerNestedSandbox = true;
+      network = commonSettings.network // {
+        allowLocalBinding = true;
+      };
+      filesystem = commonSettings.filesystem // {
+        allowRead = commonSettings.filesystem.allowRead ++ [
+          "~/.colima"
+          "~/.docker"
+        ];
+      };
+    }
+  );
 }
