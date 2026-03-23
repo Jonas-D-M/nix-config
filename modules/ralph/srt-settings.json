@@ -1,0 +1,20 @@
+{
+  "network": {
+    "allowedDomains": [
+      "*.anthropic.com",
+      "*.claude.ai",
+      "api.github.com",
+      "github.com",
+      "*.githubusercontent.com",
+      "*.npmjs.org",
+      "registry.npmjs.org"
+    ],
+    "deniedDomains": [],
+    "allowLocalBinding": false
+  },
+  "filesystem": {
+    "denyRead": ["~/.ssh", "~/.gnupg", "~/.sops"],
+    "allowWrite": [".", "/tmp"],
+    "denyWrite": [".env", ".env.local", ".env.production"]
+  }
+}

@@ -20,15 +20,16 @@ let
     pname = "sandbox-runtime";
     version = "0.0.42";
 
-    src = pkgs.fetchurl {
-      url = "https://registry.npmjs.org/@anthropic-ai/sandbox-runtime/-/sandbox-runtime-0.0.42.tgz";
-      hash = "sha512-kJpuhU4hHMumeygIkKvNhscEsTtQK1sat1kZwhb6HLYBznwjMGOdnuBI/RM9HeFwxArn71/ciD2WJbxttXBMHw==";
+    src = pkgs.fetchFromGitHub {
+      owner = "anthropic-experimental";
+      repo = "sandbox-runtime";
+      rev = "v0.0.42";
+      # Run `drb` — nix will print the correct hash, then update this value.
+      hash = "sha256-aFLHY17wMpSmwpR0GmvBQZ2PL824PTTpfdZQFfR0hBs=";
     };
 
-    # Run `drb` once — nix will print the correct hash in the error, then update this.
-    npmDepsHash = lib.fakeHash;
-
-    dontNpmBuild = true;
+    # Run `drb` again — nix will print the correct hash, then update this value.
+    npmDepsHash = "sha256-K9PttPaNAlPMylndDtNasnN+bgM1DQ3OLyP3aiLxfEQ=";
 
     meta = {
       description = "OS-level sandboxing for AI agents";
@@ -99,4 +100,6 @@ in
     ralph-once
     ralph
   ];
+
+  home.file.".srt-settings.json".source = ./srt-settings.json;
 }
