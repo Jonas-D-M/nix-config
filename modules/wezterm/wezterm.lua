@@ -31,6 +31,13 @@ local config     = {
   send_composed_key_when_right_alt_is_pressed = false,
 
   color_scheme                                = "Tokyo Night Storm",
+  keys                                        = {
+    {
+      key = "w",
+      mods = "CMD",
+      action = wezterm.action.CloseCurrentTab { confirm = false },
+    }
+  }
 }
 
 return config
