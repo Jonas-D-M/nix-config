@@ -47,7 +47,7 @@ let
       exit 1
     fi
     touch progress.txt
-    srt claude --permission-mode acceptEdits "@PRD.md @progress.txt \
+    srt claude --dangerously-skip-permissions "@PRD.md @progress.txt \
     1. Read the PRD and progress file. \
     2. Find the next incomplete task and implement it. \
     3. Commit your changes. \
@@ -75,7 +75,7 @@ let
     for ((i=1; i<=$1; i++)); do
       echo ""
       echo "=== Ralph iteration $i/$1 ==="
-      result=$(srt claude --permission-mode acceptEdits -p "@PRD.md @progress.txt \
+      result=$(srt claude --dangerously-skip-permissions -p "@PRD.md @progress.txt \
       1. Find the highest-priority incomplete task and implement it. \
       2. Run your tests and type checks. \
       3. Update the PRD with what was done. \
