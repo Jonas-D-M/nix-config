@@ -17,7 +17,7 @@ in
     microsoft-office.enable = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = "Whether to install Microsoft Excel and Word via Homebrew casks.";
+      description = "Whether to install Microsoft Office bloat via Homebrew casks.";
     };
   };
 
@@ -123,6 +123,7 @@ in
       ++ lib.optionals cfg.microsoft-office.enable [
         "microsoft-excel"
         "microsoft-word"
+        "microsoft-powerpoint"
       ];
       onActivation.cleanup = "zap";
     };

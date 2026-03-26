@@ -16,6 +16,11 @@
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
+    devshell = {
+      url = "github:numtide/devshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs =
@@ -25,6 +30,7 @@
       home-manager,
       nix-darwin,
       nix-homebrew,
+      devshell,
       ...
     }:
     let
@@ -37,8 +43,32 @@
         system = linuxSystem;
         config = nixpkgsConfig;
       };
+      forEachSystem =
+        f:
+        builtins.listToAttrs (
+          map
+            (system: {
+              name = system;
+              value = f (import nixpkgs {
+                inherit system;
+                config = nixpkgsConfig;
+                overlays = [ devshell.overlays.default ];
+              });
+            })
+            [
+              linuxSystem
+              darwinSystem
+            ]
+        );
     in
     {
+      devShells = forEachSystem (pkgs: {
+        default = import ./shells/default.nix { inherit pkgs; };
+        frontend = import ./shells/frontend.nix { inherit pkgs; };
+        backend = import ./shells/backend.nix { inherit pkgs; };
+        devops = import ./shells/devops.nix { inherit pkgs; };
+      });
+
       homeConfigurations."jonas" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
 

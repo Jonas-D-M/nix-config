@@ -20,6 +20,16 @@ pkgs.devshell.mkShell {
       package = pkgs.k9s;
       category = "k8s";
     }
+    {
+      package = pkgs.kubeswitch;
+      category = "k8s";
+    }
+
+    # containers
+    {
+      package = pkgs.docker-client;
+      category = "containers";
+    }
 
     # secrets
     {
@@ -32,6 +42,14 @@ pkgs.devshell.mkShell {
     }
 
     # tools
+    {
+      package = pkgs.gh;
+      category = "tools";
+    }
+    {
+      package = pkgs.direnv;
+      category = "tools";
+    }
     {
       package = pkgs.jq;
       category = "tools";
@@ -54,6 +72,10 @@ pkgs.devshell.mkShell {
     {
       name = "KUBECONFIG";
       eval = "$HOME/.config/kube/config";
+    }
+    {
+      name = "PATH";
+      prefix = "$HOME/.krew/bin";
     }
   ];
 }

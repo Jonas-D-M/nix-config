@@ -47,8 +47,26 @@ pkgs.devshell.mkShell {
       category = "dev";
     }
     {
+      package = pkgs.nodejs_22;
+      category = "dev";
+    }
+    {
+      package = pkgs.pnpm;
+      category = "dev";
+    }
+    {
       package = pkgs.bun;
       category = "dev";
+    }
+
+    # linting / formatting
+    {
+      package = pkgs.prettierd;
+      category = "linting / formatting";
+    }
+    {
+      package = pkgs.eslint_d;
+      category = "linting / formatting";
     }
 
     # containers / k8s
@@ -68,6 +86,14 @@ pkgs.devshell.mkShell {
       package = pkgs.k9s;
       category = "k8s";
     }
+    {
+      package = pkgs.kubeswitch;
+      category = "k8s";
+    }
+    {
+      package = pkgs.docker-client;
+      category = "k8s";
+    }
 
     # nix tooling
     {
@@ -81,6 +107,16 @@ pkgs.devshell.mkShell {
     {
       package = pkgs.age;
       category = "nix";
+    }
+
+    # tools
+    {
+      package = pkgs.gh;
+      category = "tools";
+    }
+    {
+      package = pkgs.direnv;
+      category = "tools";
     }
   ];
 }

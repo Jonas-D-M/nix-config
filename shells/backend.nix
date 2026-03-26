@@ -19,7 +19,21 @@ pkgs.devshell.mkShell {
       category = "database";
     }
 
+    # containers
+    {
+      package = pkgs.docker-client;
+      category = "containers";
+    }
+
     # tools
+    {
+      package = pkgs.gh;
+      category = "tools";
+    }
+    {
+      package = pkgs.direnv;
+      category = "tools";
+    }
     {
       package = pkgs.jq;
       category = "tools";

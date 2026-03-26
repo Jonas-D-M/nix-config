@@ -19,7 +19,25 @@ pkgs.devshell.mkShell {
       category = "package managers";
     }
 
+    # linting / formatting
+    {
+      package = pkgs.prettierd;
+      category = "linting / formatting";
+    }
+    {
+      package = pkgs.eslint_d;
+      category = "linting / formatting";
+    }
+
     # tools
+    {
+      package = pkgs.gh;
+      category = "tools";
+    }
+    {
+      package = pkgs.direnv;
+      category = "tools";
+    }
     {
       package = pkgs.jq;
       category = "tools";
