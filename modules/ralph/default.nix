@@ -64,7 +64,7 @@ let
 
       # Build jq filter to inject extra write paths.
       local extra_json
-      extra_json=$(printf '%s\n' "''${extra_abs[@]}" | ${pkgs.jq}/bin/jq -R . | ${pkgs.jq}/bin/jq -sc .)
+      extra_json=$(printf '%s\n' "''${extra_abs[@]}" | ${pkgs.jq}/bin/jq -R 'select(length > 0)' | ${pkgs.jq}/bin/jq -sc .)
 
       local base_settings
       if [ -f "vendor/bin/sail" ]; then
