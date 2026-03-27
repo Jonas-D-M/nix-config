@@ -57,6 +57,8 @@ in
     ./claude-code
     ./k9s
     ./node
+    ./colima
+    ./linearmouse
   ];
 
   # Provide a small API to override/extend from the host file.

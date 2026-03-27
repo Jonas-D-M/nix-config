@@ -9,7 +9,6 @@ let
 in
 {
   imports = [
-    ../../modules/darwin/colima
     ../../modules/darwin/linearmouse
   ];
 
@@ -136,10 +135,6 @@ in
 
     power.restartAfterFreeze = true;
 
-    custom.services.colima.enable = true;
-
-    custom.services.linearmouse = {
-      enable = true;
-    };
+    custom.services.linearmouse.enable = true;
   };
 }

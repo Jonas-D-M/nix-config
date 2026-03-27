@@ -84,6 +84,7 @@
                 imports = [
                   ./modules/shared.nix
                 ];
+                custom.services.colima.enable = true;
               };
 
             }
