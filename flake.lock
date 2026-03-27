@@ -104,17 +104,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1774557462,
-        "narHash": "sha256-fLgVV+O2LhvPjxHlVO3qkDxLCBRBjctCQnFd7sXlt7w=",
-        "ref": "refs/heads/master",
-        "rev": "2313cae2899fa7ea5e12e4f2e6ff20a5fe7c3073",
-        "revCount": 1,
-        "type": "git",
-        "url": "ssh://git@github.com/Jonas-D-M/nix-shells"
+        "lastModified": 1774557804,
+        "narHash": "sha256-QAz+j6x+vHih6k9TjPTsGOCGMehkwQPy4bTwoNsPb0c=",
+        "owner": "Jonas-D-M",
+        "repo": "nix-shells",
+        "rev": "3709e24271439ee97636669ba4811e5b97ce30cc",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/Jonas-D-M/nix-shells"
+        "owner": "Jonas-D-M",
+        "repo": "nix-shells",
+        "type": "github"
       }
     },
     "nixpkgs": {
