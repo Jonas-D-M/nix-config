@@ -40,7 +40,6 @@ let
 
     # programs
     mysql80
-    claude-code
 
   ];
 in
@@ -56,6 +55,8 @@ in
     ./ssh
     ./ralph
     ./claude-code
+    ./k9s
+    ./node
   ];
 
   # Provide a small API to override/extend from the host file.
@@ -92,11 +93,17 @@ in
   };
 
   config = {
+    # User identity
+    home.username = cfg.user;
+    home.homeDirectory =
+      if pkgs.stdenv.isDarwin then "/Users/${cfg.user}" else "/home/${cfg.user}";
+    news.display = "silent";
+
     # User-level config only
     home.stateVersion = cfg.homeStateVersion;
     home.sessionVariables = {
       KUBECONFIG = "$HOME/.config/kube/config";
-      SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.sops/age-key.txt";
+      SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
     };
     programs.home-manager.enable = true;
 
@@ -113,14 +120,6 @@ in
     programs.kubeswitch = {
       enable = true;
       enableZshIntegration = true;
-    };
-
-    programs.k9s = {
-      enable = true;
-
-      settings.k9s.ui.skin = "transparent";
-
-      skins.transparent = ./k9s/transparent.yaml;
     };
 
     home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

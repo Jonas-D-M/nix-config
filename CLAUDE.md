@@ -25,12 +25,11 @@ There are no tests beyond a successful `nix build` dry-run.
 
 ```
 flake.nix
-  └─ home.nix               (user identity, stateVersion baseline)
-       └─ modules/shared.nix  (packages, programs, activation scripts, imports all feature modules)
-            └─ hosts/darwin/  or  hosts/popos.nix  (platform-specific overrides)
+  └─ modules/shared.nix  (user identity, packages, programs, activation scripts, imports all feature modules)
+       └─ hosts/darwin/  or  hosts/popos.nix  (platform-specific overrides)
 ```
 
-- **`modules/shared.nix`** is the main hub. All feature modules are imported from here, not directly from `flake.nix`.
+- **`modules/shared.nix`** is the main hub. User identity, stateVersion, and all feature modules are imported from here.
 - **`hosts/`** contains platform-specific config. macOS uses nix-darwin for system-level settings (Dock, Finder, Homebrew, Touch ID sudo). Linux uses Home Manager alone.
 - Feature modules live in `modules/<name>/default.nix`.
 
@@ -56,7 +55,7 @@ config.custom = {
 
 ### Activation Script Ordering
 
-Scripts use `lib.hm.dag.entryAfter`. Secrets-dependent logic (e.g. `ensurePubKeys`) must declare `[ "ensureSshDir" "sops-nix" ]` as dependencies. Breaking this ordering leaves keys or directories missing.
+Scripts use `lib.hm.dag.entryAfter`. Key generation (`generateSshKeys`) runs after `writeBoundary`, then `ensurePubKeys` runs after `generateSshKeys`. Breaking this ordering leaves keys or directories missing.
 
 ## Key Conventions
 
@@ -65,12 +64,11 @@ Scripts use `lib.hm.dag.entryAfter`. Secrets-dependent logic (e.g. `ensurePubKey
 - **Host-specific packages**: use `lib.mkAfter` in the host file to append lists.
 - **Shell aliases**: add to `modules/zsh/default.nix`, not `shared.nix`.
 - **New shell helpers** (functions): add inside `programs.zsh.initContent` in `modules/zsh/default.nix`.
-- **`home.stateVersion`** appears in both `home.nix` and `shared.nix` — change both together if upgrading.
+- **`home.stateVersion`** is set in `shared.nix` via `config.custom.homeStateVersion` (default `"25.05"`).
 - **Work vs personal git identity** is controlled by a conditional `gitdir:~/work/**` include in `modules/git/default.nix`.
 
 ## Adding a New Secret
 
 1. Encrypt with `sops` using the Age recipient (`age-keygen -y keys.txt`).
 2. Store as `secrets/<name>.enc`.
-3. Reference in a `sops.secrets` entry inside `secrets.nix`.
-4. Any derived artifacts (config files, keys) must be generated in an activation script with `entryAfter [ "sops-nix" ]`.
+3. Any derived artifacts (config files, keys) must be generated in an activation script with `entryAfter [ "writeBoundary" ]`.

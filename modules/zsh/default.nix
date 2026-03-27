@@ -1,12 +1,10 @@
 {
   pkgs,
   lib,
-  config,
   ...
 }:
 {
   home.sessionVariables = {
-    PNPM_HOME = "${config.home.homeDirectory}/.local/share/pnpm";
     _ZO_DOCTOR = "0";
   };
 
@@ -14,7 +12,6 @@
     "$HOME/.local/bin"
     "$HOME/bin"
     "$HOME/.krew/bin"
-    "$HOME/.local/share/pnpm"
   ]
   ++ lib.optionals pkgs.stdenv.isDarwin [
     "/Applications/Obsidian.app/Contents/MacOS"
@@ -63,17 +60,6 @@
       bindkey '^[[3;3~' kill-word
 
     '';
-  };
-
-  home.packages = with pkgs; [
-    fnm
-    pnpm
-  ];
-
-  home.file = {
-    ".nvmrc" = {
-      text = "20\n";
-    };
   };
 
   programs.fzf = {

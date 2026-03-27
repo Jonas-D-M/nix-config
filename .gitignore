@@ -12,6 +12,7 @@ result
 result-*
 *.drv
 *.lock
+!flake.lock
 *.log
 
 # --- Home Manager / Nix temp dirs ---

@@ -27,7 +27,7 @@ case "$OS" in
   *) echo "❌ Unsupported OS: $OS"; exit 1 ;;
 esac
 
-DEFAULT_FLAKE_REF_LINUX=".#jonas-home"
+DEFAULT_FLAKE_REF_LINUX=".#jonas"
 DEFAULT_FLAKE_REF_DARWIN=".#jonas-mac"
 if $IS_DARWIN; then
   DEFAULT_FLAKE_REF="$DEFAULT_FLAKE_REF_DARWIN"

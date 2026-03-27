@@ -140,7 +140,6 @@ in
 
     custom.services.linearmouse = {
       enable = true;
-      defaultConfig = ./linearmouse/config.json;
     };
   };
 }

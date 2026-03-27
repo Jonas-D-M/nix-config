@@ -51,7 +51,6 @@
         inherit pkgs;
 
         modules = [
-          ./home.nix
           ./modules/shared.nix
           ./hosts/popos.nix
         ];
@@ -78,12 +77,11 @@
               home-manager.useUserPackages = true;
               home-manager.backupFileExtension = "hm-backup";
 
-              # Hard override to avoid null merges from other modules
+              # mkForce needed: useUserPackages causes nix-darwin common.nix to set homeDirectory = null
               home-manager.users.jonas.home.homeDirectory = lib.mkForce "/Users/jonas";
 
               home-manager.users.jonas = {
                 imports = [
-                  ./home.nix
                   ./modules/shared.nix
                 ];
               };
