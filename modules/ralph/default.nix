@@ -203,6 +203,8 @@ let
         "*.githubusercontent.com"
         "*.npmjs.org"
         "registry.npmjs.org"
+        "packagist.org"
+        "repo.packagist.org"
       ];
       deniedDomains = [ ];
     };
