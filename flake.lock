@@ -20,6 +20,7 @@
     "devshell": {
       "inputs": {
         "nixpkgs": [
+          "nix-shells",
           "nixpkgs"
         ]
       },
@@ -95,6 +96,27 @@
         "type": "github"
       }
     },
+    "nix-shells": {
+      "inputs": {
+        "devshell": "devshell",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1774557462,
+        "narHash": "sha256-fLgVV+O2LhvPjxHlVO3qkDxLCBRBjctCQnFd7sXlt7w=",
+        "ref": "refs/heads/master",
+        "rev": "2313cae2899fa7ea5e12e4f2e6ff20a5fe7c3073",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@github.com/Jonas-D-M/nix-shells"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/Jonas-D-M/nix-shells"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1773646010,
@@ -113,10 +135,10 @@
     },
     "root": {
       "inputs": {
-        "devshell": "devshell",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nix-homebrew": "nix-homebrew",
+        "nix-shells": "nix-shells",
         "nixpkgs": "nixpkgs"
       }
     }
