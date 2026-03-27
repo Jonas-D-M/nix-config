@@ -47,6 +47,15 @@ let
     RALPH_SRT_SETTINGS=""
     RALPH_ADD_DIR_FLAGS=()
 
+    # Ensure SSH signing keys are loaded into the agent so srt can use them.
+    ralph_preload_ssh_keys() {
+      for key in "$HOME/.ssh/id_ed25519" "$HOME/.ssh/id_ed25519_work"; do
+        if [ -f "$key" ] && ! ssh-add -l 2>/dev/null | grep -qF "$key"; then
+          ssh-add "$key" 2>/dev/null || true
+        fi
+      done
+    }
+
     # ralph_setup [extra-dir...]
     # Resolves extra dirs, patches srt settings, and populates RALPH_ADD_DIR_FLAGS.
     ralph_setup() {
@@ -132,14 +141,17 @@ let
     fi
     touch progress.txt
 
+    ralph_preload_ssh_keys
     ralph_setup "$@"
     tool_hint=$(ralph_tool_hint)
 
-    srt --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions "''${RALPH_ADD_DIR_FLAGS[@]}" -p "@PRD.md @progress.txt \
-    1. Read the PRD and progress file. \
-    2. Find the next incomplete task and implement it. \
-    3. Commit your changes. \
-    4. Update progress.txt with what you did. \
+    srt --settings "$RALPH_SRT_SETTINGS" claude ''${RALPH_MODEL:+--model "$RALPH_MODEL"} --dangerously-skip-permissions "''${RALPH_ADD_DIR_FLAGS[@]}" -p "@PRD.md @progress.txt \
+    You are running autonomously. Do NOT ask questions, do NOT summarize, do NOT wait for input — just act. \
+    1. Find the highest-priority unchecked - [ ] task in PRD.md that has no unmet dependencies. \
+    2. Implement it now. \
+    3. Edit PRD.md: change its - [ ] to - [x] for the completed task. \
+    4. Commit all changes including the updated PRD.md. \
+    5. Append one line to progress.txt describing what you did. \
     ONLY DO ONE TASK AT A TIME. \
     $tool_hint"
   '';
@@ -165,6 +177,7 @@ let
 
     touch progress.txt
 
+    ralph_preload_ssh_keys
     ralph_setup "$@"
     tool_hint=$(ralph_tool_hint)
 
@@ -174,15 +187,17 @@ let
     for ((i=1; i<=iterations; i++)); do
       echo ""
       echo "=== Ralph iteration $i/$iterations ==="
-      srt --settings "$RALPH_SRT_SETTINGS" claude --dangerously-skip-permissions "''${RALPH_ADD_DIR_FLAGS[@]}" -p "@PRD.md @progress.txt \
-      1. Find the highest-priority incomplete task and implement it. \
-      2. Run your tests and type checks. \
-      3. Update the PRD with what was done. \
-      4. Append your progress to progress.txt. \
-      5. Commit your changes. \
+      srt --settings "$RALPH_SRT_SETTINGS" claude ''${RALPH_MODEL:+--model "$RALPH_MODEL"} --dangerously-skip-permissions "''${RALPH_ADD_DIR_FLAGS[@]}" -p "@PRD.md @progress.txt \
+      You are running autonomously. Do NOT ask questions, do NOT summarize, do NOT wait for input — just act. \
+      1. Find the highest-priority unchecked - [ ] task in PRD.md that has no unmet dependencies. \
+      2. Implement it now. \
+      3. Run your tests and type checks. \
+      4. Edit PRD.md: change its - [ ] to - [x] for the completed task. \
+      5. Append one line to progress.txt describing what you did. \
+      6. Commit all changes including the updated PRD.md. \
       ONLY WORK ON A SINGLE TASK. \
       $tool_hint \
-      If the PRD is complete, output \<promise\>COMPLETE\</promise\>." | tee "$tmpout"
+      If all tasks are complete, output \<promise\>COMPLETE\</promise\>." | tee "$tmpout"
 
       if grep -q "<promise>COMPLETE</promise>" "$tmpout"; then
         echo ""
@@ -219,6 +234,8 @@ let
         "~/.ssh/config"
         "~/.ssh/allowed_signers"
         "~/.ssh/*.pub"
+        "~/.ssh/id_ed25519"
+        "~/.ssh/id_ed25519_work"
       ];
       allowWrite = [
         "."
