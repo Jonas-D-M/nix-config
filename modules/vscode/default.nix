@@ -9,7 +9,8 @@
     enable = true;
     package = lib.mkIf pkgs.stdenv.isDarwin (
       lib.mkForce (
-        pkgs.emptyDirectory // {
+        pkgs.emptyDirectory
+        // {
           pname = "vscode";
           version = "0.0.0";
         }
@@ -308,4 +309,22 @@
       ];
     };
   };
+
+  home.activation.makeVscodeSettingsMutable =
+    let
+      settingsDir =
+        if pkgs.stdenv.isDarwin then
+          "$HOME/Library/Application Support/Code/User"
+        else
+          "$HOME/.config/Code/User";
+    in
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      settings="${settingsDir}/settings.json"
+      if [ -L "$settings" ]; then
+        target=$(readlink "$settings")
+        run rm "$settings"
+        run cp "$target" "$settings"
+        run chmod u+w "$settings"
+      fi
+    '';
 }
