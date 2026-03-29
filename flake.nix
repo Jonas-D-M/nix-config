@@ -44,10 +44,11 @@
       linuxSystem = "x86_64-linux";
       darwinSystem = "aarch64-darwin";
       nixpkgsConfig = { allowUnfree = true; };
-      # Import pkgs for Linux (outside Home Manager config to avoid warning with useGlobalPkgs)
+      # Import pkgs for Linux with vscode-extensions overlay so allowUnfree applies
       pkgs = import nixpkgs {
         system = linuxSystem;
         config = nixpkgsConfig;
+        overlays = [ nix-vscode-extensions.overlays.default ];
       };
     in
     {
@@ -57,7 +58,7 @@
         inherit pkgs;
 
         extraSpecialArgs = {
-          vscode-marketplace = nix-vscode-extensions.extensions.${linuxSystem}.vscode-marketplace;
+          vscode-marketplace-release = pkgs.vscode-marketplace-release;
         };
 
         modules = [
@@ -74,10 +75,11 @@
           home-manager.darwinModules.home-manager
           nix-homebrew.darwinModules.nix-homebrew
           (
-            { lib, ... }:
+            { lib, pkgs, ... }:
             {
               nixpkgs.hostPlatform = "aarch64-darwin";
               nixpkgs.config = nixpkgsConfig;
+              nixpkgs.overlays = [ nix-vscode-extensions.overlays.default ];
               nix.settings.experimental-features = [
                 "nix-command"
                 "flakes"
@@ -87,7 +89,8 @@
               home-manager.useUserPackages = true;
               home-manager.backupFileExtension = "hm-backup";
               home-manager.extraSpecialArgs = {
-                vscode-marketplace = nix-vscode-extensions.extensions."aarch64-darwin".vscode-marketplace;
+                vscode-marketplace = pkgs.vscode-marketplace;
+                vscode-marketplace-release = pkgs.vscode-marketplace-release;
               };
 
               # mkForce needed: useUserPackages causes nix-darwin common.nix to set homeDirectory = null
