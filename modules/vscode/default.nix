@@ -271,6 +271,12 @@
           { "file" = "~/.copilot/instructions"; }
           { "file" = "~/.claude/rules"; }
         ];
+        "chat.instructionsFilesLocations" = {
+          ".github/instructions" = true;
+          ".claude/rules" = true;
+          "~/.copilot/instructions" = true;
+          "~/.claude/rules" = true;
+        };
 
         # Explorer
         "explorer.confirmDelete" = false;
