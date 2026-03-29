@@ -95,6 +95,8 @@ in
   };
 
   config = {
+    xdg.enable = true;
+
     # User identity
     home.username = cfg.user;
     home.homeDirectory =

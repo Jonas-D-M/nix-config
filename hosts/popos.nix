@@ -14,6 +14,9 @@ let
   wallpaperUri = "file://${wallpaperFile}";
 in
 {
+  targets.genericLinux.enable = true;
+  fonts.fontconfig.enable = true;
+
   home.file.".local/share/backgrounds/w11" = {
     source = ../media/wallpapers/w11;
     recursive = true;
