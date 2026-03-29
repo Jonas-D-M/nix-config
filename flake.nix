@@ -21,6 +21,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-vscode-extensions = {
+      url = "github:nix-community/nix-vscode-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs =
@@ -31,6 +36,7 @@
       nix-darwin,
       nix-homebrew,
       nix-shells,
+      nix-vscode-extensions,
       ...
     }:
     let
@@ -49,6 +55,10 @@
 
       homeConfigurations."jonas" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
+
+        extraSpecialArgs = {
+          vscode-marketplace = nix-vscode-extensions.extensions.${linuxSystem}.vscode-marketplace;
+        };
 
         modules = [
           ./modules/shared.nix
@@ -76,6 +86,9 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.backupFileExtension = "hm-backup";
+              home-manager.extraSpecialArgs = {
+                vscode-marketplace = nix-vscode-extensions.extensions."aarch64-darwin".vscode-marketplace;
+              };
 
               # mkForce needed: useUserPackages causes nix-darwin common.nix to set homeDirectory = null
               home-manager.users.jonas.home.homeDirectory = lib.mkForce "/Users/jonas";

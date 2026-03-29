@@ -59,6 +59,7 @@ in
     ./node
     ./colima
     ./linearmouse
+    ./vscode
   ];
 
   # Provide a small API to override/extend from the host file.
