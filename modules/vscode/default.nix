@@ -23,11 +23,9 @@
       extensions =
         (with vscode-marketplace-release; [
           aaron-bond.better-comments
-          ahmadawais.shades-of-purple
           alexcvzz.vscode-sqlite
           anthropic.claude-code
           bbenoist.nix
-          beardedbear.beardedtheme
           bmewburn.vscode-intelephense-client
           bradlc.vscode-tailwindcss
           christian-kohler.npm-intellisense
@@ -44,7 +42,6 @@
           github.copilot-chat
           github.vscode-github-actions
           github.vscode-pull-request-github
-          humao.rest-client
           jasonnutter.search-node-modules
           jnoortheen.nix-ide
           jock.svg
@@ -72,39 +69,28 @@
           ms-vscode.remote-explorer
           ms-vscode.remote-server
           ms-vscode.vs-keybindings
-          msjsdiag.vscode-react-native
           mutantdino.resourcemonitor
           onecentlin.laravel-blade
           pkief.material-icon-theme
-          postman.postman-for-vscode
-          prisma.prisma
-          pwabuilder.pwa-studio
           redhat.vscode-yaml
-          rocketseat.theme-omni
           rogalmic.bash-debug
           sanderronde.phpstan-vscode
           sandipchitale.vscode-kubernetes-helm-extras
           shakram02.bash-beautify
-          sibiraj-s.vscode-scss-formatter
-          sleistner.vscode-fileutils
           streetsidesoftware.code-spell-checker
           streetsidesoftware.code-spell-checker-british-english
           streetsidesoftware.code-spell-checker-dutch
           sumneko.lua
-          syler.sass-indented
           tamasfe.even-better-toml
           tim-koehler.helm-intellisense
           tomoki1207.pdf
           typespec.typespec-vscode
           vscodevim.vim
-          whizkydee.material-palenight-theme
-          williamdasilva.lottie-viewer
           wix.vscode-import-cost
           xabikos.javascriptsnippets
           xdebug.php-debug
           yoavbls.pretty-ts-errors
           yzhang.markdown-all-in-one
-          zhuangtongfa.material-theme
           zobo.php-intellisense
         ])
         ++ [ vscode-marketplace-release."42crunch".vscode-openapi ];
