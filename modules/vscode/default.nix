@@ -307,6 +307,7 @@
     in
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       settings="${settingsDir}/settings.json"
+      run rm -f "$settings.hm-backup"
       if [ -L "$settings" ]; then
         target=$(readlink "$settings")
         run rm "$settings"
