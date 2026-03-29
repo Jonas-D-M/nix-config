@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   vscode-marketplace-release,
@@ -166,7 +167,7 @@
         # Terminal
         "terminal.integrated.profiles.osx" = {
           "zsh (nix)" = {
-            "path" = "/etc/profiles/per-user/jonas/bin/zsh";
+            "path" = "/etc/profiles/per-user/${config.home.username}/bin/zsh";
           };
         };
         "terminal.integrated.defaultProfile.osx" = "zsh (nix)";
