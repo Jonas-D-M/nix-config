@@ -7,6 +7,7 @@ let
       "${lib.getExe' pkgs.pulseaudio "paplay"} /run/current-system/sw/share/sounds/freedesktop/stereo/complete.oga";
 
   settings = {
+    model = "claude-opus-4-6";
     hooks = {
       Stop = [
         {
