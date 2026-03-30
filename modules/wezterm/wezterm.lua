@@ -27,8 +27,8 @@ local config     = {
   window_decorations                          = "INTEGRATED_BUTTONS|RESIZE",
 
   default_cursor_style                        = "SteadyBlock",
-  send_composed_key_when_left_alt_is_pressed  = false,
-  send_composed_key_when_right_alt_is_pressed = false,
+  send_composed_key_when_left_alt_is_pressed  = true,
+  send_composed_key_when_right_alt_is_pressed = true,
 
   color_scheme                                = "Tokyo Night Storm",
   keys                                        = {
