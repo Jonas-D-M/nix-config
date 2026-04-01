@@ -33,6 +33,7 @@
       drb = "sudo darwin-rebuild switch --flake ~/nix-config";
       neofetch = "fastfetch";
       nix-cleanup = "nix-collect-garbage --delete-older-than 30d";
+      kloot = "claude";
     };
     initContent = ''
       # --- fnm (Fast Node Manager) ---
