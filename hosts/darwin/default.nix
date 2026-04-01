@@ -118,6 +118,7 @@ in
         "obsidian"
         "chatgpt"
         "claude"
+        "bitwarden"
       ]
       ++ lib.optionals cfg.microsoft-office.enable [
         "microsoft-excel"
