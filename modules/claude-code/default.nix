@@ -60,19 +60,22 @@ in
   imports = [ ./permissions.nix ];
 
   home.packages = [ pkgs.claude-code ];
-  home.file.".claude/settings.json".text = builtins.toJSON settings;
-
-  # Skills
-  home.file.".claude/skills/nix-flake-patterns/SKILL.md".source =
-    ./skills/nix-flake-patterns/SKILL.md;
-  home.file.".claude/skills/home-manager-modules/SKILL.md".source =
-    ./skills/home-manager-modules/SKILL.md;
-  home.file.".claude/skills/darwin-nix-system/SKILL.md".source = ./skills/darwin-nix-system/SKILL.md;
-
-  # Commands
-  home.file.".claude/commands/nix-check/SKILL.md".source = ./commands/nix-check/SKILL.md;
-  home.file.".claude/commands/new-module/SKILL.md".source = ./commands/new-module/SKILL.md;
-
-  # Agents
-  home.file.".claude/agents/nix-doctor.md".source = ./agents/nix-doctor.md;
+  home.file =
+    let
+      mkSkill = name: {
+        ".claude/skills/${name}/SKILL.md".source = ./skills/${name}/SKILL.md;
+      };
+      mkCommand = name: {
+        ".claude/commands/${name}/SKILL.md".source = ./commands/${name}/SKILL.md;
+      };
+    in
+    {
+      ".claude/settings.json".text = builtins.toJSON settings;
+      ".claude/agents/nix-doctor.md".source = ./agents/nix-doctor.md;
+    }
+    // mkSkill "nix-flake-patterns"
+    // mkSkill "home-manager-modules"
+    // mkSkill "darwin-nix-system"
+    // mkCommand "nix-check"
+    // mkCommand "new-module";
 }
