@@ -50,10 +50,9 @@ The configuration is layered. Each layer adds specificity:
 
 ```
 flake.nix
-  └─ home.nix                  (identity: username, home path)
-       └─ modules/shared.nix   (everything shared: packages, programs, all feature modules)
-            └─ hosts/darwin/   (macOS-only: system settings, Homebrew, launchd)
-            └─ hosts/popos.nix (Linux-only: GNOME/dconf settings)
+  └─ modules/shared.nix   (identity, packages, programs, all feature modules)
+       └─ hosts/darwin/   (macOS-only: system settings, Homebrew, launchd)
+       └─ hosts/popos.nix (Linux-only: GNOME/dconf settings)
 ```
 
 #### `flake.nix` — the entry point
@@ -65,18 +64,21 @@ The flake declares two outputs:
 
 The two evaluation strategies differ. On macOS, `home-manager.useGlobalPkgs = true` means nixpkgs is instantiated once at the nix-darwin level and shared with Home Manager — hence why `pkgs` is _not_ pre-instantiated in the flake for darwin. On Linux there is no outer nix-darwin, so the flake instantiates `pkgs` directly.
 
-#### `home.nix` — identity only
+Additional flake inputs:
 
-Deliberately minimal. Sets `home.username` and resolves `home.homeDirectory` based on the platform (`/Users/jonas` on macOS, `/home/jonas` on Linux). Nothing else lives here. Imported by both outputs.
+- **`nix-shells`** — reusable dev shells from a separate repo, re-exported as `devShells`
+- **`nix-vscode-extensions`** — overlay that provides `vscode-marketplace` and `vscode-marketplace-release` attrs, used by the VS Code module to install extensions from the marketplace
 
 #### `modules/shared.nix` — the hub
 
 This is where almost everything real happens. It:
 
+- Sets user identity (`home.username`, `home.homeDirectory` — resolved per-platform)
 - Imports all feature modules
 - Declares the `config.custom` option namespace (see section 6)
 - Defines the base package list (`baseHomePackages`)
-- Configures cross-platform programs: `direnv`, `kubeswitch`, `k9s`, `gh`, `openfortivpn`
+- Configures cross-platform programs: `direnv`, `kubeswitch`, `gh`, `openfortivpn`
+- Enables `xdg` and silences Home Manager news
 - Sets `home.stateVersion` and session variables (`KUBECONFIG`, `SOPS_AGE_KEY_FILE`)
 - Runs the `createWorkDir` activation script to ensure `~/work` exists
 
@@ -94,14 +96,17 @@ Host files sit on top of `shared.nix` and add what is platform-specific. They ca
 
 On macOS, nix-darwin owns the outer evaluation. This gives access to system-level settings that Home Manager cannot touch:
 
-- **Touch ID for sudo** (`security.pam.services.sudo_local.touchIdAuth`)
-- **Homebrew** — GUI apps and casks that are not in nixpkgs or better installed as native `.app` bundles (WezTerm, VS Code, Chrome, Slack, etc.). `onActivation.cleanup = "zap"` means any cask not listed in the config will be removed on the next apply.
-- **Dock, Finder, keyboard repeat, trackpad** via `system.defaults`
-- **Power settings** — the machine never sleeps when on power
-- **launchd agents** — Colima starts automatically at login
+- **Touch ID for sudo** (`security.pam.services.sudo_local.touchIdAuth` + `reattach`)
+- **Networking** — sets `computerName`, `hostName`, and `localHostName`
+- **Homebrew** — GUI apps and casks that are not in nixpkgs or better installed as native `.app` bundles (WezTerm, VS Code, Chrome, Slack, Spotify, DBeaver, Postman, Figma, Obsidian, Claude, ChatGPT, Bitwarden, etc.). `onActivation.cleanup = "zap"` means any cask not listed in the config will be removed on the next apply. Microsoft Office casks are controlled by the `custom.darwin.homebrew.microsoft-office.enable` option (default `true`).
+- **Dock, Finder, keyboard repeat, trackpad, Control Center** via `system.defaults`
+- **Startup chime** disabled
+- **Power settings** — the machine never sleeps when on power; auto-restart after freeze is enabled
+- **Siri** — status menu icon hidden
+- **Guest login** disabled
 - **nix-darwin version** pinned at `system.stateVersion = 6`
 
-The host also imports `modules/darwin/colima` and `modules/darwin/linearmouse`.
+The host also imports `modules/darwin/linearmouse` (system-level: Homebrew install + trackpad natural scroll).
 
 #### Linux (`hosts/popos.nix`)
 
@@ -181,13 +186,42 @@ Auto-detection: if `vendor/bin/sail` exists in the current directory, the Sail s
 
 Writes `~/.claude/settings.json`. The only setting is a `Stop` hook that plays a sound when Claude finishes — `afplay` on macOS, `paplay` on Linux.
 
+#### `k9s`
+
+Kubernetes cluster TUI. Enabled with a transparent skin (`transparent.yaml`) so it blends with the terminal background.
+
+#### `node`
+
+Node.js tooling:
+
+- `fnm` for Node version management, `pnpm` as the package manager
+- `PNPM_HOME` set and added to `sessionPath`
+- A default `~/.nvmrc` pinned to Node 20
+
+#### `vscode`
+
+Full VS Code configuration managed declaratively. On macOS the package itself is installed via Homebrew (the Nix package is replaced with an empty directory stub), while on Linux the Nix package is used directly.
+
+Key settings:
+
+- **Theme**: Tokyo Night Storm with Material Icon Theme
+- **Font**: JetBrainsMono Nerd Font with ligatures
+- **Editor**: format on save/paste, sidebar on right, minimap disabled, Vim keybindings
+- **Formatters**: Prettier for JS/TS/HTML/SCSS/JSON/Vue/Markdown, Intelephense for PHP
+- **Extensions**: ~60 extensions installed from `nix-vscode-extensions` marketplace — covers languages (TypeScript, PHP, Python, Nix, Lua, Bash, YAML, TOML), frameworks (React, Laravel, Tailwind, Helm), tools (Docker, Kubernetes, Git, GitHub Actions, Playwright), and AI (Copilot, Claude Code)
+- **Terminal**: uses Nix-managed `zsh` on macOS, login `zsh` on Linux
+- **Copilot**: enabled globally (disabled for YAML and Markdown)
+- **Custom keybindings**: `ctrl+tab`/`ctrl+shift+tab` for editor cycling, `ctrl+space` for suggestions
+
+An activation script makes `settings.json` mutable after Home Manager writes it, so VS Code can update settings at runtime without conflicts.
+
 #### `openfortivpn`
 
 Enables the `openfortivpn` Home Manager program and creates a shell alias.
 
-#### `darwin/colima`
+#### `colima`
 
-Docker runtime for macOS via Lima VM (no Docker Desktop). Defined as a custom option (`custom.services.colima.enable`) and enabled from `hosts/darwin/default.nix`.
+Docker runtime for macOS via Lima VM (no Docker Desktop). Lives at `modules/colima` and is guarded by `mkIf (cfg.enable && pkgs.stdenv.isDarwin)`. Defined as a custom option (`custom.services.colima.enable`) and enabled from the flake's darwin configuration.
 
 When enabled:
 
@@ -195,9 +229,12 @@ When enabled:
 - Sets `DOCKER_HOST` to the Colima socket path
 - Registers a launchd agent that starts Colima at login, with `colima stop --force` pre-run to clean up stale VM state from unclean shutdowns
 
-#### `darwin/linearmouse`
+#### `linearmouse`
 
-Mouse configuration for macOS via LinearMouse. Config file lives at `hosts/darwin/linearmouse/config.json`.
+Mouse configuration for macOS via LinearMouse. Split into two modules:
+
+- **`modules/linearmouse`** (Home Manager): registers a launchd agent that launches LinearMouse at login (with a 5-second delay for WindowServer readiness) and seeds a default config to `~/.config/linearmouse/linearmouse.json` if none exists. Source config lives at `modules/darwin/linearmouse/config.json`.
+- **`modules/darwin/linearmouse`** (nix-darwin): installs LinearMouse via Homebrew and sets trackpad natural scrolling. Controlled by `custom.services.linearmouse.enable`.
 
 ---
 
