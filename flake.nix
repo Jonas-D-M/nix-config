@@ -43,7 +43,9 @@
       # Target systems
       linuxSystem = "x86_64-linux";
       darwinSystem = "aarch64-darwin";
-      nixpkgsConfig = { allowUnfree = true; };
+      nixpkgsConfig = {
+        allowUnfree = true;
+      };
       # Import pkgs for Linux with vscode-extensions overlay so allowUnfree applies
       pkgs = import nixpkgs {
         system = linuxSystem;
@@ -68,7 +70,7 @@
       };
 
       darwinConfigurations."jonas-mac" = nix-darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
+        system = darwinSystem;
 
         modules = [
           ./hosts/darwin
@@ -77,7 +79,7 @@
           (
             { lib, pkgs, ... }:
             {
-              nixpkgs.hostPlatform = "aarch64-darwin";
+              nixpkgs.hostPlatform = darwinSystem;
               nixpkgs.config = nixpkgsConfig;
               nixpkgs.overlays = [ nix-vscode-extensions.overlays.default ];
               nix.settings.experimental-features = [

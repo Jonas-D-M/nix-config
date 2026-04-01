@@ -49,8 +49,10 @@ let
 
     # Ensure SSH signing keys are loaded into the agent so srt can use them.
     ralph_preload_ssh_keys() {
+      local loaded
+      loaded=$(ssh-add -l 2>/dev/null || true)
       for key in "$HOME/.ssh/id_ed25519" "$HOME/.ssh/id_ed25519_work"; do
-        if [ -f "$key" ] && ! ssh-add -l 2>/dev/null | grep -qF "$key"; then
+        if [ -f "$key" ] && ! echo "$loaded" | grep -qF "$key"; then
           ssh-add "$key" 2>/dev/null || true
         fi
       done

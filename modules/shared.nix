@@ -89,10 +89,6 @@ in
       type = lib.types.str;
       default = config.custom.stateVersion;
     };
-    systemStateVersion = lib.mkOption {
-      type = lib.types.str;
-      default = config.custom.stateVersion;
-    };
   };
 
   config = {
@@ -100,14 +96,13 @@ in
 
     # User identity
     home.username = cfg.user;
-    home.homeDirectory =
-      if pkgs.stdenv.isDarwin then "/Users/${cfg.user}" else "/home/${cfg.user}";
+    home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${cfg.user}" else "/home/${cfg.user}";
     news.display = "silent";
 
     # User-level config only
     home.stateVersion = cfg.homeStateVersion;
     home.sessionVariables = {
-      KUBECONFIG = "$HOME/.config/kube/config";
+      KUBECONFIG = "${config.home.homeDirectory}/.config/kube/config";
       SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
     };
     programs.home-manager.enable = true;

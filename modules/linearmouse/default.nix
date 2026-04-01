@@ -36,8 +36,8 @@ in
     home.activation.ensureLinearmouseConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       CONFIG_DIR="${config.home.homeDirectory}/.config/linearmouse"
       CONFIG_FILE="$CONFIG_DIR/linearmouse.json"
-      mkdir -p "$CONFIG_DIR"
       if [ ! -f "$CONFIG_FILE" ]; then
+        mkdir -p "$CONFIG_DIR"
         echo "Copying default LinearMouse config to $CONFIG_FILE"
         cp "${defaultConfigSrc}" "$CONFIG_FILE"
       fi

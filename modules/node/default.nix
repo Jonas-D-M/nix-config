@@ -16,7 +16,7 @@
   };
 
   home.sessionPath = [
-    "$HOME/.local/share/pnpm"
+    "${config.home.homeDirectory}/.local/share/pnpm"
   ];
 
   home.file.".nvmrc" = {

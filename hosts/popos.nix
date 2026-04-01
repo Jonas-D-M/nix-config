@@ -10,8 +10,6 @@ let
   wallpaperDir = "${config.home.homeDirectory}/.local/share/backgrounds/w11";
 
   wallpaperFile = "${wallpaperDir}/img22.jpg";
-
-  wallpaperUri = "file://${wallpaperFile}";
 in
 {
   targets.genericLinux.enable = true;

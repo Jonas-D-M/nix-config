@@ -83,7 +83,6 @@ in
           persistent-others = [ ];
         };
         finder = {
-          AppleShowAllExtensions = true;
           FXPreferredViewStyle = "Nlsv";
           ShowPathbar = true;
         };

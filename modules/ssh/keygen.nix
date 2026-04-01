@@ -14,33 +14,25 @@
     gen_key() {
       keyfile="$1"
       comment="$2"
+      keytype="''${3:-ed25519}"
+      extra_flags=()
+      if [ "$keytype" = "rsa" ]; then
+        extra_flags=(-b 4096)
+      fi
       if [ ! -f "$keyfile" ]; then
-        echo "Generating SSH key: $keyfile"
+        echo "Generating SSH key ($keytype): $keyfile"
         umask 177
-        ${pkgs.openssh}/bin/ssh-keygen -q -t ed25519 -N "" -C "$comment" -f "$keyfile"
+        ${pkgs.openssh}/bin/ssh-keygen -q -t "$keytype" "''${extra_flags[@]}" -N "" -C "$comment" -f "$keyfile"
         chmod 600 "$keyfile"
       else
         echo "Skipping generation: $keyfile already exists"
       fi
     }
 
-    gen_key_rsa() {
-      keyfile="$1"
-      comment="$2"
-      if [ ! -f "$keyfile" ]; then
-        echo "Generating SSH key (rsa-4096): $keyfile"
-        umask 177
-        ${pkgs.openssh}/bin/ssh-keygen -q -t rsa -b 4096 -N "" -C "$comment" -f "$keyfile"
-        chmod 600 "$keyfile"
-      else
-        echo "Skipping generation: $keyfile already exists"
-      fi
-    }
-
-    gen_key "$HOME/.ssh/id_ed25519" "jonas.personal"
-    gen_key "$HOME/.ssh/id_ed25519_work" "jonas.work"
+    gen_key "$HOME/.ssh/id_ed25519" "${config.home.username}.personal"
+    gen_key "$HOME/.ssh/id_ed25519_work" "${config.home.username}.work"
     # Azure DevOps requires RSA keys, so we generate a separate one for that.
-    gen_key_rsa "$HOME/.ssh/id_rsa_azure_devops" "jonas.work.azure_devops"
+    gen_key "$HOME/.ssh/id_rsa_azure_devops" "${config.home.username}.work.azure_devops" rsa
   '';
 
   # Create .pub and allowed_signers from the keys
@@ -65,13 +57,13 @@
 
     tmp_signers="$(mktemp)"; wrote_any=false
     if [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
-      printf "jonas.personal " >> "$tmp_signers"
+      printf "${config.home.username}.personal " >> "$tmp_signers"
       cat "$HOME/.ssh/id_ed25519.pub" >> "$tmp_signers"
       printf "\n" >> "$tmp_signers"
       wrote_any=true
     fi
     if [ -f "$HOME/.ssh/id_ed25519_work.pub" ]; then
-      printf "jonas.work " >> "$tmp_signers"
+      printf "${config.home.username}.work " >> "$tmp_signers"
       cat "$HOME/.ssh/id_ed25519_work.pub" >> "$tmp_signers"
       printf "\n" >> "$tmp_signers"
       wrote_any=true
