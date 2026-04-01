@@ -61,4 +61,18 @@ in
 
   home.packages = [ pkgs.claude-code ];
   home.file.".claude/settings.json".text = builtins.toJSON settings;
+
+  # Skills
+  home.file.".claude/skills/nix-flake-patterns/SKILL.md".source =
+    ./skills/nix-flake-patterns/SKILL.md;
+  home.file.".claude/skills/home-manager-modules/SKILL.md".source =
+    ./skills/home-manager-modules/SKILL.md;
+  home.file.".claude/skills/darwin-nix-system/SKILL.md".source = ./skills/darwin-nix-system/SKILL.md;
+
+  # Commands
+  home.file.".claude/commands/nix-check/SKILL.md".source = ./commands/nix-check/SKILL.md;
+  home.file.".claude/commands/new-module/SKILL.md".source = ./commands/new-module/SKILL.md;
+
+  # Agents
+  home.file.".claude/agents/nix-doctor.md".source = ./agents/nix-doctor.md;
 }
