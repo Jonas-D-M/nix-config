@@ -7,6 +7,7 @@
 {
   home.sessionVariables = {
     _ZO_DOCTOR = "0";
+    EDITOR = "code --wait";
   };
 
   home.sessionPath = [
