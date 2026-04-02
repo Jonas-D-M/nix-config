@@ -26,6 +26,7 @@ let
     php83
     php83Packages.composer
     bun
+    just
 
     # containers / k8s
     kubectl
