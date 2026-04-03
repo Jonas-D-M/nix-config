@@ -27,6 +27,7 @@ let
     php83Packages.composer
     bun
     just
+    opentofu
 
     # containers / k8s
     kubectl

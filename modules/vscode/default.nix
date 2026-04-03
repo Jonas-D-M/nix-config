@@ -93,7 +93,10 @@
           yzhang.markdown-all-in-one
           zobo.php-intellisense
         ])
-        ++ [ vscode-marketplace-release."42crunch".vscode-openapi ];
+        ++ [
+          vscode-marketplace-release."42crunch".vscode-openapi
+          vscode-marketplace-release."4ops".terraform
+        ];
       userSettings = {
         # Theme & UI
         "workbench.colorTheme" = "Tokyo Night Storm";
