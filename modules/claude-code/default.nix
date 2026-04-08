@@ -5,6 +5,8 @@
   ...
 }:
 let
+  cfg = config.custom.claudeCode;
+
   playSound =
     if pkgs.stdenv.isDarwin then
       "afplay /System/Library/Sounds/Glass.aiff"
@@ -38,7 +40,8 @@ let
         "brew:*"
       ];
       filesystem = {
-        allowWrite = [ "." ];
+        allowWrite = [ "." ] ++ lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
+        allowRead = lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
         denyRead = [
           ".env"
           ".env.local"

@@ -115,6 +115,20 @@ let
   # Conservative ask: everything standard can do + write ops
   conservativeAsk = standardAsk ++ standardAllow;
 
+  # Add-on: Docker / Laravel Sail
+  dockerAllow = [
+    "Bash(docker:*)"
+    "Bash(docker compose:*)"
+    "Bash(vendor/bin/sail:*)"
+    "Bash(php artisan:*)"
+    "Bash(composer:*)"
+  ];
+
+  dockerAsk = [
+    "Bash(docker system prune:*)"
+    "Bash(docker volume rm:*)"
+  ];
+
   denyList = [
     "Bash(rm -rf /:*)"
     "Bash(rm -rf /*:*)"
@@ -142,27 +156,40 @@ in
       '';
     };
 
+    enableDocker = lib.mkEnableOption "Docker / Laravel Sail commands in allowed permissions";
+
+    dockerSocket = lib.mkOption {
+      type = lib.types.str;
+      default = "${config.home.homeDirectory}/.colima/default/docker.sock";
+      description = "Path to the Docker daemon socket for sandbox filesystem access.";
+    };
+
     _resolvedPermissions = lib.mkOption {
       type = lib.types.attrs;
       internal = true;
       readOnly = true;
-      default = {
-        allow =
-          if cfg.permissionProfile == "autonomous" then
-            autonomousAllow
-          else if cfg.permissionProfile == "standard" then
-            standardAllow
-          else
-            baseAllow;
-        ask =
-          if cfg.permissionProfile == "autonomous" then
-            autonomousAsk
-          else if cfg.permissionProfile == "standard" then
-            standardAsk
-          else
-            conservativeAsk;
-        deny = denyList;
-      };
+      default =
+        let
+          profileAllow =
+            if cfg.permissionProfile == "autonomous" then
+              autonomousAllow
+            else if cfg.permissionProfile == "standard" then
+              standardAllow
+            else
+              baseAllow;
+          profileAsk =
+            if cfg.permissionProfile == "autonomous" then
+              autonomousAsk
+            else if cfg.permissionProfile == "standard" then
+              standardAsk
+            else
+              conservativeAsk;
+        in
+        {
+          allow = profileAllow ++ (lib.optionals cfg.enableDocker dockerAllow);
+          ask = profileAsk ++ (lib.optionals cfg.enableDocker dockerAsk);
+          deny = denyList;
+        };
     };
   };
 }
