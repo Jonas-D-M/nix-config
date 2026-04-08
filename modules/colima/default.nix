@@ -28,6 +28,7 @@ in
     ];
 
     home.sessionVariables = {
+      COLIMA_HOME = "${config.home.homeDirectory}/.colima";
       DOCKER_HOST = "unix://${config.home.homeDirectory}/.colima/default/docker.sock";
     };
 
@@ -36,6 +37,7 @@ in
       config = {
         Label = "dev.${user}.colima";
         EnvironmentVariables = {
+          COLIMA_HOME = "${config.home.homeDirectory}/.colima";
           PATH = "/etc/profiles/per-user/${user}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
         };
         ProgramArguments = [

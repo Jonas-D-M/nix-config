@@ -13,6 +13,42 @@ let
     else
       "${lib.getExe' pkgs.pulseaudio "paplay"} /run/current-system/sw/share/sounds/freedesktop/stereo/complete.oga";
 
+  autoCommitScript = pkgs.writeShellScript "claude-auto-commit" ''
+    git rev-parse --git-dir > /dev/null 2>&1 || exit 0
+    { ! git diff --quiet || ! git diff --cached --quiet; } || exit 0
+    git add -u
+    FILES=$(git diff --cached --name-only)
+    [ -z "$FILES" ] && exit 0
+
+    DIFF=$(git diff --cached --stat)
+    DIFF_CONTENT=$(git diff --cached -- . ':!*.lock' ':!package-lock.json' | head -200)
+
+    PROMPT="You are a commit message generator. Based on this git diff, write a commit message.
+
+    Rules:
+    - First line: a concise summary under 72 chars using conventional commit format (feat/fix/refactor/docs/chore)
+    - Then a blank line
+    - Then a body with bullet points explaining the key changes and WHY they were made
+    - Do NOT include Co-Authored-By
+    - Output ONLY the commit message, nothing else
+
+    Diff stat:
+    $DIFF
+
+    Diff content:
+    $DIFF_CONTENT"
+
+    MSG=$(echo "$PROMPT" | ${lib.getExe pkgs.claude-code} --print --model haiku 2>/dev/null)
+
+    if [ -z "$MSG" ] || [ $? -ne 0 ]; then
+      COUNT=$(echo "$FILES" | wc -l | tr -d " ")
+      SCOPE=$(echo "$FILES" | sed "s|/[^/]*$||" | sort -u | head -1 | awk -F/ '{print $NF}')
+      MSG="chore($SCOPE): update $COUNT file(s)"
+    fi
+
+    git commit -m "$MSG"
+  '';
+
   settings = {
     model = "claude-opus-4-6";
     hooks = {
@@ -24,21 +60,33 @@ let
               type = "command";
               command = playSound;
             }
+            {
+              type = "command";
+              command = toString autoCommitScript;
+            }
           ];
         }
       ];
     };
     sandbox = {
       enabled = true;
-      excludedCommands = [
-        "nix:*"
-        "nix-build:*"
-        "nix-shell:*"
-        "nix-instantiate:*"
-        "darwin-rebuild:*"
-        "home-manager:*"
-        "brew:*"
-      ];
+      excludedCommands =
+        [
+          "nix:*"
+          "nix-build:*"
+          "nix-shell:*"
+          "nix-instantiate:*"
+          "darwin-rebuild:*"
+          "home-manager:*"
+          "brew:*"
+        ]
+        ++ lib.optionals cfg.enableDocker [
+          "docker:*"
+          "docker-compose:*"
+          "vendor/bin/sail:*"
+          "php:*"
+          "composer:*"
+        ];
       filesystem = {
         allowWrite = [ "." ] ++ lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
         allowRead = lib.optionals cfg.enableDocker [ cfg.dockerSocket ];

@@ -103,6 +103,7 @@
                   ./modules/shared.nix
                 ];
                 custom.services.colima.enable = true;
+                custom.claudeCode.enableDocker = true;
               };
 
             }
