@@ -28,6 +28,7 @@ let
     bun
     just
     opentofu
+    openbao
 
     # containers / k8s
     kubectl
