@@ -159,6 +159,7 @@
             "path" = "/etc/profiles/per-user/${config.home.username}/bin/zsh";
           };
         };
+        "terminal.integrated.allowChords" = false;
         "terminal.integrated.defaultProfile.osx" = "zsh (nix)";
         "terminal.integrated.profiles.linux" = {
           "zsh (login)" = {
