@@ -60,10 +60,6 @@ let
               type = "command";
               command = playSound;
             }
-            {
-              type = "command";
-              command = toString autoCommitScript;
-            }
           ];
         }
       ];
