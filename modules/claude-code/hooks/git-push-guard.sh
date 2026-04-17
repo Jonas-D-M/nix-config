@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# PreToolUse hook: auto-approve git push to claude/* branches, block others.
-# Receives tool input as JSON on stdin.
+# PreToolUse hook: auto-approve git push to claude/* branches, ask for others.
+# Exit 0 = approve, exit 2 = block. JSON output for "ask".
 
 set -euo pipefail
 
@@ -17,9 +17,9 @@ fi
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 
 if [[ "$BRANCH" == claude/* ]]; then
-  # Auto-approve pushes on claude/ branches
-  echo '{"decision": "approve", "reason": "Pushing to claude/ branch"}'
-else
-  # Block pushes to non-claude/ branches
-  echo '{"decision": "block", "reason": "Only pushing to claude/* branches is allowed without confirmation"}'
+  exit 0
 fi
+
+# Ask for confirmation on non-claude/ branches
+echo '{"hookSpecificOutput": {"permissionDecision": "ask", "reason": "Pushing to non-claude/ branch: '"$BRANCH"'"}}'
+exit 0

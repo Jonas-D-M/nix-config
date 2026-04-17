@@ -102,7 +102,6 @@ let
 
   # Autonomous ask: reduced set
   autonomousAsk = [
-    "Bash(git push:*)"
     "Bash(git merge:*)"
     "Bash(git rebase:*)"
     "Bash(git reset:*)"

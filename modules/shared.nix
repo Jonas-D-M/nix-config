@@ -26,6 +26,7 @@ let
     php83
     php83Packages.composer
     bun
+    nodejs
     just
     opentofu
     openbao
@@ -42,7 +43,7 @@ let
     pass
 
     # programs
-    mysql80
+    mysql84
 
   ];
 in

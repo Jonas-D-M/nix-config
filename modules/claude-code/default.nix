@@ -13,6 +13,21 @@ let
     else
       "${lib.getExe' pkgs.pulseaudio "paplay"} /run/current-system/sw/share/sounds/freedesktop/stereo/complete.oga";
 
+  worktreeDeps = pkgs.writeShellScript "worktree-deps" (builtins.readFile ./hooks/worktree-deps.sh);
+
+  gitPushGuard =
+    let
+      script = pkgs.writeShellApplication {
+        name = "git-push-guard";
+        runtimeInputs = [
+          pkgs.jq
+          pkgs.git
+        ];
+        text = builtins.readFile ./hooks/git-push-guard.sh;
+      };
+    in
+    "${script}/bin/git-push-guard";
+
   autoCommitScript = pkgs.writeShellScript "claude-auto-commit" ''
     git rev-parse --git-dir > /dev/null 2>&1 || exit 0
     { ! git diff --quiet || ! git diff --cached --quiet; } || exit 0
@@ -52,6 +67,28 @@ let
   settings = {
     model = "claude-opus-4-6";
     hooks = {
+      PreToolUse = [
+        {
+          matcher = "Bash";
+          hooks = [
+            {
+              type = "command";
+              command = gitPushGuard;
+            }
+          ];
+        }
+      ];
+      PostToolUse = [
+        {
+          matcher = "EnterWorktree";
+          hooks = [
+            {
+              type = "command";
+              command = worktreeDeps;
+            }
+          ];
+        }
+      ];
       Stop = [
         {
           matcher = "";
@@ -66,23 +103,23 @@ let
     };
     sandbox = {
       enabled = true;
-      excludedCommands =
-        [
-          "nix:*"
-          "nix-build:*"
-          "nix-shell:*"
-          "nix-instantiate:*"
-          "darwin-rebuild:*"
-          "home-manager:*"
-          "brew:*"
-        ]
-        ++ lib.optionals cfg.enableDocker [
-          "docker:*"
-          "docker-compose:*"
-          "vendor/bin/sail:*"
-          "php:*"
-          "composer:*"
-        ];
+      excludedCommands = [
+        "nix:*"
+        "nix-build:*"
+        "nix-shell:*"
+        "nix-instantiate:*"
+        "darwin-rebuild:*"
+        "home-manager:*"
+        "brew:*"
+        "gh:*"
+      ]
+      ++ lib.optionals cfg.enableDocker [
+        "docker:*"
+        "docker-compose:*"
+        "vendor/bin/sail:*"
+        "php:*"
+        "composer:*"
+      ];
       filesystem = {
         allowWrite = [ "." ] ++ lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
         allowRead = lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
