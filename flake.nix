@@ -26,6 +26,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Pinned nixpkgs for claude-code 2.1.114 — remove once nixos-unstable catches up
+    nixpkgs-claude-code.url = "github:nixos/nixpkgs/b12141ef619e0a9c1c84dc8c684040326f27cdcc";
+
   };
 
   outputs =
@@ -37,6 +40,7 @@
       nix-homebrew,
       nix-shells,
       nix-vscode-extensions,
+      nixpkgs-claude-code,
       ...
     }:
     let
@@ -46,11 +50,23 @@
       nixpkgsConfig = {
         allowUnfree = true;
       };
+      # Pin claude-code to 2.1.114 — remove once nixos-unstable catches up
+      claudeCodeOverlay = final: prev: {
+        claude-code =
+          (import nixpkgs-claude-code {
+            inherit (prev) system;
+            config = nixpkgsConfig;
+          }).claude-code-bin;
+      };
+      sharedOverlays = [
+        nix-vscode-extensions.overlays.default
+        claudeCodeOverlay
+      ];
       # Import pkgs for Linux with vscode-extensions overlay so allowUnfree applies
       pkgs = import nixpkgs {
         system = linuxSystem;
         config = nixpkgsConfig;
-        overlays = [ nix-vscode-extensions.overlays.default ];
+        overlays = sharedOverlays;
       };
     in
     {
@@ -81,7 +97,7 @@
             {
               nixpkgs.hostPlatform = darwinSystem;
               nixpkgs.config = nixpkgsConfig;
-              nixpkgs.overlays = [ nix-vscode-extensions.overlays.default ];
+              nixpkgs.overlays = sharedOverlays;
               nix.settings.experimental-features = [
                 "nix-command"
                 "flakes"

@@ -65,7 +65,7 @@ let
   '';
 
   settings = {
-    model = "claude-opus-4-6";
+    model = "default";
     hooks = {
       PreToolUse = [
         {
