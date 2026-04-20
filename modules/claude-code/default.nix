@@ -65,7 +65,6 @@ let
   '';
 
   settings = {
-    model = "default";
     hooks = {
       PreToolUse = [
         {
