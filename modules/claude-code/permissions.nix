@@ -185,6 +185,7 @@ in
               conservativeAsk;
         in
         {
+          defaultMode = "auto";
           allow = profileAllow ++ (lib.optionals cfg.enableDocker dockerAllow);
           ask = profileAsk ++ (lib.optionals cfg.enableDocker dockerAsk);
           deny = denyList;
