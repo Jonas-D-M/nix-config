@@ -20,6 +20,6 @@
   ];
 
   home.file.".nvmrc" = {
-    text = "20\n";
+    text = "22\n";
   };
 }
