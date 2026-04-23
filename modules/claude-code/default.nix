@@ -28,6 +28,9 @@ let
     in
     "${script}/bin/git-push-guard";
 
+  gsdHooksDir = "${config.home.homeDirectory}/.claude/hooks";
+  mkGsdNodeHook = file: ''node "${gsdHooksDir}/${file}"'';
+
   autoCommitScript = pkgs.writeShellScript "claude-auto-commit" ''
     git rev-parse --git-dir > /dev/null 2>&1 || exit 0
     { ! git diff --quiet || ! git diff --cached --quiet; } || exit 0
@@ -65,7 +68,21 @@ let
   '';
 
   settings = {
+    statusLine = {
+      type = "command";
+      command = mkGsdNodeHook "gsd-statusline.js";
+    };
     hooks = {
+      SessionStart = [
+        {
+          hooks = [
+            {
+              type = "command";
+              command = mkGsdNodeHook "gsd-check-update.js";
+            }
+          ];
+        }
+      ];
       PreToolUse = [
         {
           matcher = "Bash";
@@ -73,6 +90,26 @@ let
             {
               type = "command";
               command = gitPushGuard;
+            }
+          ];
+        }
+        {
+          matcher = "Write|Edit";
+          hooks = [
+            {
+              type = "command";
+              command = mkGsdNodeHook "gsd-prompt-guard.js";
+              timeout = 5;
+            }
+          ];
+        }
+        {
+          matcher = "Write|Edit";
+          hooks = [
+            {
+              type = "command";
+              command = mkGsdNodeHook "gsd-read-guard.js";
+              timeout = 5;
             }
           ];
         }
@@ -84,6 +121,26 @@ let
             {
               type = "command";
               command = worktreeDeps;
+            }
+          ];
+        }
+        {
+          matcher = "Bash|Edit|Write|MultiEdit|Agent|Task";
+          hooks = [
+            {
+              type = "command";
+              command = mkGsdNodeHook "gsd-context-monitor.js";
+              timeout = 10;
+            }
+          ];
+        }
+        {
+          matcher = "Read";
+          hooks = [
+            {
+              type = "command";
+              command = mkGsdNodeHook "gsd-read-injection-scanner.js";
+              timeout = 5;
             }
           ];
         }

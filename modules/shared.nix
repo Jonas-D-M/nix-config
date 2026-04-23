@@ -15,6 +15,7 @@ let
     curl
     wget
     gnupg
+    gnumake
     unzip
     zip
     p7zip
