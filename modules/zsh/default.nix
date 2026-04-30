@@ -17,6 +17,8 @@
   ]
   ++ lib.optionals pkgs.stdenv.isDarwin [
     "/Applications/Obsidian.app/Contents/MacOS"
+    "/opt/homebrew/bin"
+    "/opt/homebrew/sbin"
   ];
 
   programs.zsh = {

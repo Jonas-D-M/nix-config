@@ -101,6 +101,8 @@ in
 
     homebrew = {
       enable = true;
+      taps = [ "supabase/tap" ];
+      brews = [ "supabase" ];
       casks = [
         "wezterm"
         "visual-studio-code"
