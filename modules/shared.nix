@@ -22,6 +22,7 @@ let
     jq
     yq-go
     ripgrep
+    pv
 
     # Dev
     php83
