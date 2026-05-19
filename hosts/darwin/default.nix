@@ -121,6 +121,7 @@ in
         "chatgpt"
         "claude"
         "bitwarden"
+        "copilot-cli"
       ]
       ++ lib.optionals cfg.microsoft-office.enable [
         "microsoft-excel"
