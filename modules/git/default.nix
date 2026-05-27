@@ -14,6 +14,8 @@
 
       pull.ff = "only";
 
+      push.autoSetupRemote = true;
+
       # SSH commit signing (global)
       gpg = {
         format = "ssh";
