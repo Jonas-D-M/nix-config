@@ -1,4 +1,12 @@
 return {
+  -- LazyVim defaults to snacks.explorer; we use neo-tree (on the right) instead.
+  {
+    "folke/snacks.nvim",
+    opts = {
+      explorer = { enabled = false },
+    },
+  },
+
   -- File explorer on the right side, VS Code style.
   {
     "nvim-neo-tree/neo-tree.nvim",
@@ -7,6 +15,13 @@ return {
         position = "right",
         width = 32,
       },
+      filesystem = {
+        hijack_netrw_behavior = "open_default",
+      },
+    },
+    keys = {
+      { "<leader>e", "<cmd>Neotree toggle<cr>", desc = "Explorer (toggle)" },
+      { "<leader>E", "<cmd>Neotree reveal<cr>", desc = "Explorer (reveal file)" },
     },
   },
 
