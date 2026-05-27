@@ -37,6 +37,22 @@
       neofetch = "fastfetch";
       nix-cleanup = "nix-collect-garbage --delete-older-than 30d";
       kloot = "claude";
+
+      # git
+      gd = "git diff";
+      gdc = "git diff --cached";
+      gs = "git status --short";
+      ga = "git add -vu";
+      gA = "git add -vA";
+      gc = "git commit";
+      gcm = "git commit -m";
+      gca = "git commit -a";
+      gcam = "git commit -am";
+      gco = "git checkout";
+      gcob = "git checkout -b";
+      gp = "git pull";
+      gpp = "git pull && git push";
+      gl = ''git log --graph --abbrev-commit --decorate --date=relative --format=format:"%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)" --all'';
     };
     initContent = ''
       # --- fnm (Fast Node Manager) ---
