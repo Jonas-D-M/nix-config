@@ -19,17 +19,17 @@
         AddKeysToAgent yes
     '';
 
-    matchBlocks = {
+    settings = {
       "*" = {
-        forwardAgent = false;
+        ForwardAgent = false;
       };
 
       "ssh.dev.azure.com" = {
-        hostname = "ssh.dev.azure.com";
-        user = "git";
-        identitiesOnly = true;
-        identityFile = [ "${config.home.homeDirectory}/.ssh/id_rsa_azure_devops" ];
-        extraOptions.AddKeysToAgent = "yes";
+        HostName = "ssh.dev.azure.com";
+        User = "git";
+        IdentitiesOnly = true;
+        IdentityFile = [ "${config.home.homeDirectory}/.ssh/id_rsa_azure_devops" ];
+        AddKeysToAgent = "yes";
       };
     };
   };
