@@ -8,7 +8,7 @@ local appearance = wezterm.gui.get_appearance()
 
 local config     = {
   font = wezterm.font {
-    family = "JetBrains Mono",
+    family = "JetBrainsMono Nerd Font",
     weight = "Medium",
   },
 
