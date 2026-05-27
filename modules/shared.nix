@@ -65,6 +65,7 @@ in
     ./node
     ./colima
     ./linearmouse
+    ./neovim
     ./vscode
     ./rtk
     ./gsd2

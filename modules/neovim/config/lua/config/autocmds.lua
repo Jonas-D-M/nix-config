@@ -1,0 +1,2 @@
+-- LazyVim defaults are auto-loaded; add overrides here.
+-- https://www.lazyvim.org/configuration/autocmds

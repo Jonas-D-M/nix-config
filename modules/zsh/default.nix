@@ -7,7 +7,7 @@
 {
   home.sessionVariables = {
     _ZO_DOCTOR = "0";
-    EDITOR = "code --wait";
+    EDITOR = lib.mkDefault "code --wait";
   };
 
   home.sessionPath = [
