@@ -68,6 +68,7 @@ let
   '';
 
   settings = {
+    includeCoAuthoredBy = false;
     statusLine = {
       type = "command";
       command = mkGsdNodeHook "gsd-statusline.js";
