@@ -145,7 +145,9 @@ in
 
     programs.openfortivpn = {
       enable = true;
-      createAlias = true;
+      vpns = {
+        secondary = { };
+      };
     };
   };
 }
