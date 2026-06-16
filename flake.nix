@@ -105,6 +105,7 @@
                   ./modules/shared.nix
                 ];
                 custom.services.colima.enable = true;
+                custom.services.colima.sshAgent = true;
                 custom.claudeCode.enableDocker = true;
               };
 
