@@ -69,6 +69,16 @@ let
 
   settings = {
     includeCoAuthoredBy = false;
+    env = {
+      # Disable all non-essential network traffic in one flag: session quality
+      # surveys, telemetry, Sentry error reporting, the transcript-share
+      # follow-up, and the /feedback command. The WebFetch domain safety check
+      # is unaffected (it has its own opt-out).
+      CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = "1";
+      # claude-code is pinned by Nix; stop the built-in autoupdater from
+      # fighting the package version.
+      DISABLE_AUTOUPDATER = "1";
+    };
     statusLine = {
       type = "command";
       command = mkGsdNodeHook "gsd-statusline.js";
