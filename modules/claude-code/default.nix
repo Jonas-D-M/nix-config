@@ -78,6 +78,9 @@ let
       # claude-code is pinned by Nix; stop the built-in autoupdater from
       # fighting the package version.
       DISABLE_AUTOUPDATER = "1";
+      # Strip Anthropic and cloud-provider credentials from sandboxed Bash
+      # subprocess environments so a compromised command cannot read them.
+      CLAUDE_CODE_SUBPROCESS_ENV_SCRUB = "1";
     };
     statusLine = {
       type = "command";
@@ -191,13 +194,21 @@ let
         allowWrite = [ "." ] ++ lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
         allowRead = lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
         denyRead = [
-          ".env"
-          ".env.local"
-          ".env.development"
-          ".env.production"
-          ".env.staging"
-          ".env.test"
+          # High-value secrets the default read policy would otherwise expose
+          # to any sandboxed subprocess. None of these are needed by Bash, so
+          # denying them is pure hardening (esp. the SOPS Age key that decrypts
+          # every secret in this repo). Absolute paths so they resolve here
+          # rather than under ~/.claude (user-settings relative-path root).
+          "~/.ssh"
+          "~/.aws"
+          "~/.config/sops/age/keys.txt"
+          "~/.config/gh"
           "/etc/shadow"
+          # NOTE: project .env files are NOT denied here. Bare relative paths in
+          # this user-scope settings file resolve under ~/.claude, not the
+          # project, so a ".env" entry would protect nothing. To deny a
+          # project's .env from sandboxed subprocesses, add a denyRead to that
+          # repo's own .claude/settings.json, where "." resolves to its root.
         ];
       };
       network = {
