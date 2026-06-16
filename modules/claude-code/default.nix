@@ -205,6 +205,17 @@ let
       };
     };
     permissions = config.custom.claudeCode._resolvedPermissions;
+    extraKnownMarketplaces = {
+      mesco = {
+        source = {
+          source = "github";
+          repo = "PRF-FSDT/mesco-claude-plugins";
+        };
+      };
+    };
+    enabledPlugins = {
+      "mesco-conventions@mesco" = true;
+    };
   };
 in
 {
