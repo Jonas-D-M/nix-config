@@ -213,6 +213,9 @@ let
       };
       network = {
         allowedDomains = [ "*" ];
+        # Let sandboxed commands reach localhost on any port (e.g. local dev
+        # servers); allowedDomains does not cover loopback by itself.
+        allowLocalBinding = true;
       };
     };
     permissions = config.custom.claudeCode._resolvedPermissions;
