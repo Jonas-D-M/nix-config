@@ -35,7 +35,12 @@ let
 
     # containers / k8s
     kubectl
-    kubernetes-helm
+    # checkPhase in this nixpkgs rev references cmd/helm/dependency_build_test.go,
+    # which moved under pkg/cmd/ in helm 4.2.0, so the build's substituteInPlace
+    # fails. Skip the broken tests until nixpkgs fixes the derivation.
+    (kubernetes-helm.overrideAttrs (_: {
+      doCheck = false;
+    }))
 
     # extras
     krew
