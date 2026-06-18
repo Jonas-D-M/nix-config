@@ -182,6 +182,11 @@ let
         "home-manager:*"
         "brew:*"
         "gh:*"
+        # git runs unsandboxed so commit signing can read the private signing
+        # key. This keeps the ~/.ssh denyRead below fully intact for every
+        # other (less-trusted) command rather than punching a key-exposing
+        # hole in it. git is trusted core VCS tooling, like gh above.
+        "git:*"
       ]
       ++ lib.optionals cfg.enableDocker [
         "docker:*"
