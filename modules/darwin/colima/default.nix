@@ -1,5 +1,6 @@
-# modules/colima/default.nix
-# Darwin-only: Colima Docker runtime + launchd auto-start
+# modules/darwin/colima/default.nix
+# Darwin-only HM module: Colima Docker runtime + launchd auto-start.
+# Imported via hosts/darwin's home-manager.users (not shared.nix).
 {
   config,
   lib,

@@ -42,7 +42,11 @@ in
       vscode-marketplace-release = pkgs.vscode-marketplace-release;
     };
     home-manager.users.${userName} = {
-      imports = [ ../../modules/shared.nix ];
+      imports = [
+        ../../modules/shared.nix
+        # colima is macOS-only, so it's imported here rather than in shared.nix
+        ../../modules/darwin/colima
+      ];
       # mkForce needed: useUserPackages makes nix-darwin common.nix set homeDirectory = null
       home.homeDirectory = lib.mkForce "/Users/${userName}";
       custom.services.colima.enable = true;

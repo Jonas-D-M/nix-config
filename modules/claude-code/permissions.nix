@@ -159,8 +159,10 @@ in
 
     dockerSocket = lib.mkOption {
       type = lib.types.str;
-      default = config.custom.services.colima.socketPath;
-      description = "Path to the Docker daemon socket for sandbox filesystem access (defaults to Colima's socket).";
+      # Self-contained literal: claude-code is cross-platform, so it can't depend
+      # on the darwin-only colima module. Matches Colima's default socket path.
+      default = "${config.home.homeDirectory}/.colima/default/docker.sock";
+      description = "Path to the Docker daemon socket for sandbox filesystem access.";
     };
 
     _resolvedPermissions = lib.mkOption {

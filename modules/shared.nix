@@ -74,7 +74,6 @@ in
     ./node
     ./gh
     ./direnv
-    ./colima
     ./linearmouse
     ./neovim
     ./vscode

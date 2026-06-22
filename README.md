@@ -221,7 +221,7 @@ Enables the `openfortivpn` Home Manager program and creates a shell alias.
 
 #### `colima`
 
-Docker runtime for macOS via Lima VM (no Docker Desktop). Lives at `modules/colima` and is guarded by `mkIf (cfg.enable && pkgs.stdenv.isDarwin)`. Defined as a custom option (`custom.services.colima.enable`) and enabled from the flake's darwin configuration.
+Docker runtime for macOS via Lima VM (no Docker Desktop). Lives at `modules/darwin/colima` and is guarded by `mkIf (cfg.enable && pkgs.stdenv.isDarwin)`. Defined as a custom option (`custom.services.colima.enable`); imported and enabled from the darwin host (`hosts/darwin`), not `shared.nix`.
 
 When enabled:
 
