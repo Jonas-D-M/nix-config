@@ -37,9 +37,8 @@ Defined in `modules/shared.nix`. Available options:
 config.custom = {
   user                # username (default "jonas")
   extraHomePackages   # per-host package additions
-  stateVersion        # Home Manager version (default "25.05")
-  homeStateVersion    # override home version
-  systemStateVersion  # override system version
+  stateVersion        # base Home Manager state version (default "25.05")
+  homeStateVersion    # override home version (defaults to stateVersion)
 };
 ```
 

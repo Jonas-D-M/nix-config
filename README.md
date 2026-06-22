@@ -266,9 +266,8 @@ To add a new secret:
 | --------------------------- | ----------- | ----------------------- | ------------------------------------------------------ |
 | `custom.user`               | `str`       | `"jonas"`               | Username used by modules that need it                  |
 | `custom.extraHomePackages`  | `[package]` | `[]`                    | Packages appended to the base list for a specific host |
-| `custom.stateVersion`       | `str`       | `"25.05"`               | Base version for both home and system                  |
-| `custom.homeStateVersion`   | `str`       | inherits `stateVersion` | Override home version independently                    |
-| `custom.systemStateVersion` | `str`       | inherits `stateVersion` | Override system version independently                  |
+| `custom.stateVersion`       | `str`       | `"25.05"`               | Base Home Manager state version                        |
+| `custom.homeStateVersion`   | `str`       | inherits `stateVersion` | Override the home version independently                |
 
 Host files use `lib.mkAfter` when appending to lists to ensure merge ordering is respected. Individual modules add their own sub-namespaces (e.g. `custom.services.colima`, `custom.darwin.homebrew`).
 
