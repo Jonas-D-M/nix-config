@@ -156,13 +156,13 @@ Split into two files:
 - Azure DevOps (`ssh.dev.azure.com`) always uses `id_rsa_azure_devops`
 - Agent forwarding is off globally
 
-**`keygen.nix`** — activation scripts that generate keys if they do not already exist (never overwrite):
+**`keys.nix`** — the SSH key registry: the single list of managed keys that drives generation, `allowed_signers`, host routing, and git signing. **`keygen.nix`** — one activation script (`sshKeys`) that generates any registry key not already present (never overwrite):
 
 - `id_ed25519` — personal (ed25519)
 - `id_ed25519_work` — work (ed25519)
 - `id_rsa_azure_devops` — Azure DevOps requires RSA, so this is 4096-bit RSA
 
-After generation, `ensurePubKeys` derives the `.pub` files and writes `~/.ssh/allowed_signers` for Git signature verification.
+The same script then derives the `.pub` files and writes `~/.ssh/allowed_signers` — only the keys that sign commits (`id_ed25519`, `id_ed25519_work`) appear there.
 
 #### `wezterm`
 
@@ -282,13 +282,12 @@ The SSH key chain:
 
 ```
 writeBoundary
-  └─ generateSshKeys    (creates ~/.ssh, generates missing keys)
-       └─ ensurePubKeys (derives .pub files, writes allowed_signers)
+  └─ sshKeys  (creates ~/.ssh, generates missing keys, derives .pub, writes allowed_signers)
 ```
 
-`writeBoundary` is a built-in Home Manager marker meaning "all managed files have been written". Keygen runs after this so `~/.ssh` exists. `ensurePubKeys` runs after keygen because it needs the private keys to derive public keys.
+`writeBoundary` is a built-in Home Manager marker meaning "all managed files have been written". `sshKeys` runs after this so `~/.ssh` exists; within it, key generation precedes `.pub` derivation by line order — no cross-script dependency to get wrong.
 
-If you add an activation script that depends on a decrypted secret, use `entryAfter [ "sops-nix" ]`. If it also needs SSH keys, use `entryAfter [ "sops-nix" "ensurePubKeys" ]`. A missing dependency here means the script runs before its inputs are ready — the failure mode is a silent missing file, not a loud error.
+If you add an activation script that depends on a decrypted secret, use `entryAfter [ "sops-nix" ]`. If it also needs SSH keys, use `entryAfter [ "sops-nix" "sshKeys" ]`. A missing dependency here means the script runs before its inputs are ready — the failure mode is a silent missing file, not a loud error.
 
 ---
 

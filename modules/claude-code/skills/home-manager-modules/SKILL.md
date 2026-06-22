@@ -79,8 +79,7 @@ home.activation.myScript = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
 
 Key ordering constraints in this repo:
 - `writeBoundary` (built-in) — all files written
-- `generateSshKeys` — decrypts SSH keys from SOPS
-- `ensurePubKeys` — generates `.pub` files and `allowed_signers`
+- `sshKeys` — generates any missing SSH keys, their `.pub` files, and `allowed_signers` (one script, driven by the SSH key registry in `modules/ssh/keys.nix`)
 
 Always use `entryAfter` to declare dependencies.
 

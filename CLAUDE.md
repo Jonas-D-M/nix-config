@@ -51,11 +51,11 @@ config.custom = {
 
 - Encrypted with SOPS + Age. Age key lives at `~/.config/sops/age/keys.txt`, retrieved from Bitwarden during bootstrap.
 - Encrypted files: `secrets/*.enc` (JSON with `data` key).
-- SSH keys are decrypted to `~/.ssh/id_ed25519*`; activation scripts generate `.pub` companions and `allowed_signers` for Git SSH signing.
+- SSH keys live at `~/.ssh/id_ed25519*`; a single activation script (`sshKeys`, driven by the SSH key registry in `modules/ssh/keys.nix`) generates any missing keys, their `.pub` companions, and `allowed_signers` for Git SSH signing.
 
 ### Activation Script Ordering
 
-Scripts use `lib.hm.dag.entryAfter`. Key generation (`generateSshKeys`) runs after `writeBoundary`, then `ensurePubKeys` runs after `generateSshKeys`. Breaking this ordering leaves keys or directories missing.
+Scripts use `lib.hm.dag.entryAfter`. SSH key generation, `.pub` derivation, and `allowed_signers` assembly all run in one `sshKeys` script after `writeBoundary`, fed by the SSH key registry in `modules/ssh/keys.nix` — within that script, ordering is line order. Other scripts (e.g. `createWorkDir`) also run after `writeBoundary`, the marker meaning all managed files are on disk.
 
 ## Key Conventions
 

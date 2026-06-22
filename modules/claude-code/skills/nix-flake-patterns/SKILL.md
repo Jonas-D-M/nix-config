@@ -75,7 +75,7 @@ home.activation.myScript = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
 '';
 ```
 
-Common ordering: `writeBoundary` -> `generateSshKeys` -> `ensurePubKeys`.
+Common ordering: `writeBoundary` -> `sshKeys` (generate keys, derive `.pub`, write `allowed_signers` — all in one script).
 
 ## Platform Conditionals
 
