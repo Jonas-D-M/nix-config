@@ -44,8 +44,10 @@ in
     home-manager.users.${userName} = {
       imports = [
         ../../modules/shared.nix
-        # colima is macOS-only, so it's imported here rather than in shared.nix
+        # colima and linearmouse are macOS-only HM modules, imported here
+        # rather than in shared.nix.
         ../../modules/darwin/colima
+        ../../modules/darwin/linearmouse/home.nix
       ];
       # mkForce needed: useUserPackages makes nix-darwin common.nix set homeDirectory = null
       home.homeDirectory = lib.mkForce "/Users/${userName}";

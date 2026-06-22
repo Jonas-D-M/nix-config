@@ -1,5 +1,6 @@
-# modules/linearmouse/default.nix
-# Darwin-only HM module: LaunchAgent + config seeding
+# modules/darwin/linearmouse/home.nix
+# Darwin-only HM module: LaunchAgent + config seeding.
+# Companion to ./default.nix (the system-level Homebrew/trackpad module).
 {
   config,
   lib,
@@ -13,7 +14,7 @@ let
     sleep 5
     exec /Applications/LinearMouse.app/Contents/MacOS/LinearMouse
   '';
-  defaultConfigSrc = ../darwin/linearmouse/config.json;
+  defaultConfigSrc = ./config.json;
 in
 {
   config = lib.mkIf pkgs.stdenv.isDarwin {

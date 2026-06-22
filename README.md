@@ -231,10 +231,10 @@ When enabled:
 
 #### `linearmouse`
 
-Mouse configuration for macOS via LinearMouse. Split into two modules:
+Mouse configuration for macOS via LinearMouse. Both halves live under `modules/darwin/linearmouse/`:
 
-- **`modules/linearmouse`** (Home Manager): registers a launchd agent that launches LinearMouse at login (with a 5-second delay for WindowServer readiness) and seeds a default config to `~/.config/linearmouse/linearmouse.json` if none exists. Source config lives at `modules/darwin/linearmouse/config.json`.
-- **`modules/darwin/linearmouse`** (nix-darwin): installs LinearMouse via Homebrew and sets trackpad natural scrolling. Controlled by `custom.services.linearmouse.enable`.
+- **`home.nix`** (Home Manager): registers a launchd agent that launches LinearMouse at login (with a 5-second delay for WindowServer readiness) and seeds a default config to `~/.config/linearmouse/linearmouse.json` if none exists, from the co-located `config.json`. Imported by the darwin host's `home-manager.users`.
+- **`default.nix`** (nix-darwin): installs LinearMouse via Homebrew and sets trackpad natural scrolling. Controlled by `custom.services.linearmouse.enable`.
 
 ---
 

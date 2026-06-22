@@ -74,7 +74,6 @@ in
     ./node
     ./gh
     ./direnv
-    ./linearmouse
     ./neovim
     ./vscode
     ./rtk
