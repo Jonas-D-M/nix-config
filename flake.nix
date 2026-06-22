@@ -70,7 +70,7 @@
 
         modules = [
           ./modules/shared.nix
-          ./hosts/popos.nix
+          ./hosts/popos
         ];
       };
 

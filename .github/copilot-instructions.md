@@ -10,7 +10,7 @@ MacBook and a Pop!\_OS (x86_64) desktop.
 flake.nix
   └─ modules/shared.nix   (the hub: identity, base packages, config.custom, imports every feature module)
        ├─ hosts/darwin/   (macOS, nix-darwin: Dock, Finder, Homebrew, Touch ID)
-       └─ hosts/popos.nix (Linux, Home Manager: GNOME/dconf, wallpapers)
+       └─ hosts/popos/   (Linux, Home Manager: GNOME/dconf, wallpapers)
 ```
 
 - `flake.nix` exposes two outputs: `homeConfigurations."jonas"` (Linux, standalone

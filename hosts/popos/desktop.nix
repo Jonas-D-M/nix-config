@@ -1,31 +1,20 @@
-# hosts/popos.nix
+# hosts/popos/desktop.nix
+# GNOME / Pop Shell desktop settings (dconf) and wallpaper sync.
 {
   config,
-  pkgs,
-  lib,
   ...
 }:
 let
   # sync the wallpaper directory from your repo to ~/.local/share/backgrounds/w11
   wallpaperDir = "${config.home.homeDirectory}/.local/share/backgrounds/w11";
-
   wallpaperFile = "${wallpaperDir}/img22.jpg";
 in
 {
-  targets.genericLinux.enable = true;
-  fonts.fontconfig.enable = true;
-
   home.file.".local/share/backgrounds/w11" = {
-    source = ../media/wallpapers/w11;
+    source = ../../media/wallpapers/w11;
     recursive = true;
   };
 
-  home.packages = lib.mkAfter (
-    with pkgs;
-    [
-      docker
-    ]
-  );
   dconf.settings = {
     # Theme preference override (Pop defaults to dark)
     "org/gnome/desktop/interface" = {

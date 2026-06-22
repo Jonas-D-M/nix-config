@@ -26,7 +26,7 @@ There are no tests beyond a successful `nix build` dry-run.
 ```
 flake.nix
   └─ modules/shared.nix  (user identity, packages, programs, activation scripts, imports all feature modules)
-       └─ hosts/darwin/  or  hosts/popos.nix  (platform-specific overrides)
+       └─ hosts/darwin/  or  hosts/popos/  (platform-specific overrides)
 ```
 
 - **`modules/shared.nix`** is the main hub. User identity, stateVersion, and all feature modules are imported from here.

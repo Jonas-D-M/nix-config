@@ -52,7 +52,7 @@ The configuration is layered. Each layer adds specificity:
 flake.nix
   └─ modules/shared.nix   (identity, packages, programs, all feature modules)
        └─ hosts/darwin/   (macOS-only: system settings, Homebrew, launchd)
-       └─ hosts/popos.nix (Linux-only: GNOME/dconf settings)
+       └─ hosts/popos/   (Linux-only: GNOME/dconf settings)
 ```
 
 #### `flake.nix` — the entry point
@@ -107,9 +107,9 @@ On macOS, nix-darwin owns the outer evaluation. This gives access to system-leve
 
 The host config is split across `hosts/darwin/`: `default.nix` (flake/Home-Manager wiring, identity, per-host toggles), `system.nix` (the `system.defaults` above, Touch ID, power), and `homebrew.nix`. It also imports `modules/darwin/linearmouse` (system-level: Homebrew install + trackpad natural scroll).
 
-#### Linux (`hosts/popos.nix`)
+#### Linux (`hosts/popos/`)
 
-On Pop!\_OS there is no system-level management — only Home Manager. Platform-specific config is purely user-space:
+On Pop!\_OS there is no system-level management — only Home Manager. Config is split across `hosts/popos/`: `default.nix` (targets, fonts, packages) and `desktop.nix` (dconf + wallpaper). Platform-specific config is purely user-space:
 
 - **dconf** settings drive all GNOME/Pop Shell behaviour: color scheme (light), wallpaper, lock screen, touchpad, keyboard shortcuts, app favorites, workspace navigation
 - **Wallpaper** files are synced from `media/wallpapers/w11/` into `~/.local/share/backgrounds/w11/` via `home.file`
