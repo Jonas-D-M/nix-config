@@ -97,7 +97,7 @@ On macOS, nix-darwin owns the outer evaluation. This gives access to system-leve
 
 - **Touch ID for sudo** (`security.pam.services.sudo_local.touchIdAuth` + `reattach`)
 - **Networking** — sets `computerName`, `hostName`, and `localHostName`
-- **Homebrew** — GUI apps and casks that are not in nixpkgs or better installed as native `.app` bundles (WezTerm, VS Code, Chrome, Slack, Spotify, DBeaver, Postman, Figma, Obsidian, Claude, ChatGPT, Bitwarden, etc.). `onActivation.cleanup = "zap"` means any cask not listed in the config will be removed on the next apply. Microsoft Office casks are controlled by the `custom.darwin.homebrew.microsoft-office.enable` option (default `true`).
+- **Homebrew** — the Homebrew install itself is managed declaratively by `nix-homebrew` (it installs and owns `/opt/homebrew`, adopting an existing install via `autoMigrate`), so a fresh Mac needs no manual `brew` bootstrap — `darwin-rebuild` sets it up. On top of that, the nix-darwin `homebrew` module installs GUI casks better delivered as native `.app` bundles (WezTerm, VS Code, Chrome, Slack, Spotify, DBeaver, Postman, Figma, Obsidian, Claude, ChatGPT, Bitwarden, etc.). `onActivation.cleanup = "zap"` removes any cask not listed on the next apply. Microsoft Office casks are gated by `custom.darwin.homebrew.microsoft-office.enable` (default `true`). Homebrew config lives in `hosts/darwin/homebrew.nix`.
 - **Dock, Finder, keyboard repeat, trackpad, Control Center** via `system.defaults`
 - **Startup chime** disabled
 - **Power settings** — the machine never sleeps when on power; auto-restart after freeze is enabled
@@ -105,7 +105,7 @@ On macOS, nix-darwin owns the outer evaluation. This gives access to system-leve
 - **Guest login** disabled
 - **nix-darwin version** pinned at `system.stateVersion = 6`
 
-The host also imports `modules/darwin/linearmouse` (system-level: Homebrew install + trackpad natural scroll).
+The host config is split across `hosts/darwin/`: `default.nix` (flake/Home-Manager wiring, identity, per-host toggles), `system.nix` (the `system.defaults` above, Touch ID, power), and `homebrew.nix`. It also imports `modules/darwin/linearmouse` (system-level: Homebrew install + trackpad natural scroll).
 
 #### Linux (`hosts/popos.nix`)
 

@@ -3,6 +3,7 @@
 {
   config,
   lib,
+  userName,
   ...
 }:
 let
@@ -18,6 +19,15 @@ in
   };
 
   config = {
+    # nix-homebrew installs and owns the Homebrew prefix declaratively, so a
+    # fresh Mac needs no manual `brew` install. autoMigrate adopts an existing
+    # /opt/homebrew on the first switch instead of failing.
+    nix-homebrew = {
+      enable = true;
+      user = userName;
+      autoMigrate = true;
+    };
+
     homebrew = {
       enable = true;
       taps = [ "supabase/tap" ];
