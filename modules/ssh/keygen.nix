@@ -4,9 +4,26 @@
   lib,
   ...
 }:
+let
+  keys = config.custom.ssh.keys;
+  signers = config.custom.ssh.signers;
+  ssh-keygen = "${pkgs.openssh}/bin/ssh-keygen";
+
+  genKeyLine = k: ''gen_key "$HOME/.ssh/${k.name}" ${lib.escapeShellArg k.comment} "${k.type}"'';
+  genPubLine = k: ''gen_pub "$HOME/.ssh/${k.name}"'';
+  signerBlock = k: ''
+    if [ -f "$HOME/.ssh/${k.name}.pub" ]; then
+      printf '%s ' ${lib.escapeShellArg k.signs} >> "$tmp_signers"
+      cat "$HOME/.ssh/${k.name}.pub" >> "$tmp_signers"
+      printf "\n" >> "$tmp_signers"
+      wrote_any=true
+    fi'';
+in
 {
-  # Generate keys if they don't exist (never overwrite)
-  home.activation.generateSshKeys = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  # One activation script driven by the SSH key registry: generate any missing
+  # keys (never overwrite), derive their .pub, then assemble allowed_signers.
+  # Ordering is line-order within one script — no cross-script DAG dependency.
+  home.activation.sshKeys = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     set -euo pipefail
     mkdir -p "$HOME/.ssh"
     chmod 700 "$HOME/.ssh"
@@ -22,28 +39,18 @@
       if [ ! -f "$keyfile" ]; then
         echo "Generating SSH key ($keytype): $keyfile"
         umask 177
-        ${pkgs.openssh}/bin/ssh-keygen -q -t "$keytype" "''${extra_flags[@]}" -N "" -C "$comment" -f "$keyfile"
+        ${ssh-keygen} -q -t "$keytype" "''${extra_flags[@]}" -N "" -C "$comment" -f "$keyfile"
         chmod 600 "$keyfile"
       else
         echo "Skipping generation: $keyfile already exists"
       fi
     }
 
-    gen_key "$HOME/.ssh/id_ed25519" "${config.home.username}.personal"
-    gen_key "$HOME/.ssh/id_ed25519_work" "${config.home.username}.work"
-    # Azure DevOps requires RSA keys, so we generate a separate one for that.
-    gen_key "$HOME/.ssh/id_rsa_azure_devops" "${config.home.username}.work.azure_devops" rsa
-  '';
-
-  # Create .pub and allowed_signers from the keys
-  home.activation.ensurePubKeys = lib.hm.dag.entryAfter [ "generateSshKeys" ] ''
-    set -euo pipefail
-
     gen_pub() {
       key="$1"; pub="$1.pub"
       if [ -f "$key" ] && [ ! -f "$pub" ]; then
         tmp_pub="$(mktemp)"
-        ${pkgs.openssh}/bin/ssh-keygen -y -f "$key" > "$tmp_pub" \
+        ${ssh-keygen} -y -f "$key" > "$tmp_pub" \
           && install -m 0644 "$tmp_pub" "$pub" \
           || { echo "ssh-keygen failed for $key" >&2; rm -f "$tmp_pub"; exit 1; }
         rm -f "$tmp_pub"
@@ -51,23 +58,15 @@
       [ -f "$pub" ] && chmod 644 "$pub" || true
     }
 
-    gen_pub "$HOME/.ssh/id_ed25519"
-    gen_pub "$HOME/.ssh/id_ed25519_work"
-    gen_pub "$HOME/.ssh/id_rsa_azure_devops"
+    # Generate any missing keys (registry order).
+    ${lib.concatMapStringsSep "\n    " genKeyLine keys}
 
+    # Derive public keys.
+    ${lib.concatMapStringsSep "\n    " genPubLine keys}
+
+    # Assemble allowed_signers from the keys that sign commits.
     tmp_signers="$(mktemp)"; wrote_any=false
-    if [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
-      printf "${config.home.username}.personal " >> "$tmp_signers"
-      cat "$HOME/.ssh/id_ed25519.pub" >> "$tmp_signers"
-      printf "\n" >> "$tmp_signers"
-      wrote_any=true
-    fi
-    if [ -f "$HOME/.ssh/id_ed25519_work.pub" ]; then
-      printf "${config.home.username}.work " >> "$tmp_signers"
-      cat "$HOME/.ssh/id_ed25519_work.pub" >> "$tmp_signers"
-      printf "\n" >> "$tmp_signers"
-      wrote_any=true
-    fi
+    ${lib.concatStringsSep "\n    " (map signerBlock signers)}
 
     if [ "$wrote_any" = true ]; then
       install -m 0600 "$tmp_signers" "$HOME/.ssh/allowed_signers"
