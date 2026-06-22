@@ -21,6 +21,7 @@ result-*
 .cache/
 .hm-build
 .tmp/
+.direnv/
 
 # --- macOS/Linux system clutter ---
 .DS_Store
