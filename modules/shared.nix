@@ -52,6 +52,8 @@ let
     # programs
     mysql84
 
+    codex
+    platformio
   ];
 in
 {
