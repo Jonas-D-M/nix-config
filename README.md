@@ -238,23 +238,16 @@ Mouse configuration for macOS via LinearMouse. Split into two modules:
 
 ---
 
-### 5. Secrets (SOPS + Age)
+### 5. Secrets and SSH Keys
 
-Secrets are encrypted with SOPS using an Age key. The Age private key lives at `~/.config/sops/age/keys.txt` (retrieved from Bitwarden during bootstrap — this key is never in the repo).
+This config has **no declarative secret store**. There is no `sops-nix` integration, no `secrets.nix`, and no encrypted `secrets/*.enc` files in the repo. (An earlier version used SOPS; it was removed in favour of generating keys locally.)
 
-- Encrypted secret files are stored as `secrets/*.enc` (JSON with a `data` key)
-- A `secrets.nix` file declares `sops.secrets` entries pointing to those files
-- At activation time, SOPS decrypts secrets to their target paths
-- Activation scripts that depend on decrypted secrets must declare `[ "sops-nix" ]` as a dependency (see section 7)
+What exists instead:
 
-The `SOPS_AGE_KEY_FILE` session variable points to the key location so SOPS can find it without extra flags.
+- **SSH keys are generated on the machine**, never stored or decrypted. The registry-driven `sshKeys` activation script (see the `ssh` module above) creates any missing key, derives its `.pub`, and writes `allowed_signers`. Keys are never overwritten, so each machine has its own key identity — losing a machine means re-registering its public keys with GitHub/Azure, not restoring a secret.
+- **The Age key is still restored from Bitwarden during bootstrap** and `SOPS_AGE_KEY_FILE` points at `~/.config/sops/age/keys.txt`. The `sops`, `age`, and `pass` CLIs are installed, so you can encrypt/decrypt by hand — but nothing in the Nix config depends on them.
 
-To add a new secret:
-
-1. Encrypt with `sops` using the Age recipient (`age-keygen -y keys.txt`)
-2. Store as `secrets/<name>.enc`
-3. Add a `sops.secrets` entry in `secrets.nix`
-4. Generate derived artifacts in an activation script with `entryAfter [ "sops-nix" ]`
+If you later want declarative secrets (decrypted automatically at activation), add `sops-nix` as a flake input and a `sops.secrets` module. That wiring is intentionally absent right now.
 
 ---
 
@@ -286,7 +279,7 @@ writeBoundary
 
 `writeBoundary` is a built-in Home Manager marker meaning "all managed files have been written". `sshKeys` runs after this so `~/.ssh` exists; within it, key generation precedes `.pub` derivation by line order — no cross-script dependency to get wrong.
 
-If you add an activation script that depends on a decrypted secret, use `entryAfter [ "sops-nix" ]`. If it also needs SSH keys, use `entryAfter [ "sops-nix" "sshKeys" ]`. A missing dependency here means the script runs before its inputs are ready — the failure mode is a silent missing file, not a loud error.
+If you add an activation script that needs the SSH keys, use `entryAfter [ "sshKeys" ]`. A missing dependency here means the script runs before its inputs are ready — the failure mode is a silent missing file, not a loud error. (There is no `sops-nix` node in this config; don't depend on one.)
 
 ---
 

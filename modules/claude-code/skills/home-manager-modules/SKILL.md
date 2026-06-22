@@ -88,11 +88,9 @@ Always use `entryAfter` to declare dependencies.
 - **Functions/init code**: add inside `programs.zsh.initContent` in `modules/zsh/default.nix`
 - **Environment variables**: use `home.sessionVariables` or `programs.zsh.sessionVariables`
 
-## Secrets Flow
+## Secrets and SSH Keys
 
-1. Encrypt with `sops --encrypt --age <recipient>` -> `secrets/<name>.enc`
-2. Decrypt in an activation script with `entryAfter [ "writeBoundary" ]`
-3. Age key lives at `~/.config/sops/age/keys.txt` (from Bitwarden bootstrap)
+There is no declarative secret store (no `sops-nix`, no `secrets/*.enc`). SSH keys are generated locally by the registry-driven `sshKeys` activation script — to add one, append to the registry in `modules/ssh/keys.nix`; don't hand-write a keygen script. The Age key at `~/.config/sops/age/keys.txt` (restored from Bitwarden during bootstrap) and the `sops`/`age` CLIs are available for ad-hoc manual use only.
 
 ## Work vs Personal Git Identity
 
