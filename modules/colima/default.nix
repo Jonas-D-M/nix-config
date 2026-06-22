@@ -24,6 +24,16 @@ in
   options.custom.services.colima = {
     enable = lib.mkEnableOption "Colima (Docker runtime via Lima VM + auto-start)";
 
+    socketPath = lib.mkOption {
+      type = lib.types.str;
+      readOnly = true;
+      default = "${config.home.homeDirectory}/.colima/default/docker.sock";
+      description = ''
+        Path to the Colima Docker daemon socket (derived). Single source for
+        consumers like claude-code's sandbox allowlist, so the path can't drift.
+      '';
+    };
+
     cpu = lib.mkOption {
       type = lib.types.int;
       default = 2;
@@ -68,7 +78,7 @@ in
 
     home.sessionVariables = {
       COLIMA_HOME = "${config.home.homeDirectory}/.colima";
-      DOCKER_HOST = "unix://${config.home.homeDirectory}/.colima/default/docker.sock";
+      DOCKER_HOST = "unix://${cfg.socketPath}";
     };
 
     launchd.agents.colima = {

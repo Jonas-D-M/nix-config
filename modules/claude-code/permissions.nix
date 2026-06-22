@@ -159,8 +159,8 @@ in
 
     dockerSocket = lib.mkOption {
       type = lib.types.str;
-      default = "${config.home.homeDirectory}/.colima/default/docker.sock";
-      description = "Path to the Docker daemon socket for sandbox filesystem access.";
+      default = config.custom.services.colima.socketPath;
+      description = "Path to the Docker daemon socket for sandbox filesystem access (defaults to Colima's socket).";
     };
 
     _resolvedPermissions = lib.mkOption {
