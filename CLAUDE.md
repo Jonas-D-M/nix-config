@@ -39,12 +39,13 @@ flake.nix
 
 ```nix
 config.custom = {
-  user                # username (default "jonas")
   extraHomePackages   # per-host package additions
   stateVersion        # base Home Manager state version (default "25.05")
   homeStateVersion    # override home version (defaults to stateVersion)
 }
 ```
+
+The username is a single flake-level constant (`userName` in `flake.nix`), threaded into both configs via `specialArgs`/`extraSpecialArgs` — it is not a `custom` option.
 
 ### Secrets & SSH Keys
 

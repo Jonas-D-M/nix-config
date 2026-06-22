@@ -3,6 +3,7 @@
   pkgs,
   lib,
   config,
+  userName,
   ...
 }:
 let
@@ -82,13 +83,6 @@ in
 
   # Provide a small API to override/extend from the host file.
   options.custom = {
-    user = lib.mkOption {
-      type = lib.types.str;
-      example = "jonas";
-      default = "jonas";
-      description = "Primary username for Home Manager profile.";
-    };
-
     extraHomePackages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [ ];
@@ -112,9 +106,9 @@ in
   config = {
     xdg.enable = true;
 
-    # User identity
-    home.username = cfg.user;
-    home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${cfg.user}" else "/home/${cfg.user}";
+    # User identity (username is a flake-level constant; see flake.nix)
+    home.username = userName;
+    home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${userName}" else "/home/${userName}";
     news.display = "silent";
 
     # User-level config only

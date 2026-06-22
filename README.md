@@ -257,10 +257,11 @@ If you later want declarative secrets (decrypted automatically at activation), a
 
 | Option                      | Type        | Default                 | Purpose                                                |
 | --------------------------- | ----------- | ----------------------- | ------------------------------------------------------ |
-| `custom.user`               | `str`       | `"jonas"`               | Username used by modules that need it                  |
 | `custom.extraHomePackages`  | `[package]` | `[]`                    | Packages appended to the base list for a specific host |
 | `custom.stateVersion`       | `str`       | `"25.05"`               | Base Home Manager state version                        |
 | `custom.homeStateVersion`   | `str`       | inherits `stateVersion` | Override the home version independently                |
+
+The username is not an option — it is a single `userName` constant in `flake.nix`, threaded into both configurations via `specialArgs`/`extraSpecialArgs`.
 
 Host files use `lib.mkAfter` when appending to lists to ensure merge ordering is respected. Individual modules add their own sub-namespaces (e.g. `custom.services.colima`, `custom.darwin.homebrew`).
 

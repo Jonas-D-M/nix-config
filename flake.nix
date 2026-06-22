@@ -42,6 +42,8 @@
       # Target systems
       linuxSystem = "x86_64-linux";
       darwinSystem = "aarch64-darwin";
+      # Single source for the username; threaded into both configs.
+      userName = "jonas";
       nixpkgsConfig = {
         allowUnfree = true;
       };
@@ -58,10 +60,11 @@
     {
       inherit (nix-shells) devShells;
 
-      homeConfigurations."jonas" = home-manager.lib.homeManagerConfiguration {
+      homeConfigurations.${userName} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
 
         extraSpecialArgs = {
+          inherit userName;
           vscode-marketplace-release = pkgs.vscode-marketplace-release;
         };
 
@@ -75,7 +78,12 @@
         system = darwinSystem;
 
         specialArgs = {
-          inherit nixpkgsConfig sharedOverlays darwinSystem;
+          inherit
+            nixpkgsConfig
+            sharedOverlays
+            darwinSystem
+            userName
+            ;
         };
 
         modules = [

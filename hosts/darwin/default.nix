@@ -7,6 +7,7 @@
   nixpkgsConfig,
   sharedOverlays,
   darwinSystem,
+  userName,
   ...
 }:
 {
@@ -31,12 +32,13 @@
     home-manager.useUserPackages = true;
     home-manager.backupFileExtension = "hm-backup";
     home-manager.extraSpecialArgs = {
+      inherit userName;
       vscode-marketplace-release = pkgs.vscode-marketplace-release;
     };
-    home-manager.users.jonas = {
+    home-manager.users.${userName} = {
       imports = [ ../../modules/shared.nix ];
       # mkForce needed: useUserPackages makes nix-darwin common.nix set homeDirectory = null
-      home.homeDirectory = lib.mkForce "/Users/jonas";
+      home.homeDirectory = lib.mkForce "/Users/${userName}";
       custom.services.colima.enable = true;
       custom.services.colima.sshAgent = true;
       custom.claudeCode.enableDocker = true;
@@ -47,7 +49,7 @@
     # set once; keep stable
     system.stateVersion = 6;
     # must match your Mac short username
-    system.primaryUser = "jonas";
+    system.primaryUser = userName;
 
     programs.zsh.enable = true;
 

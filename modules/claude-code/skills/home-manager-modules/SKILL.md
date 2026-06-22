@@ -35,7 +35,6 @@ Defined in `modules/shared.nix`. Available options:
 
 ```nix
 config.custom = {
-  user                # username (default "jonas")
   extraHomePackages   # per-host package additions
   stateVersion        # base Home Manager state version (default "25.05")
   homeStateVersion    # override home version (defaults to stateVersion)
