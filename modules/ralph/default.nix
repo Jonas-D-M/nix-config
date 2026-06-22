@@ -16,9 +16,21 @@
 # relaxed network settings and the prompt switches to Sail commands.
 #
 # Sandbox settings are generated from commonSettings in this file.
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 
 let
+  # SSH keys that sign commits, from the registry (modules/ssh/keys.nix) — the
+  # single source of truth. Ralph preloads these into the agent and grants the
+  # sandbox read access to them; new/renamed keys flow through automatically.
+  signingKeys = config.custom.ssh.signers;
+  sshKeyPreloadList = lib.concatMapStringsSep " " (k: "\"$HOME/.ssh/${k.name}\"") signingKeys;
+  sshKeyReadPaths = map (k: "~/.ssh/${k.name}") signingKeys;
+
   sandbox-runtime = pkgs.buildNpmPackage {
     pname = "sandbox-runtime";
     version = "0.0.42";
@@ -51,7 +63,7 @@ let
     ralph_preload_ssh_keys() {
       local loaded
       loaded=$(ssh-add -l 2>/dev/null || true)
-      for key in "$HOME/.ssh/id_ed25519" "$HOME/.ssh/id_ed25519_work"; do
+      for key in ${sshKeyPreloadList}; do
         if [ -f "$key" ] && ! echo "$loaded" | grep -qF "$key"; then
           ssh-add "$key" 2>/dev/null || true
         fi
@@ -236,9 +248,8 @@ let
         "~/.ssh/config"
         "~/.ssh/allowed_signers"
         "~/.ssh/*.pub"
-        "~/.ssh/id_ed25519"
-        "~/.ssh/id_ed25519_work"
-      ];
+      ]
+      ++ sshKeyReadPaths;
       allowWrite = [
         "."
         "/tmp"
