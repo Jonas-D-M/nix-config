@@ -122,6 +122,7 @@ in
         "claude"
         "bitwarden"
         "copilot-cli"
+        "codex-app"
       ]
       ++ lib.optionals cfg.microsoft-office.enable [
         "microsoft-excel"
