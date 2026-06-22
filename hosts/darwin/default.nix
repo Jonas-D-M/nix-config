@@ -10,6 +10,12 @@
   userName,
   ...
 }:
+let
+  # "jonas" -> "Jonas" for the display-oriented machine names below.
+  displayName =
+    lib.toUpper (builtins.substring 0 1 userName)
+    + builtins.substring 1 (builtins.stringLength userName) userName;
+in
 {
   imports = [
     ./system.nix
@@ -54,9 +60,9 @@
     programs.zsh.enable = true;
 
     networking = {
-      computerName = "Jonas's MacBook Pro";
-      hostName = "Jonas-MacBook-Pro";
-      localHostName = "jonas-mac";
+      computerName = "${displayName}'s MacBook Pro";
+      hostName = "${displayName}-MacBook-Pro";
+      localHostName = "${userName}-mac";
     };
 
     # keep system packages empty; you install via Home Manager

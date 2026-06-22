@@ -74,7 +74,7 @@
         ];
       };
 
-      darwinConfigurations."jonas-mac" = nix-darwin.lib.darwinSystem {
+      darwinConfigurations."${userName}-mac" = nix-darwin.lib.darwinSystem {
         system = darwinSystem;
 
         specialArgs = {
