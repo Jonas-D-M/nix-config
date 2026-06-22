@@ -14,6 +14,7 @@
     stylua
   ];
 
+  # Sole owner of $EDITOR across the config.
   home.sessionVariables.EDITOR = "nvim";
 
   home.shellAliases = {

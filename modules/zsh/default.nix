@@ -7,7 +7,7 @@
 {
   home.sessionVariables = {
     _ZO_DOCTOR = "0";
-    EDITOR = lib.mkDefault "code --wait";
+    # EDITOR is owned by the neovim module.
   };
 
   home.sessionPath = [
