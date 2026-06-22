@@ -12,7 +12,7 @@ set -euo pipefail
 #   ./scripts/bootstrap.sh [flakeRef] [bitwardenNoteName]
 #
 # Defaults:
-#   On Linux:     flakeRef => .#jonas-home               (homeConfigurations.*)
+#   On Linux:     flakeRef => .#jonas                    (homeConfigurations.*)
 #   On macOS:     flakeRef => .#jonas-mac                (darwinConfigurations.*)
 #   bitwardenNoteName => age-key
 
@@ -158,7 +158,7 @@ ensure_home_manager_hint
 
 # --- Bitwarden + age + sops (idempotent, no outer-shell expansions) ----------
 BW_NOTE_NAME="$BW_NOTE_NAME" AGE_KEYS_PATH="$AGE_KEYS_PATH" \
-"${NIX_CMD}" shell nixpkgs#bitwarden-cli nixpkgs#age nixpkgs#sops nixpkgs#jq -c bash -lc '
+"${NIX_CMD}" shell nixpkgs#bitwarden-cli nixpkgs#age nixpkgs#jq -c bash -lc '
   set -euo pipefail
 
   # Local copies of env vars
@@ -206,16 +206,6 @@ BW_NOTE_NAME="$BW_NOTE_NAME" AGE_KEYS_PATH="$AGE_KEYS_PATH" \
 
   echo "🔎 Age public recipient:"
   age-keygen -y "$keys_path" || true
-
-  # 4) Optional quick validation
-  if [ -f secrets/ssh.id_ed25519.enc ]; then
-    echo "🧪 Testing decryption of secrets/ssh.id_ed25519.enc …"
-    if sops -d secrets/ssh.id_ed25519.enc >/dev/null; then
-      echo "✅ Decryption OK"
-    else
-      echo "⚠️  Decryption failed (check keys / recipients)."
-    fi
-  fi
 '
 
 # --- activate (HM on Linux, nix-darwin on macOS) -----------------------------
