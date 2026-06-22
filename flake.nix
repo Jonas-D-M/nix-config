@@ -93,7 +93,6 @@
               home-manager.useUserPackages = true;
               home-manager.backupFileExtension = "hm-backup";
               home-manager.extraSpecialArgs = {
-                vscode-marketplace = pkgs.vscode-marketplace;
                 vscode-marketplace-release = pkgs.vscode-marketplace-release;
               };
 
