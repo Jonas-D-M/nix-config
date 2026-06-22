@@ -58,4 +58,14 @@ in
       }
     ];
   };
+
+  # ~/work is the work-context root that the gitdir include above and the ssh
+  # work key both key off — ensure it exists. workDir is the same registry-
+  # derived path, so this follows if the work context ever moves.
+  home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ ! -d "${workDir}" ]; then
+      echo "Creating ${workDir} directory..."
+      mkdir -p "${workDir}"
+    fi
+  '';
 }

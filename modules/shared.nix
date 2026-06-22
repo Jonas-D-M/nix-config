@@ -69,7 +69,10 @@ in
     ./ralph
     ./claude-code
     ./k9s
+    ./kubeswitch
     ./node
+    ./gh
+    ./direnv
     ./colima
     ./linearmouse
     ./neovim
@@ -124,31 +127,6 @@ in
 
     # Merge base + per-host extras
     home.packages = baseHomePackages ++ cfg.extraHomePackages;
-
-    programs.direnv = {
-      enable = true;
-      enableZshIntegration = true;
-      nix-direnv.enable = true;
-      silent = true;
-    };
-
-    programs.kubeswitch = {
-      enable = true;
-      enableZshIntegration = true;
-    };
-
-    home.activation.createWorkDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      if [ ! -d "$HOME/work" ]; then
-        echo "Creating ~/work directory..."
-        mkdir -p "$HOME/work"
-      fi
-    '';
-    programs.gh = {
-      enable = true;
-      settings = {
-        git_protocol = "ssh";
-      };
-    };
 
     programs.openfortivpn = {
       enable = true;
