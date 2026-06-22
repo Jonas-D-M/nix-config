@@ -58,7 +58,15 @@ in
         "microsoft-word"
         "microsoft-powerpoint"
       ];
-      onActivation.cleanup = "zap";
+      # On every `drb`: refresh definitions (autoUpdate), upgrade outdated
+      # casks/brews (upgrade), and remove anything no longer listed (cleanup).
+      # Casks marked auto_updates / version :latest are skipped by brew upgrade,
+      # so this won't fight apps that update themselves.
+      onActivation = {
+        autoUpdate = true;
+        upgrade = true;
+        cleanup = "zap";
+      };
     };
   };
 }
