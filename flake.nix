@@ -74,42 +74,14 @@
       darwinConfigurations."jonas-mac" = nix-darwin.lib.darwinSystem {
         system = darwinSystem;
 
+        specialArgs = {
+          inherit nixpkgsConfig sharedOverlays darwinSystem;
+        };
+
         modules = [
           ./hosts/darwin
           home-manager.darwinModules.home-manager
           nix-homebrew.darwinModules.nix-homebrew
-          (
-            { lib, pkgs, ... }:
-            {
-              nixpkgs.hostPlatform = darwinSystem;
-              nixpkgs.config = nixpkgsConfig;
-              nixpkgs.overlays = sharedOverlays;
-              nix.settings.experimental-features = [
-                "nix-command"
-                "flakes"
-              ];
-
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "hm-backup";
-              home-manager.extraSpecialArgs = {
-                vscode-marketplace-release = pkgs.vscode-marketplace-release;
-              };
-
-              # mkForce needed: useUserPackages causes nix-darwin common.nix to set homeDirectory = null
-              home-manager.users.jonas.home.homeDirectory = lib.mkForce "/Users/jonas";
-
-              home-manager.users.jonas = {
-                imports = [
-                  ./modules/shared.nix
-                ];
-                custom.services.colima.enable = true;
-                custom.services.colima.sshAgent = true;
-                custom.claudeCode.enableDocker = true;
-              };
-
-            }
-          )
         ];
       };
     };

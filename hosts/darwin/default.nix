@@ -2,6 +2,9 @@
   pkgs,
   lib,
   config,
+  nixpkgsConfig,
+  sharedOverlays,
+  darwinSystem,
   ...
 }:
 let
@@ -21,6 +24,31 @@ in
   };
 
   config = {
+    # nixpkgs + nix flake wiring (values passed from flake.nix via specialArgs)
+    nixpkgs.hostPlatform = darwinSystem;
+    nixpkgs.config = nixpkgsConfig;
+    nixpkgs.overlays = sharedOverlays;
+    nix.settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+
+    # Home Manager runs inside nix-darwin (it owns the outer evaluation).
+    home-manager.useGlobalPkgs = true;
+    home-manager.useUserPackages = true;
+    home-manager.backupFileExtension = "hm-backup";
+    home-manager.extraSpecialArgs = {
+      vscode-marketplace-release = pkgs.vscode-marketplace-release;
+    };
+    home-manager.users.jonas = {
+      imports = [ ../../modules/shared.nix ];
+      # mkForce needed: useUserPackages makes nix-darwin common.nix set homeDirectory = null
+      home.homeDirectory = lib.mkForce "/Users/jonas";
+      custom.services.colima.enable = true;
+      custom.services.colima.sshAgent = true;
+      custom.claudeCode.enableDocker = true;
+    };
+
     # nix-darwin owns nix-daemon
     nix.enable = true;
     # set once; keep stable
