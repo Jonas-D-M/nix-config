@@ -1,27 +1,20 @@
+# hosts/darwin/default.nix
+# The macOS host: flake/Home-Manager wiring, machine identity, and per-host
+# toggles. System preferences live in ./system.nix, Homebrew in ./homebrew.nix.
 {
   pkgs,
   lib,
-  config,
   nixpkgsConfig,
   sharedOverlays,
   darwinSystem,
   ...
 }:
-let
-  cfg = config.custom.darwin.homebrew;
-in
 {
   imports = [
+    ./system.nix
+    ./homebrew.nix
     ../../modules/darwin/linearmouse
   ];
-
-  options.custom.darwin.homebrew = {
-    microsoft-office.enable = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Whether to install Microsoft Office bloat via Homebrew casks.";
-    };
-  };
 
   config = {
     # nixpkgs + nix flake wiring (values passed from flake.nix via specialArgs)
@@ -53,15 +46,10 @@ in
     nix.enable = true;
     # set once; keep stable
     system.stateVersion = 6;
-
     # must match your Mac short username
     system.primaryUser = "jonas";
 
     programs.zsh.enable = true;
-
-    # renamed path for Touch ID
-    security.pam.services.sudo_local.touchIdAuth = true;
-    security.pam.services.sudo_local.reattach = true;
 
     networking = {
       computerName = "Jonas's MacBook Pro";
@@ -69,104 +57,8 @@ in
       localHostName = "jonas-mac";
     };
 
-    system = {
-      startup.chime = false;
-      defaults = {
-        CustomUserPreferences = {
-          "com.apple.Siri" = {
-            StatusMenuVisible = false; # hide Siri icon
-          };
-
-        };
-        controlcenter = {
-          BatteryShowPercentage = true;
-        };
-        NSGlobalDomain = {
-          AppleShowAllExtensions = true;
-          InitialKeyRepeat = 15;
-          KeyRepeat = 2;
-          "com.apple.mouse.tapBehavior" = 1;
-          "com.apple.trackpad.forceClick" = false;
-        };
-        dock = {
-          autohide = true;
-          showhidden = true;
-          show-recents = false;
-          static-only = false;
-          launchanim = false;
-          mineffect = "scale";
-          appswitcher-all-displays = false;
-          minimize-to-application = true;
-          persistent-apps = [
-            "/Applications/Google Chrome.app"
-            "/Applications/Visual Studio Code.app"
-            "/Applications/Spotify.app"
-            "/Applications/Microsoft Teams.app"
-            "/Applications/WezTerm.app"
-            "/Applications/DBeaver.app"
-            "/Applications/Clockify Desktop.app"
-            "/Applications/Microsoft Outlook.app"
-            "/Applications/Slack.app"
-          ];
-          persistent-others = [ ];
-        };
-        finder = {
-          AppleShowAllFiles = true;
-          FXPreferredViewStyle = "Nlsv";
-          ShowPathbar = true;
-        };
-        trackpad = {
-          Clicking = true;
-          FirstClickThreshold = 0;
-        };
-        loginwindow.GuestEnabled = false;
-      };
-
-    };
-
     # keep system packages empty; you install via Home Manager
     environment.systemPackages = [ ];
-
-    homebrew = {
-      enable = true;
-      taps = [ "supabase/tap" ];
-      brews = [ "supabase" ];
-      casks = [
-        "wezterm"
-        "visual-studio-code"
-        "spotify"
-        "google-chrome"
-        "dbeaver-community"
-        "postman"
-        "microsoft-teams"
-        "clockify"
-        "slack"
-        "microsoft-outlook"
-        "font-jetbrains-mono-nerd-font"
-        "figma"
-        "windows-app"
-        "obsidian"
-        "chatgpt"
-        "claude"
-        "bitwarden"
-        "copilot-cli"
-        "codex-app"
-      ]
-      ++ lib.optionals cfg.microsoft-office.enable [
-        "microsoft-excel"
-        "microsoft-word"
-        "microsoft-powerpoint"
-      ];
-      onActivation.cleanup = "zap";
-    };
-
-    power.sleep = {
-      computer = "never"; # keep the Mac awake when on power
-      display = "never"; # prevent screen sleep
-      harddisk = "never"; # avoid spinning down disks
-    };
-
-    power.restartAfterFreeze = true;
 
     custom.services.linearmouse.enable = true;
   };
