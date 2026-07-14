@@ -81,5 +81,19 @@ in
         cleanup = "zap";
       };
     };
+
+    # nix-homebrew relocates the Homebrew repository into the Nix store, so the
+    # standard /opt/homebrew/completions/ tree is never populated. That leaves
+    # the `_brew` completion in share/zsh/site-functions a dangling symlink
+    # (target /opt/homebrew/completions/zsh/_brew is missing), and since that
+    # dir is on zsh's fpath, compinit prints "no such file or directory" on
+    # every shell start. Prune any broken symlinks from the dir after Homebrew
+    # activation; the completion is already non-functional, so nothing is lost.
+    system.activationScripts.pruneBrewCompletions.text = ''
+      siteFns=/opt/homebrew/share/zsh/site-functions
+      if [ -d "$siteFns" ]; then
+        find "$siteFns" -maxdepth 1 -type l ! -exec test -e {} \; -print -delete || true
+      fi
+    '';
   };
 }
