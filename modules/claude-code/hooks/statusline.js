@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Claude Code statusline — vendored, GSD-free.
-// Shows: model │ current task (from todos) │ directory │ context-usage bar.
+// Shows: model │ current task (from todos) │ directory │ context-usage bar │ subscription usage.
 // Derived from the GSD statusline, stripped of all GSD-specific behaviour
 // (planning-state reader, update-check, and the context-monitor bridge file).
 
@@ -45,14 +45,40 @@ function runStatusline() {
 
         // Color based on usable context thresholds.
         if (used < 50) {
-          ctx = ` \x1b[32m${bar} ${used}%\x1b[0m`;
+          ctx = `\x1b[32m${bar} ${used}%\x1b[0m`;
         } else if (used < 65) {
-          ctx = ` \x1b[33m${bar} ${used}%\x1b[0m`;
+          ctx = `\x1b[33m${bar} ${used}%\x1b[0m`;
         } else if (used < 80) {
-          ctx = ` \x1b[38;5;208m${bar} ${used}%\x1b[0m`;
+          ctx = `\x1b[38;5;208m${bar} ${used}%\x1b[0m`;
         } else {
-          ctx = ` \x1b[5;31m💀 ${bar} ${used}%\x1b[0m`;
+          ctx = `\x1b[5;31m💀 ${bar} ${used}%\x1b[0m`;
         }
+      }
+
+      // Subscription usage — 5-hour rolling window, with a countdown to reset.
+      // Data is absent for non-subscribers and until the first API response of a
+      // session; always render the segment (with a dim placeholder) so the
+      // statusline layout stays stable instead of flickering fields in and out.
+      let usage;
+      const w = data.rate_limits?.five_hour;
+      if (w && w.used_percentage != null) {
+        // Color by how much of the window is consumed.
+        const pct = Math.round(w.used_percentage);
+        const color =
+          pct < 50 ? '\x1b[32m' : pct < 75 ? '\x1b[33m' : pct < 90 ? '\x1b[38;5;208m' : '\x1b[31m';
+
+        // Local wall-clock time the window resets (resets_at is Unix epoch seconds).
+        let reset = '';
+        if (w.resets_at) {
+          const d = new Date(w.resets_at * 1000);
+          const hh = String(d.getHours()).padStart(2, '0');
+          const mm = String(d.getMinutes()).padStart(2, '0');
+          reset = ` ↻${hh}:${mm}`;
+        }
+
+        usage = `${color}🔋 ${pct}%${reset}\x1b[0m`;
+      } else {
+        usage = `\x1b[2m🔋 --%\x1b[0m`;
       }
 
       // Current task from the in-progress todo, if any.
@@ -80,15 +106,15 @@ function runStatusline() {
         }
       }
 
-      // Output
+      // Output — join present fields with a consistent ` │ ` separator so
+      // every segment aligns the same way.
       const dirname = path.basename(dir);
-      const middle = task ? `\x1b[1m${task}\x1b[0m` : null;
-
-      if (middle) {
-        process.stdout.write(`\x1b[2m${model}\x1b[0m │ ${middle} │ \x1b[2m${dirname}\x1b[0m${ctx}`);
-      } else {
-        process.stdout.write(`\x1b[2m${model}\x1b[0m │ \x1b[2m${dirname}\x1b[0m${ctx}`);
-      }
+      const segments = [`\x1b[2m${model}\x1b[0m`];
+      if (task) segments.push(`\x1b[1m${task}\x1b[0m`);
+      segments.push(`\x1b[2m${dirname}\x1b[0m`);
+      if (ctx) segments.push(ctx);
+      segments.push(usage);
+      process.stdout.write(segments.join(' │ '));
     } catch (e) {
       // Silent fail — don't break the statusline on parse errors.
     }
