@@ -49,6 +49,9 @@
       };
       sharedOverlays = [
         nix-vscode-extensions.overlays.default
+        # TEMPORARY: fix lima/colima build on aarch64-darwin (cctools ld64
+        # SIGTRAP). Remove once nixpkgs includes nixpkgs#541023. See the file.
+        (import ./overlays/lima-darwin-lld.nix)
       ];
       # Import pkgs for Linux with vscode-extensions overlay so allowUnfree applies
       pkgs = import nixpkgs {
