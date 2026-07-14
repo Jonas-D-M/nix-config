@@ -64,6 +64,7 @@ in
         "bitwarden"
         "copilot-cli"
         "codex-app"
+        "teamviewer"
       ]
       ++ lib.optionals cfg.microsoft-office.enable [
         "microsoft-excel"
