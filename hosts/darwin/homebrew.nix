@@ -30,8 +30,20 @@ in
 
     homebrew = {
       enable = true;
-      taps = [ "supabase/tap" ];
-      brews = [ "supabase" ];
+      taps = [
+        "supabase/tap"
+        {
+          # Homebrew 6.0 enables HOMEBREW_REQUIRE_TAP_TRUST by default, which
+          # refuses to load formulae from non-official taps during activation.
+          # Trusting the tap lets its formulae (krr) install without prompting.
+          name = "robusta-dev/homebrew-krr";
+          trusted = true;
+        }
+      ];
+      brews = [
+        "supabase"
+        "krr"
+      ];
       casks = [
         "wezterm"
         "visual-studio-code"
