@@ -99,9 +99,18 @@ let
       # claude-code is pinned by Nix; stop the built-in autoupdater from
       # fighting the package version.
       DISABLE_AUTOUPDATER = "1";
-      # Strip Anthropic and cloud-provider credentials from sandboxed Bash
-      # subprocess environments so a compromised command cannot read them.
-      CLAUDE_CODE_SUBPROCESS_ENV_SCRUB = "1";
+      # NOTE: do not set CLAUDE_CODE_SUBPROCESS_ENV_SCRUB here. It looks like a
+      # free hardening win (it strips Anthropic/cloud credentials from sandboxed
+      # Bash subprocess environments), but the CLI treats it as an
+      # untrusted-multi-user signal and short-circuits permission-mode
+      # resolution to "default" before permissions.defaultMode is ever read --
+      # silently, when the mode comes from settings rather than a CLI flag. That
+      # killed the `defaultMode = "auto"` set in ./permissions.nix. There is no
+      # settings-level way to keep both. Nothing is lost by omitting it: auth
+      # here is the OAuth credentials file, not ANTHROPIC_*/AWS_* env vars, so
+      # there is nothing in the environment to scrub. The file-based secrets
+      # (~/.ssh, ~/.aws, the SOPS Age key, ~/.config/gh) are protected by
+      # sandbox.filesystem.denyRead below, which is a separate mechanism.
     };
     statusLine = {
       type = "command";
