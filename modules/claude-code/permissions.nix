@@ -71,12 +71,16 @@ let
     "WebSearch"
   ];
 
-  # Autonomous: adds git branch operations
+  # Autonomous: adds git branch + history operations and file deletion
   autonomousAllow = standardAllow ++ [
     "Bash(git checkout:*)"
     "Bash(git switch:*)"
     "Bash(git stash:*)"
     "Bash(git restore:*)"
+    "Bash(git merge:*)"
+    "Bash(git rebase:*)"
+    "Bash(git reset:*)"
+    "Bash(rm:*)"
   ];
 
   # Standard ask: destructive/external operations need confirmation
@@ -100,12 +104,8 @@ let
     "Bash(gh issue close:*)"
   ];
 
-  # Autonomous ask: reduced set
+  # Autonomous ask: reduced set (system-level changes only)
   autonomousAsk = [
-    "Bash(git merge:*)"
-    "Bash(git rebase:*)"
-    "Bash(git reset:*)"
-    "Bash(rm:*)"
     "Bash(sudo:*)"
     "Bash(darwin-rebuild:*)"
     "Bash(home-manager:*)"
