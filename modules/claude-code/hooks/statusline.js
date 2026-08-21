@@ -8,6 +8,34 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
+// Nerd Font Material Design battery glyphs, empty → full (10% steps).
+// Verify these render in your terminal before relying on them; the Material
+// Design block moved wholesale in Nerd Fonts v3.
+const BATT = [
+  "\u{F008E}",
+  "\u{F007A}",
+  "\u{F007B}",
+  "\u{F007C}",
+  "\u{F007D}",
+  "\u{F007E}",
+  "\u{F007F}",
+  "\u{F0080}",
+  "\u{F0081}",
+  "\u{F0082}",
+  "\u{F0079}",
+];
+
+// Continuous green → amber → red ramp keyed on usage percentage.
+const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+function usageColor(pct) {
+  const t = pct < 50 ? pct / 50 : (pct - 50) / 50;
+  const [r, g, b] =
+    pct < 50
+      ? [lerp(0, 220, t), lerp(200, 180, t), lerp(80, 0, t)]
+      : [220, lerp(180, 40, t), lerp(0, 40, t)];
+  return `\x1b[38;2;${r};${g};${b}m`;
+}
+
 function runStatusline() {
   let input = "";
   // Timeout guard: if stdin doesn't close within 3s (e.g. pipe issues on
@@ -68,19 +96,15 @@ function runStatusline() {
       // Data is absent for non-subscribers and until the first API response of a
       // session; always render the segment (with a dim placeholder) so the
       // statusline layout stays stable instead of flickering fields in and out.
+      //
+      // The battery DRAINS as usage climbs: full+green means budget remaining,
+      // empty+red means the window is nearly spent.
       let usage;
       const w = data.rate_limits?.five_hour;
       if (w && w.used_percentage != null) {
-        // Color by how much of the window is consumed.
-        const pct = Math.round(w.used_percentage);
-        const color =
-          pct < 50
-            ? "\x1b[32m"
-            : pct < 75
-              ? "\x1b[33m"
-              : pct < 90
-                ? "\x1b[38;5;208m"
-                : "\x1b[31m";
+        const pct = Math.max(0, Math.min(100, Math.round(w.used_percentage)));
+        const icon = BATT[Math.round((100 - pct) / 10)];
+        const blink = pct >= 97 ? "\x1b[5m" : "";
 
         // Local wall-clock time the window resets (resets_at is Unix epoch seconds).
         let reset = "";
@@ -91,9 +115,9 @@ function runStatusline() {
           reset = ` ↻${hh}:${mm}`;
         }
 
-        usage = `${color}🔋 ${pct}%${reset}\x1b[0m`;
+        usage = `${blink}${usageColor(pct)}${icon} ${pct}%${reset}\x1b[0m`;
       } else {
-        usage = `\x1b[2m🔋 --%\x1b[0m`;
+        usage = `\x1b[2m${BATT[10]} --%\x1b[0m`;
       }
 
       // Current task from the in-progress todo, if any.
