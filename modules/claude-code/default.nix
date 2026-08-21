@@ -210,4 +210,22 @@ in
     // mkSkill "darwin-nix-system"
     // mkCommand "nix-check"
     // mkCommand "new-module";
+
+  # HM would otherwise link ~/.claude/settings.json to a read-only store path.
+  # Claude writes settings in-app (e.g. /model), and against a read-only
+  # symlink it unlinks and replaces the file with just its own view, wiping
+  # the HM-managed keys (statusline, hooks, permissions) until the next
+  # rebuild. Swap the symlink for a writable copy so in-app writes edit it in
+  # place; the next rebuild restores the declared values. Mirrors the VSCode
+  # makeVscodeSettingsMutable pattern.
+  home.activation.makeClaudeSettingsMutable = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    settings="$HOME/.claude/settings.json"
+    run rm -f "$settings.hm-backup"
+    if [ -L "$settings" ]; then
+      target=$(readlink "$settings")
+      run rm "$settings"
+      run cp "$target" "$settings"
+      run chmod u+w "$settings"
+    fi
+  '';
 }
