@@ -1,6 +1,16 @@
 # modules/darwin/linearmouse/home.nix
-# Darwin-only HM module: LaunchAgent + config seeding.
+# Darwin-only HM module: seeds the default LinearMouse config.
 # Companion to ./default.nix (the system-level Homebrew/trackpad module).
+#
+# Launch-at-login is deliberately NOT managed here. A launchd agent that execs
+# /Applications/LinearMouse.app/Contents/MacOS/LinearMouse makes TCC attribute
+# the Accessibility request to the *responsible process* — the Nix-store bash
+# running the wrapper script — instead of to LinearMouse.app. The grant given in
+# System Settings then never matches, and because the store path changes on
+# every rebuild the app re-prompts after each `drb`. LinearMouse ships its own
+# login item (Contents/Library/LoginItems/LaunchAtLoginHelper.app), which is
+# launched via LaunchServices and keeps its permission; enable it once in the
+# app's settings.
 {
   config,
   lib,
@@ -8,31 +18,10 @@
   ...
 }:
 let
-  user = config.home.username;
-  linearmouseStartScript = pkgs.writeShellScript "linearmouse-start" ''
-    # Wait for WindowServer and accessibility to be ready
-    sleep 5
-    exec /Applications/LinearMouse.app/Contents/MacOS/LinearMouse
-  '';
   defaultConfigSrc = ./config.json;
 in
 {
   config = lib.mkIf pkgs.stdenv.isDarwin {
-    launchd.agents.linearmouse = {
-      enable = true;
-      config = {
-        Label = "dev.${user}.linearmouse";
-        ProgramArguments = [
-          "${linearmouseStartScript}"
-        ];
-        RunAtLoad = true;
-        KeepAlive = true;
-        ProcessType = "Interactive";
-        StandardOutPath = "/tmp/linearmouse.out.log";
-        StandardErrorPath = "/tmp/linearmouse.err.log";
-      };
-    };
-
     # Seed default config if user doesn't have one yet
     home.activation.ensureLinearmouseConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       CONFIG_DIR="${config.home.homeDirectory}/.config/linearmouse"
