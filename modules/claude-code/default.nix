@@ -70,6 +70,12 @@ let
 
   settings = {
     includeCoAuthoredBy = false;
+    # Declared here as the default model. The makeClaudeSettingsMutable
+    # activation script below writes settings.json as a real writable file
+    # (not a store symlink), so in-app writes like /model edit it in place
+    # without clobbering the rest of this attrset; the next rebuild restores
+    # this declared value.
+    model = "claude-opus-5[1m]";
     env = {
       # Disable all non-essential network traffic in one flag: session quality
       # surveys, telemetry, Sentry error reporting, the transcript-share
