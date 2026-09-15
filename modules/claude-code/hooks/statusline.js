@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Claude Code statusline — vendored, GSD-free.
-// Shows: model │ current task (from todos) │ directory │ context-usage bar │ subscription usage.
+// Shows: model · current task (from todos) · directory · context-usage bar ·
+// subscription usage.
 // Derived from the GSD statusline, stripped of all GSD-specific behaviour
 // (planning-state reader, update-check, and the context-monitor bridge file).
 
@@ -24,6 +25,30 @@ const BATT = [
   "\u{F0082}",
   "\u{F0079}",
 ];
+
+// Nerd Font Material Design clock, marking the rate-limit window reset time.
+// Deliberately NOT U+21BB (↻): that codepoint is absent from JetBrainsMono Nerd
+// Font, so terminals silently substitute it from a fallback face and it lands at
+// the wrong weight and width beside the battery. Staying inside the Material
+// Design block keeps both glyphs from the same design family.
+const CLOCK = "\u{F0150}";
+
+// Material Design skull, shown once context usage is critical. Replaces a 💀
+// emoji: that was double-width and drawn from the system colour-emoji face, so
+// it shifted the whole line's alignment the moment it appeared.
+const SKULL = "\u{F068C}";
+
+// Segment divider. Dimmed on purpose — previously the pipes were emitted bare
+// after a reset, so they rendered at full foreground brightness while the
+// content around them was dim, making the dividers louder than the data.
+const SEP = " \x1b[2m·\x1b[0m ";
+
+// Bar cells: heavy rule for consumed, light rule for remaining. Not █/░ — ten
+// light-shade blocks have near-full cell coverage in JetBrains Mono and merge
+// into one solid slab, which read as a filled bar at 0% usage.
+const BAR_FULL = "━";
+const BAR_EMPTY = "─";
+const BAR_WIDTH = 10;
 
 // Continuous green → amber → red ramp keyed on usage percentage.
 const lerp = (a, b, t) => Math.round(a + (b - a) * t);
@@ -76,9 +101,13 @@ function runStatusline() {
           Math.min(100, Math.round(100 - usableRemaining)),
         );
 
-        // Build progress bar (10 segments).
-        const filled = Math.floor(used / 10);
-        const bar = "█".repeat(filled) + "░".repeat(10 - filled);
+        // Build progress bar. Any non-zero usage claims at least one cell, so an
+        // all-empty bar unambiguously means "nothing used yet" rather than
+        // "under 10% and rounded away".
+        const filled =
+          used > 0 ? Math.max(1, Math.floor((used / 100) * BAR_WIDTH)) : 0;
+        const bar =
+          BAR_FULL.repeat(filled) + BAR_EMPTY.repeat(BAR_WIDTH - filled);
 
         // Color based on usable context thresholds.
         if (used < 50) {
@@ -88,7 +117,7 @@ function runStatusline() {
         } else if (used < 80) {
           ctx = `\x1b[38;5;208m${bar} ${used}%\x1b[0m`;
         } else {
-          ctx = `\x1b[5;31m💀 ${bar} ${used}%\x1b[0m`;
+          ctx = `\x1b[5;31m${SKULL} ${bar} ${used}%\x1b[0m`;
         }
       }
 
@@ -112,7 +141,7 @@ function runStatusline() {
           const d = new Date(w.resets_at * 1000);
           const hh = String(d.getHours()).padStart(2, "0");
           const mm = String(d.getMinutes()).padStart(2, "0");
-          reset = ` ↻${hh}:${mm}`;
+          reset = ` ${CLOCK} ${hh}:${mm}`;
         }
 
         usage = `${blink}${usageColor(pct)}${icon} ${pct}%${reset}\x1b[0m`;
@@ -156,15 +185,15 @@ function runStatusline() {
         }
       }
 
-      // Output — join present fields with a consistent ` │ ` separator so
-      // every segment aligns the same way.
+      // Output — join present fields with a consistent separator so every
+      // segment aligns the same way.
       const dirname = path.basename(dir);
       const segments = [`\x1b[2m${model}\x1b[0m`];
       if (task) segments.push(`\x1b[1m${task}\x1b[0m`);
       segments.push(`\x1b[2m${dirname}\x1b[0m`);
       if (ctx) segments.push(ctx);
       segments.push(usage);
-      process.stdout.write(segments.join(" │ "));
+      process.stdout.write(segments.join(SEP));
     } catch (e) {
       // Silent fail — don't break the statusline on parse errors.
     }
