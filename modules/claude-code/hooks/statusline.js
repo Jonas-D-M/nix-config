@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Claude Code statusline — vendored, GSD-free.
-// Shows: model · current task (from todos) · directory · context-usage bar ·
-// subscription usage.
+// Shows: model · current task (from todos) · directory + git branch ·
+// context-usage bar · subscription usage.
 // Derived from the GSD statusline, stripped of all GSD-specific behaviour
 // (planning-state reader, update-check, and the context-monitor bridge file).
 
@@ -38,6 +38,9 @@ const CLOCK = "\u{F0150}";
 // it shifted the whole line's alignment the moment it appeared.
 const SKULL = "\u{F068C}";
 
+// Powerline branch glyph, prefixing the current git branch.
+const BRANCH = "\u{E0A0}";
+
 // Segment divider. Dimmed on purpose — previously the pipes were emitted bare
 // after a reset, so they rendered at full foreground brightness while the
 // content around them was dim, making the dividers louder than the data.
@@ -59,6 +62,46 @@ function usageColor(pct) {
       ? [lerp(0, 220, t), lerp(200, 180, t), lerp(80, 0, t)]
       : [220, lerp(180, 40, t), lerp(0, 40, t)];
   return `\x1b[38;2;${r};${g};${b}m`;
+}
+
+// Current git branch, read straight out of .git rather than shelling out to
+// `git`. The statusline re-renders constantly, and a subprocess spawn per render
+// is real latency for a string that's one file read away.
+function gitBranch(startDir) {
+  try {
+    let dir = path.resolve(startDir);
+    // Walk up to the repo root, bounded so a symlink loop can't spin forever.
+    for (let depth = 0; depth < 64; depth++) {
+      const dotGit = path.join(dir, ".git");
+      let stat = null;
+      try {
+        stat = fs.statSync(dotGit);
+      } catch (e) {}
+
+      if (stat) {
+        let gitDir = dotGit;
+        if (stat.isFile()) {
+          // Linked worktree or submodule: .git is a file holding "gitdir: <path>".
+          // Matters here because agents run in worktrees, which would otherwise
+          // report the branch of whatever directory happened to be above them.
+          const m = /^gitdir:\s*(.+)$/m.exec(fs.readFileSync(dotGit, "utf8"));
+          if (!m) return "";
+          gitDir = path.resolve(dir, m[1].trim());
+        }
+        const head = fs.readFileSync(path.join(gitDir, "HEAD"), "utf8").trim();
+        const ref = /^ref:\s*refs\/heads\/(.+)$/.exec(head);
+        // Detached HEAD stores a bare SHA; abbreviate it the way git does.
+        return ref ? ref[1] : head.slice(0, 7);
+      }
+
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  } catch (e) {
+    // Not a repo, or unreadable — render nothing rather than break the line.
+  }
+  return "";
 }
 
 function runStatusline() {
@@ -186,11 +229,15 @@ function runStatusline() {
       }
 
       // Output — join present fields with a consistent separator so every
-      // segment aligns the same way.
+      // segment aligns the same way. Directory and branch describe the same
+      // thing, so they share one segment instead of being split by a divider.
       const dirname = path.basename(dir);
+      const branch = gitBranch(dir);
+      const location = branch ? `${dirname} ${BRANCH} ${branch}` : dirname;
+
       const segments = [`\x1b[2m${model}\x1b[0m`];
       if (task) segments.push(`\x1b[1m${task}\x1b[0m`);
-      segments.push(`\x1b[2m${dirname}\x1b[0m`);
+      segments.push(`\x1b[2m${location}\x1b[0m`);
       if (ctx) segments.push(ctx);
       segments.push(usage);
       process.stdout.write(segments.join(SEP));
