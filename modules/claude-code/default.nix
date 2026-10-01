@@ -153,27 +153,32 @@ let
     };
     sandbox = {
       enabled = true;
+      # Space-glob patterns ("git *"), NOT the permission-rule "git:*" form --
+      # the colon form silently matches nothing, so every command stayed
+      # sandboxed. An exclusion only applies when every segment of a compound
+      # command (&&, ;, |) matches; `git add . && git commit` does, `... | head`
+      # does not.
       excludedCommands = [
-        "nix:*"
-        "nix-build:*"
-        "nix-shell:*"
-        "nix-instantiate:*"
-        "darwin-rebuild:*"
-        "home-manager:*"
-        "brew:*"
-        "gh:*"
+        "nix *"
+        "nix-build *"
+        "nix-shell *"
+        "nix-instantiate *"
+        "darwin-rebuild *"
+        "home-manager *"
+        "brew *"
+        "gh *"
         # git runs unsandboxed so commit signing can read the private signing
         # key. This keeps the ~/.ssh denyRead below fully intact for every
         # other (less-trusted) command rather than punching a key-exposing
         # hole in it. git is trusted core VCS tooling, like gh above.
-        "git:*"
+        "git *"
       ]
       ++ lib.optionals cfg.enableDocker [
-        "docker:*"
-        "docker-compose:*"
-        "vendor/bin/sail:*"
-        "php:*"
-        "composer:*"
+        "docker *"
+        "docker-compose *"
+        "vendor/bin/sail *"
+        "php *"
+        "composer *"
       ];
       filesystem = {
         allowWrite = [ "." ] ++ lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
