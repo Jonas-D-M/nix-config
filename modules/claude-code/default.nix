@@ -86,25 +86,17 @@ let
     # this declared value.
     model = "claude-opus-5[1m]";
     env = {
-      # Disable all non-essential network traffic in one flag: session quality
-      # surveys, telemetry, Sentry error reporting, the transcript-share
-      # follow-up, and the /feedback command. The WebFetch domain safety check
-      # is unaffected (it has its own opt-out).
-      #
-      # It costs more than the name suggests, though: it also skips the startup
-      # GET /api/claude_cli/bootstrap, and disables /design-sync, Projects, and
-      # --enable-live-preview. See ANTHROPIC_DEFAULT_FABLE_MODEL below for the
-      # bootstrap fallout and its workaround.
-      CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = "1";
-      # Without the bootstrap fetch above, additionalModelOptionsCache in
-      # ~/.claude.json is never populated -- and that cache is the only thing
-      # the /model picker consults to decide whether the account may use Fable.
-      # An empty cache reads as "not entitled", so every fable entry is
-      # filtered out of the list even though the account can use the model
-      # fine. Setting this env var takes the picker's early-exit path and
-      # restores `fable` / `fable[1m]`. The value is the CLI's own default for
-      # the family, so it pins nothing that was not already pinned.
-      ANTHROPIC_DEFAULT_FABLE_MODEL = "claude-fable-5";
+      # Privacy opt-outs, one per feature. Do NOT replace these with the
+      # umbrella CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: besides telemetry it
+      # skips the startup GET /api/claude_cli/bootstrap, which is the only
+      # source of the /model picker's entitlement cache. Without it, models
+      # like Fable vanish from /model, and the only workaround is pinning a
+      # model ID (ANTHROPIC_DEFAULT_FABLE_MODEL). DISABLE_TELEMETRY sets the
+      # CLI's "no-telemetry" level, which keeps bootstrap running.
+      DISABLE_TELEMETRY = "1";
+      DISABLE_ERROR_REPORTING = "1";
+      CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY = "1";
+      DISABLE_FEEDBACK_COMMAND = "1";
       # claude-code is pinned by Nix; stop the built-in autoupdater from
       # fighting the package version.
       DISABLE_AUTOUPDATER = "1";
