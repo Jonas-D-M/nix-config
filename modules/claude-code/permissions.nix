@@ -114,15 +114,12 @@ let
   # Conservative ask: everything standard can do + write ops
   conservativeAsk = standardAsk ++ standardAllow;
 
-  # Add-on: Docker / Laravel Sail
-  dockerAllow = [
-    "Bash(docker:*)"
-    "Bash(docker compose:*)"
-    "Bash(vendor/bin/sail:*)"
-    "Bash(php artisan:*)"
-    "Bash(composer:*)"
-  ];
-
+  # Add-on: Docker / Laravel Sail. No allow rules on purpose: docker can't run
+  # sandboxed, and an allow rule also approves the unsandboxed retry with no
+  # review -- so Bash(docker:*) or Bash(composer:*) would let Claude write a
+  # compose file or composer script and run it with full access. Without them,
+  # sandboxed runs are still auto-allowed and retries go to auto mode's
+  # classifier.
   dockerAsk = [
     "Bash(docker system prune:*)"
     "Bash(docker volume rm:*)"
@@ -155,15 +152,7 @@ in
       '';
     };
 
-    enableDocker = lib.mkEnableOption "Docker / Laravel Sail commands in allowed permissions";
-
-    dockerSocket = lib.mkOption {
-      type = lib.types.str;
-      # Self-contained literal: claude-code is cross-platform, so it can't depend
-      # on the darwin-only colima module. Matches Colima's default socket path.
-      default = "${config.home.homeDirectory}/.colima/default/docker.sock";
-      description = "Path to the Docker daemon socket for sandbox filesystem access.";
-    };
+    enableDocker = lib.mkEnableOption "ask rules for destructive Docker commands";
 
     _resolvedPermissions = lib.mkOption {
       type = lib.types.attrs;
@@ -188,7 +177,7 @@ in
         in
         {
           defaultMode = "auto";
-          allow = profileAllow ++ (lib.optionals cfg.enableDocker dockerAllow);
+          allow = profileAllow;
           ask = profileAsk ++ (lib.optionals cfg.enableDocker dockerAsk);
           deny = denyList;
         };

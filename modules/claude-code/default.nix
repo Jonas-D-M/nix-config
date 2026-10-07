@@ -125,8 +125,8 @@ let
       # settings-level way to keep both. Nothing is lost by omitting it: auth
       # here is the OAuth credentials file, not ANTHROPIC_*/AWS_* env vars, so
       # there is nothing in the environment to scrub. The file-based secrets
-      # (~/.ssh, ~/.aws, the SOPS Age key, ~/.config/gh) are protected by
-      # sandbox.filesystem.denyRead below, which is a separate mechanism.
+      # (~/.ssh, ~/.aws, the SOPS Age key) are protected by
+      # sandbox.credentials below, which is a separate mechanism.
     };
     statusLine = {
       type = "command";
@@ -173,52 +173,94 @@ let
       # the colon form silently matches nothing, so every command stayed
       # sandboxed. An exclusion only applies when every segment of a compound
       # command (&&, ;, |) matches; `git add . && git commit` does, `... | head`
-      # does not.
+      # does not. The matcher is stricter than that, too: a leading `cd`, any
+      # redirect, `git -C <dir>`, and `$(...)` substitution (the stock
+      # `git commit -m "$(cat <<'EOF' ...)"` form) all keep a call sandboxed.
+      #
+      # Every entry runs with full access, so each one is a tool that cannot
+      # work in the sandbox, narrowed to the subcommands that need to leave
+      # it. Interpreters and tools that execute files from the working
+      # directory (php, composer, docker compose, nix run/develop/shell -c) are
+      # deliberately absent: Claude could write the file and then run it
+      # unsandboxed. Those fall back to the unsandboxed retry, which auto mode's
+      # classifier reviews.
       excludedCommands = [
-        "nix *"
+        # Nix talks to the daemon over a Unix socket the sandbox blocks.
+        "nix build *"
+        "nix eval *"
+        "nix flake *"
+        "nix search *"
+        "nix path-info *"
+        "nix log *"
+        "nix why-depends *"
+        "nix store *"
         "nix-build *"
-        "nix-shell *"
         "nix-instantiate *"
         "darwin-rebuild *"
         "home-manager *"
         "brew *"
+        # Go CLI: fails TLS verification under Seatbelt (x509 OSStatus -26276).
         "gh *"
-        # git runs unsandboxed so commit signing can read the private signing
-        # key. This keeps the ~/.ssh denyRead below fully intact for every
-        # other (less-trusted) command rather than punching a key-exposing
-        # hole in it. git is trusted core VCS tooling, like gh above.
-        "git *"
-      ]
-      ++ lib.optionals cfg.enableDocker [
-        "docker *"
-        "docker-compose *"
-        "vendor/bin/sail *"
-        "php *"
-        "composer *"
+        # git subcommands that sign (commit.gpgsign reads ~/.ssh, denied
+        # below) or talk to an SSH remote (the macOS sandbox tunnel can't
+        # authenticate to its proxy). Everything else -- status, diff, add,
+        # log, checkout -- stays sandboxed.
+        "git commit *"
+        "git tag *"
+        "git merge *"
+        "git rebase *"
+        "git cherry-pick *"
+        "git revert *"
+        "git push *"
+        "git fetch *"
+        "git pull *"
+        "git clone *"
+        "git ls-remote *"
+        "git submodule *"
       ];
       filesystem = {
-        allowWrite = [ "." ] ++ lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
-        allowRead = lib.optionals cfg.enableDocker [ cfg.dockerSocket ];
-        denyRead = [
-          # High-value secrets the default read policy would otherwise expose
-          # to any sandboxed subprocess. None of these are needed by Bash, so
-          # denying them is pure hardening (esp. the SOPS Age key that decrypts
-          # every secret in this repo). Absolute paths so they resolve here
-          # rather than under ~/.claude (user-settings relative-path root).
-          "~/.ssh"
-          "~/.aws"
-          "~/.config/sops/age/keys.txt"
-          "~/.config/gh"
-          "/etc/shadow"
-          # NOTE: project .env files are NOT denied here. Bare relative paths in
-          # this user-scope settings file resolve under ~/.claude, not the
-          # project, so a ".env" entry would protect nothing. To deny a
-          # project's .env from sandboxed subprocesses, add a denyRead to that
-          # repo's own .claude/settings.json, where "." resolves to its root.
-        ];
+        allowWrite = [ "." ];
       };
+      # High-value secrets the default read policy would otherwise expose to
+      # any sandboxed subprocess. `deny` blocks reads inside the sandbox (same
+      # effect as filesystem.denyRead), and deny entries merge across settings
+      # scopes, so no project settings can lift them. Absolute/~ paths so they
+      # resolve here rather than under ~/.claude (user-settings relative root).
+      #
+      # ~/.config/gh is deliberately NOT here: gh keeps its tokens in the macOS
+      # keychain, so the directory holds no secrets.
+      #
+      # Project .env files aren't either: a relative path in this user-scope
+      # file resolves under ~/.claude. Deny them from a repo's own
+      # .claude/settings.json, where "." resolves to its root.
+      credentials.files =
+        map
+          (path: {
+            inherit path;
+            mode = "deny";
+          })
+          [
+            "~/.ssh"
+            "~/.aws"
+            "~/.config/sops/age/keys.txt"
+            "/etc/shadow"
+          ];
       network = {
-        allowedDomains = [ "*" ];
+        # Registries and forges every project needs, so routine installs and
+        # fetches don't stop for review. Anything else goes through auto mode's
+        # per-command allowed domains, which the classifier reviews.
+        allowedDomains = [
+          "github.com"
+          "*.github.com"
+          "*.githubusercontent.com"
+          "registry.npmjs.org"
+          "registry.yarnpkg.com"
+          "packagist.org"
+          "*.packagist.org"
+          "cache.nixos.org"
+          "channels.nixos.org"
+          "*.cachix.org"
+        ];
         # Let sandboxed commands reach localhost on any port (e.g. local dev
         # servers); allowedDomains does not cover loopback by itself.
         allowLocalBinding = true;
