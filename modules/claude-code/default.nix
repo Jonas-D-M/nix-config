@@ -111,9 +111,9 @@ let
       # Sandboxed Bash can only reach the network through the sandbox proxy
       # (HTTPS_PROXY), but Node's built-in fetch ignores proxy env vars unless
       # this is set -- it resolves DNS directly, which the sandbox blocks
-      # (ENOTFOUND). pnpm 11's pre-exec registry signature check uses it, so
-      # every `pnpm exec` failed with ERR_PNPM_PNPM_ENGINE_IDENTITY_UNVERIFIABLE
-      # despite allowedDomains = [ "*" ]. Inert when no proxy var is set.
+      # (ENOTFOUND). Applies to Node-based tools only; pnpm 12 is a native
+      # binary that honors the proxy vars itself (its TLS issue is handled by
+      # sandbox.enableWeakerNetworkIsolation). Inert when no proxy var is set.
       NODE_USE_ENV_PROXY = "1";
       # NOTE: do not set CLAUDE_CODE_SUBPROCESS_ENV_SCRUB here. It looks like a
       # free hardening win (it strips Anthropic/cloud credentials from sandboxed
@@ -169,6 +169,14 @@ let
     };
     sandbox = {
       enabled = true;
+      # Lets sandboxed commands reach com.apple.trustd.agent. Tools that verify
+      # TLS through Security.framework rather than a bundled CA store -- gh
+      # (Go) and pnpm 12 (Rust, rustls-platform-verifier) -- otherwise fail
+      # every HTTPS request with OSStatus -26276; pnpm retries silently for
+      # ~70s first, so it looks like a hang. Accepted cost per the docs: trustd
+      # makes its own network fetches outside the proxy, a narrow exfiltration
+      # channel. It is what lets gh stay sandboxed instead of excluded.
+      enableWeakerNetworkIsolation = true;
       # Space-glob patterns ("git *"), NOT the permission-rule "git:*" form --
       # the colon form silently matches nothing, so every command stayed
       # sandboxed. An exclusion only applies when every segment of a compound
@@ -199,8 +207,6 @@ let
         "darwin-rebuild *"
         "home-manager *"
         "brew *"
-        # Go CLI: fails TLS verification under Seatbelt (x509 OSStatus -26276).
-        "gh *"
         # git subcommands that sign (commit.gpgsign reads ~/.ssh, denied
         # below) or talk to an SSH remote (the macOS sandbox tunnel can't
         # authenticate to its proxy). Everything else -- status, diff, add,
