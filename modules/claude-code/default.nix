@@ -184,6 +184,7 @@ let
       # does not. The matcher is stricter than that, too: a leading `cd`, any
       # redirect, `git -C <dir>`, and `$(...)` substitution (the stock
       # `git commit -m "$(cat <<'EOF' ...)"` form) all keep a call sandboxed.
+      # ./CLAUDE.md steers sessions to forms that match.
       #
       # Every entry runs with full access, so each one is a tool that cannot
       # work in the sandbox, narrowed to the subcommands that need to leave
@@ -302,6 +303,7 @@ in
     {
       ".claude/settings.json".text = builtins.toJSON settings;
       ".claude/agents/nix-doctor.md".source = ./agents/nix-doctor.md;
+      ".claude/CLAUDE.md".source = ./CLAUDE.md;
     }
     // mkSkill "nix-flake-patterns"
     // mkSkill "home-manager-modules"
