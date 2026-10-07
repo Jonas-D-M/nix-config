@@ -79,12 +79,8 @@ let
       pr = "";
       sessionUrl = false;
     };
-    # Declared here as the default model. The makeClaudeSettingsMutable
-    # activation script below writes settings.json as a real writable file
-    # (not a store symlink), so in-app writes like /model edit it in place
-    # without clobbering the rest of this attrset; the next rebuild restores
-    # this declared value.
-    model = "claude-opus-5[1m]";
+    # No `model` here on purpose: the CLI's default tracks new releases, and a
+    # pinned ID goes stale. Pick per session with /model.
     env = {
       # Privacy opt-outs, one per feature. Do NOT replace these with the
       # umbrella CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: besides telemetry it
