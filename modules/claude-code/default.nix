@@ -69,7 +69,16 @@ let
   '';
 
   settings = {
-    includeCoAuthoredBy = false;
+    # No attribution in commits or PRs. The deprecated includeCoAuthoredBy =
+    # false only blanked the Co-Authored-By trailer and PR footer; sessions
+    # connected to claude.ai (Remote Control / web) still appended a
+    # `Claude-Session: <url>` trailer and a PR-body session link, which only
+    # sessionUrl = false suppresses.
+    attribution = {
+      commit = "";
+      pr = "";
+      sessionUrl = false;
+    };
     # Declared here as the default model. The makeClaudeSettingsMutable
     # activation script below writes settings.json as a real writable file
     # (not a store symlink), so in-app writes like /model edit it in place
