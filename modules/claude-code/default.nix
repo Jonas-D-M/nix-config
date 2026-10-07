@@ -108,6 +108,13 @@ let
       # claude-code is pinned by Nix; stop the built-in autoupdater from
       # fighting the package version.
       DISABLE_AUTOUPDATER = "1";
+      # Sandboxed Bash can only reach the network through the sandbox proxy
+      # (HTTPS_PROXY), but Node's built-in fetch ignores proxy env vars unless
+      # this is set -- it resolves DNS directly, which the sandbox blocks
+      # (ENOTFOUND). pnpm 11's pre-exec registry signature check uses it, so
+      # every `pnpm exec` failed with ERR_PNPM_PNPM_ENGINE_IDENTITY_UNVERIFIABLE
+      # despite allowedDomains = [ "*" ]. Inert when no proxy var is set.
+      NODE_USE_ENV_PROXY = "1";
       # NOTE: do not set CLAUDE_CODE_SUBPROCESS_ENV_SCRUB here. It looks like a
       # free hardening win (it strips Anthropic/cloud credentials from sandboxed
       # Bash subprocess environments), but the CLI treats it as an
