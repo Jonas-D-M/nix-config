@@ -52,6 +52,9 @@
         # TEMPORARY: fix lima/colima build on aarch64-darwin (cctools ld64
         # SIGTRAP). Remove once nixpkgs includes nixpkgs#541023. See the file.
         (import ./overlays/lima-darwin-lld.nix)
+        # TEMPORARY: skip debugpy's failing test_lldb_command on aarch64-darwin,
+        # which blocks ms-python.python. Remove once fixed upstream. See the file.
+        (import ./overlays/debugpy-darwin-lldb-test.nix)
       ];
       # Import pkgs for Linux with vscode-extensions overlay so allowUnfree applies
       pkgs = import nixpkgs {
