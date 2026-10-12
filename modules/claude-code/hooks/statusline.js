@@ -170,12 +170,14 @@ function runStatusline() {
       // statusline layout stays stable instead of flickering fields in and out.
       //
       // The battery DRAINS as usage climbs: full+green means budget remaining,
-      // empty+red means the window is nearly spent.
+      // empty+red means the window is nearly spent. The number reads the same
+      // way: it shows the budget left, not the budget used.
       let usage;
       const w = data.rate_limits?.five_hour;
       if (w && w.used_percentage != null) {
         const pct = Math.max(0, Math.min(100, Math.round(w.used_percentage)));
-        const icon = BATT[Math.round((100 - pct) / 10)];
+        const left = 100 - pct;
+        const icon = BATT[Math.round(left / 10)];
         const blink = pct >= 97 ? "\x1b[5m" : "";
 
         // Local wall-clock time the window resets (resets_at is Unix epoch seconds).
@@ -187,7 +189,7 @@ function runStatusline() {
           reset = ` ${CLOCK} ${hh}:${mm}`;
         }
 
-        usage = `${blink}${usageColor(pct)}${icon} ${pct}%${reset}\x1b[0m`;
+        usage = `${blink}${usageColor(pct)}${icon} ${left}%${reset}\x1b[0m`;
       } else {
         usage = `\x1b[2m${BATT[10]} --%\x1b[0m`;
       }
