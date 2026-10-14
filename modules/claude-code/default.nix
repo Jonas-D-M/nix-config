@@ -272,13 +272,20 @@ let
     };
     enabledPlugins = {
       "mesco-conventions@mesco" = true;
+      "php-lsp@claude-plugins-official" = true;
+      "typescript-lsp@claude-plugins-official" = true;
     };
   };
 in
 {
   imports = [ ./permissions.nix ];
 
-  home.packages = [ pkgs.claude-code ];
+  home.packages = [
+    pkgs.claude-code
+    # Language servers for the php-lsp and typescript-lsp plugins
+    pkgs.intelephense
+    pkgs.typescript-language-server
+  ];
   home.file =
     let
       mkSkill = name: {
