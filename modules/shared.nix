@@ -34,6 +34,10 @@ let
     opentofu
     openbao
 
+    # code analysis (LOC / complexity metrics)
+    scc
+    python3Packages.lizard
+
     # containers / k8s
     kubectl
     # kubernetes-helm's checkPhase has failed to build in this nixpkgs line, so
