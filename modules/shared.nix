@@ -71,7 +71,6 @@ in
     ./wezterm
     ./openfortivpn
     ./ssh
-    ./ralph
     ./claude-code
     ./k9s
     ./kubeswitch

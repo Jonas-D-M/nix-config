@@ -168,20 +168,6 @@ The same script then derives the `.pub` files and writes `~/.ssh/allowed_signers
 
 Terminal emulator configuration.
 
-#### `ralph`
-
-An AI coding agent loop tool. Builds two shell scripts from Nix:
-
-- **`ralph-once`** — runs one Claude iteration against `PRD.md` and `progress.txt` in the current directory
-- **`ralph <N>`** — runs up to N iterations autonomously, stopping early if Claude outputs `<promise>COMPLETE</promise>`
-
-Both run Claude inside `srt` (sandbox-runtime), which provides OS-level isolation. Two sandbox configs are written to `~`:
-
-- `~/.srt-settings.json` — standard projects: no local port binding, SSH secrets blocked, `.env` files write-protected
-- `~/.srt-settings-sail.json` — Laravel Sail projects: PTY enabled, weaker nested sandbox (needed for Docker-in-Docker), local binding allowed, `~/.colima` and `~/.docker` readable
-
-Auto-detection: if `vendor/bin/sail` exists in the current directory, the Sail settings are used and the prompt instructs Claude to use Sail commands instead of bare `php`/`composer`. The SSH agent socket is injected into the sandbox at runtime.
-
 #### `claude-code`
 
 Writes `~/.claude/settings.json`. The only setting is a `Stop` hook that plays a sound when Claude finishes — `afplay` on macOS, `paplay` on Linux.
