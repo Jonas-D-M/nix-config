@@ -25,6 +25,19 @@ in
       "nix-command"
       "flakes"
     ];
+    # Weekly GC of anything older than 30 days (system and user generations,
+    # i.e. rollback points), plus store deduplication. `nix-cleanup` still
+    # runs the same GC by hand.
+    nix.gc = {
+      automatic = true;
+      interval = {
+        Weekday = 0;
+        Hour = 3;
+        Minute = 0;
+      };
+      options = "--delete-older-than 30d";
+    };
+    nix.optimise.automatic = true;
 
     # Home Manager runs inside nix-darwin (it owns the outer evaluation).
     home-manager.useGlobalPkgs = true;
