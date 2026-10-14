@@ -9,4 +9,7 @@
   # TEMPORARY: skip debugpy's failing test_lldb_command on aarch64-darwin,
   # which blocks ms-python.python. Remove once fixed upstream. See the file.
   (import ./debugpy-darwin-lldb-test.nix)
+  # TEMPORARY: skip kubernetes-helm's failing checkPhase. Remove once
+  # `nix build nixpkgs#kubernetes-helm` succeeds without it. See the file.
+  (import ./kubernetes-helm-skip-tests.nix)
 ]

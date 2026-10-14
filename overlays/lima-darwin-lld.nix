@@ -12,7 +12,7 @@
 # PR #536365 ("ld64: disable hardening again"). Our pinned nixpkgs predates
 # these. This overlay replicates PR #541023 locally.
 #
-# REMOVE this overlay (and its entry in flake.nix's sharedOverlays) once
+# REMOVE this overlay (and its entry in ./default.nix) once
 # nixpkgs advances past commit 605e1b1ee4bfde64892f34f002852453a1038c20.
 #
 # lima-full = lima.override { withAdditionalGuestAgents = true; }, and .override

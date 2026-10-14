@@ -7,7 +7,7 @@
 # 965 other tests pass. debugpy is pulled in by the ms-python.python VS Code
 # extension, so this one test blocks the whole system build.
 #
-# REMOVE this overlay (and its entry in flake.nix's sharedOverlays) once
+# REMOVE this overlay (and its entry in ./default.nix) once
 # nixpkgs' debugpy builds again on aarch64-darwin without it.
 final: prev:
 prev.lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin {

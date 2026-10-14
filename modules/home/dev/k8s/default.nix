@@ -10,12 +10,7 @@
   home.packages = with pkgs; [
     kubectl
     krew
-    # kubernetes-helm's checkPhase has failed to build in this nixpkgs line, so
-    # its tests are disabled here as a workaround. Re-verify on nixpkgs bumps:
-    # try dropping this overrideAttrs and `nix build nixpkgs#kubernetes-helm`.
-    (kubernetes-helm.overrideAttrs (_: {
-      doCheck = false;
-    }))
+    kubernetes-helm # tests skipped by overlays/kubernetes-helm-skip-tests.nix
   ];
 
   home.sessionVariables.KUBECONFIG = "${config.home.homeDirectory}/.config/kube/config";
