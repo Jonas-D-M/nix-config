@@ -83,14 +83,14 @@ Common ordering: `writeBoundary` -> `sshKeys` (generate keys, derive `.pub`, wri
 # Conditional list items
 home.packages = with pkgs; [
   ripgrep
-] ++ lib.optionals pkgs.stdenv.isDarwin [
+] ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
   darwin-only-pkg
-] ++ lib.optionals pkgs.stdenv.isLinux [
+] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
   linux-only-pkg
 ];
 
 # Conditional attrsets
-config = lib.mkIf pkgs.stdenv.isDarwin {
+config = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   # only evaluated on macOS
 };
 ```

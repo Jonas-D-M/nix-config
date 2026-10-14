@@ -83,7 +83,8 @@ in
 
     # User identity (username is a flake-level constant; see flake.nix)
     home.username = userName;
-    home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${userName}" else "/home/${userName}";
+    home.homeDirectory =
+      if pkgs.stdenv.hostPlatform.isDarwin then "/Users/${userName}" else "/home/${userName}";
     news.display = "silent";
 
     # User-level config only

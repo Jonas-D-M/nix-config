@@ -21,7 +21,7 @@ let
   defaultConfigSrc = ./config.json;
 in
 {
-  config = lib.mkIf pkgs.stdenv.isDarwin {
+  config = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     # Seed default config if user doesn't have one yet
     home.activation.ensureLinearmouseConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       CONFIG_DIR="${config.home.homeDirectory}/.config/linearmouse"

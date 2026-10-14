@@ -8,7 +8,7 @@ let
   cfg = config.custom.claudeCode;
 
   playSound =
-    if pkgs.stdenv.isDarwin then
+    if pkgs.stdenv.hostPlatform.isDarwin then
       "afplay /System/Library/Sounds/Glass.aiff"
     else
       "${lib.getExe' pkgs.pulseaudio "paplay"} /run/current-system/sw/share/sounds/freedesktop/stereo/complete.oga";

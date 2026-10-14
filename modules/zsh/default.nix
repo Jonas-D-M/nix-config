@@ -15,7 +15,7 @@
     "$HOME/bin"
     "$HOME/.krew/bin"
   ]
-  ++ lib.optionals pkgs.stdenv.isDarwin [
+  ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
     "/Applications/Obsidian.app/Contents/MacOS"
     "/opt/homebrew/bin"
     "/opt/homebrew/sbin"

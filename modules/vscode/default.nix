@@ -7,7 +7,7 @@
 {
   programs.vscode = {
     enable = true;
-    package = lib.mkIf pkgs.stdenv.isDarwin (
+    package = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
       lib.mkForce (
         pkgs.emptyDirectory
         // {
@@ -303,7 +303,7 @@
   home.activation.makeVscodeSettingsMutable =
     let
       settingsDir =
-        if pkgs.stdenv.isDarwin then
+        if pkgs.stdenv.hostPlatform.isDarwin then
           "$HOME/Library/Application Support/Code/User"
         else
           "$HOME/.config/Code/User";
