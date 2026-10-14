@@ -1,3 +1,10 @@
+# modules/home/claude-code/default.nix
+# Claude Code: the CLI plus LSP servers for its php/typescript plugins, and a
+# declarative ~/.claude: settings.json (statusline, hooks — git push guard,
+# worktree deps, finish sound — sandbox, permissions from ./permissions.nix,
+# plugins), the global CLAUDE.md, and the skills/commands/agents in this dir.
+# settings.json is made writable after activation so in-app changes don't
+# clobber it; see makeClaudeSettingsMutable below.
 {
   config,
   pkgs,

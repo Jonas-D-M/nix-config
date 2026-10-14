@@ -1,3 +1,6 @@
+# modules/home/wezterm/default.nix
+# WezTerm config from ./wezterm.lua. On macOS the app comes from Homebrew, so
+# the Nix package is stubbed out and only the config is managed.
 {
   pkgs,
   lib,

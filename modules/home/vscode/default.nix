@@ -1,3 +1,8 @@
+# modules/home/vscode/default.nix
+# VS Code: extensions (from nix-vscode-extensions via pkgs), settings and
+# keybindings. Also sets EDITOR. On macOS the app comes from Homebrew, so the
+# Nix package is stubbed out. settings.json is made writable after activation
+# so VS Code can change settings at runtime.
 {
   config,
   pkgs,

@@ -1,3 +1,8 @@
+# modules/home/git/default.nix
+# Git with SSH commit/tag signing. The personal identity is the default; any
+# repo under the work context (~/work) switches to the work identity via a
+# gitdir: include, which also pins core.sshCommand to the work key. Keys and
+# the work dir come from the SSH key registry (../ssh/keys.nix). pull.ff = only.
 {
   config,
   lib,

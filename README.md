@@ -1,6 +1,6 @@
 # nix-config
 
-Declarative macOS + Linux environment managed with Nix Flakes, Home Manager, and nix-darwin.
+Declarative macOS + Linux environment managed with Nix Flakes, Home Manager, and nix-darwin. One flake configures two machines: a MacBook Pro (Apple Silicon) and a Pop!\_OS desktop (x86_64). One command fully configures either machine: packages, dotfiles, shell, SSH keys, Git identity, Docker.
 
 ## Quick Start
 
@@ -13,270 +13,67 @@ The bootstrap script installs Nix, restores your Age key from Bitwarden, and run
 
 ## Daily Commands
 
-| Action            | Command                                             | Alias |
-| ----------------- | --------------------------------------------------- | ----- |
-| Rebuild (macOS)   | `sudo darwin-rebuild switch --flake ~/nix-config`   | `drb` |
-| Rebuild (Linux)   | `home-manager switch --flake ~/nix-config`          | `hms` |
+| Action            | Command                                              | Alias |
+| ----------------- | ---------------------------------------------------- | ----- |
+| Rebuild (macOS)   | `sudo darwin-rebuild switch --flake ~/nix-config`    | `drb` |
+| Rebuild (Linux)   | `home-manager switch --flake ~/nix-config`           | `hms` |
 | Check (macOS)     | `nix build .#checks.aarch64-darwin.darwin --no-link` | —     |
 | Check (Linux)     | `nix build .#checks.x86_64-linux.home --no-link`     | —     |
-| Check everything  | `nix flake check`                                   | —     |
-| Format            | `nix fmt`                                           | —     |
-| Update all inputs | `nix flake update`                                  | —     |
-| Garbage collect   | `nix-cleanup` (also runs weekly, keeping 30 days)   | —     |
+| Check everything  | `nix flake check`                                    | —     |
+| Format            | `nix fmt`                                            | —     |
+| Update all inputs | `nix flake update`                                   | —     |
+| Garbage collect   | `nix-cleanup` (also runs weekly, keeping 30 days)    | —     |
+
+After `nix flake update`, run the check before rebuilding: nixos-unstable occasionally breaks packages. Temporary fixes for that go in `overlays/`.
+
+## Layout
+
+```
+flake.nix              inputs, nixpkgs settings, the two host configs, checks
+overlays/              nixpkgs overlays; temporary upstream workarounds say when to remove them
+hosts/
+  darwin/              macOS: nix-darwin system settings, Homebrew casks, HM wiring
+  popos/               Pop!_OS: standalone Home Manager, GNOME/dconf, wallpaper
+modules/
+  home/                Home Manager modules (user level), entry point default.nix
+    packages.nix       machine basics every host needs (core CLI, secrets tooling)
+    dev/               dev tooling, one module per stack: node, php, k8s, infra, tools.nix
+    <feature>/         shell, git, ssh, editors, claude-code, … (one dir each)
+  darwin/              nix-darwin modules (system level)
+```
+
+Each module starts with a header comment saying what it manages. Read that before the code.
 
 ## Adding Things
 
-- **Machine basics** (needed regardless of dev work) — add to `modules/home/packages.nix`
-- **Dev tooling** — add to the matching stack in `modules/home/dev/` (`node`, `php`, `k8s`, `infra`), or `dev/tools.nix` if it fits none
-- **New module** — create `modules/home/<name>/default.nix`, import it in `modules/home/default.nix` (macOS-only modules: import from `hosts/darwin` instead)
-- **Host-specific packages** — use `lib.mkAfter` in the host file
-- **Shell aliases** — add to `modules/home/zsh/default.nix`
-- **Shell functions** — add inside `programs.zsh.initContent` in `modules/home/zsh/default.nix`
+- **Machine basics** (needed regardless of dev work): `modules/home/packages.nix`
+- **Dev tooling**: the matching stack in `modules/home/dev/`, or `dev/tools.nix` if it fits none
+- **New feature module**: `modules/home/<name>/default.nix`, imported from `modules/home/default.nix`
+- **macOS-only module**: same place, but imported from `hosts/darwin` instead
+- **Host-specific packages**: `home.packages = lib.mkAfter [ … ];` in the host file
+- **GUI apps on macOS**: Homebrew casks in `hosts/darwin/homebrew.nix`
+- **Shell aliases and functions**: `modules/home/zsh/default.nix`
 
----
+## How It Fits Together
 
-## Understanding This Config
+**Two evaluation strategies.** On macOS, nix-darwin owns the evaluation and Home Manager runs inside it as a module (`useGlobalPkgs`), so one nixpkgs instance serves both. On Linux there is no system layer: the flake instantiates `pkgs` itself and hands it to standalone Home Manager. Both get the same nixpkgs settings (`allowUnfree`, `overlays/default.nix`) from `nixpkgsArgs` in `flake.nix`. The only special argument either config receives is `userName`.
 
-The rest of this document explains how the repository is structured, why it is designed the way it is, and what each part is responsible for.
+**Module systems are kept apart.** `modules/home/` is user-level Home Manager config; `modules/darwin/` is system-level nix-darwin config. A feature that needs both, like LinearMouse, has one half in each.
 
-### 1. The Big Picture
+**Platform gating happens at import time.** Modules that only make sense on one OS (`colima`, `linearmouse`) are imported by that host and carry no `isDarwin` guard. Inline `stdenv.hostPlatform.isDarwin` checks are only for small differences inside shared modules (e.g. VS Code and WezTerm come from Homebrew on macOS, so their Nix packages are stubbed out there).
 
-This repository is a single source of truth for two machines: a MacBook Pro (Apple Silicon, macOS) and a desktop running Pop!\_OS (x86_64 Linux). Both are configured declaratively from one Nix flake. The goal is that after running a single command, either machine is fully configured: packages installed, dotfiles placed, shell set up, SSH keys generated, Git identity correct, Docker running.
+**Options live with their feature.** Modules declare their own `config.custom.<feature>` options (`custom.ssh`, `custom.claudeCode`, `custom.services.colima`, `custom.darwin.homebrew`); hosts set them. There is no central options file.
 
-No manual steps. No configuration drift between machines.
+**macOS host.** Beyond Home Manager, nix-darwin manages Touch ID for sudo, machine names, Dock/Finder/keyboard/trackpad defaults, power settings, and Homebrew. `nix-homebrew` installs and owns `/opt/homebrew`, so a fresh Mac needs no manual `brew` setup; casks not listed are removed on rebuild (`cleanup = "zap"`). Docker runs through Colima, started at login by launchd.
 
----
+**Linux host.** Purely user-space: dconf drives GNOME/Pop Shell behaviour, wallpapers are synced from `media/wallpapers/`, and Docker is a plain package.
 
-### 2. How the Pieces Fit Together
+## Secrets and SSH Keys
 
-The configuration is layered. Each layer adds specificity:
+There is **no declarative secret store**: no `sops-nix`, no encrypted files in the repo.
 
-```
-flake.nix
-  └─ modules/home/        (Home Manager: identity, packages, all shared feature modules)
-       └─ hosts/darwin/   (macOS-only: system settings, Homebrew, launchd)
-       └─ hosts/popos/    (Linux-only: GNOME/dconf settings)
-```
+- **SSH keys are generated on each machine**, never stored. The registry in `modules/home/ssh/keys.nix` lists every key; an activation script creates any missing one, derives its `.pub`, and writes `allowed_signers` for Git signing. Keys are never overwritten, so each machine has its own. Losing a machine means re-registering its public keys with GitHub/Azure, not restoring a secret.
+- **Work vs personal identity** is chosen by directory: anything under `~/work` uses the work SSH key and Git identity.
+- **The Age key** is restored from Bitwarden at bootstrap and `SOPS_AGE_KEY_FILE` points to it. `sops`, `age`, and `pass` are installed for manual use; nothing in the config depends on them.
 
-`modules/` is split by module system: `modules/home/` holds every Home Manager module, `modules/darwin/` holds nix-darwin (system-level) modules. A feature that needs both, like LinearMouse, has one half in each.
-
-#### `flake.nix` — the entry point
-
-The flake declares two outputs:
-
-- `homeConfigurations.jonas` — for Pop!\_OS. Uses standalone Home Manager. `pkgs` is instantiated in the flake itself and passed in, because `useGlobalPkgs` is not available in standalone mode.
-- `darwinConfigurations.jonas-mac` — for macOS. Uses nix-darwin, with Home Manager loaded as a nix-darwin module (`home-manager.darwinModules.home-manager`). nix-darwin controls the outer evaluation and Home Manager runs inside it.
-
-The two evaluation strategies differ. On macOS, `home-manager.useGlobalPkgs = true` means nixpkgs is instantiated once at the nix-darwin level and shared with Home Manager — hence why `pkgs` is _not_ pre-instantiated in the flake for darwin. On Linux there is no outer nix-darwin, so the flake instantiates `pkgs` directly.
-
-The nixpkgs settings themselves (`allowUnfree` and the overlay list from `overlays/default.nix`) are defined once in `flake.nix` as `nixpkgsArgs`: Linux passes them to `import nixpkgs`, macOS sets them as `nixpkgs.*` options through a small inline module. `userName` is the only special argument either config receives.
-
-Additional flake inputs:
-
-- **`nix-shells`** — reusable dev shells from a separate repo, re-exported as `devShells`
-- **`nix-vscode-extensions`** — overlay that provides `vscode-marketplace` and `vscode-marketplace-release` attrs, used by the VS Code module to install extensions from the marketplace
-
-#### `modules/home/default.nix` — the hub
-
-This is where almost everything real happens. It:
-
-- Sets user identity (`home.username`, `home.homeDirectory` — resolved per-platform)
-- Imports all shared feature modules
-- Imports the machine-basics package list (`packages.nix`) and the dev stacks (`dev/`)
-- Enables `xdg` and silences Home Manager news
-- Sets `home.stateVersion` and session variables (`SOPS_AGE_KEY_FILE`; `KUBECONFIG` is set by `dev/k8s`)
-
-`modules/home` is imported under `home-manager.users.jonas.imports` on macOS and directly in the `modules` list on Linux. Either way it evaluates in Home Manager context and may only contain user-level options.
-
-#### `hosts/` — platform overrides
-
-Host files sit on top of `modules/home` and add what is platform-specific. They cannot replace what the shared modules define, but they can extend it (e.g. appending packages with `lib.mkAfter`).
-
----
-
-### 3. The Two Platforms, Side by Side
-
-#### macOS (`hosts/darwin/default.nix`)
-
-On macOS, nix-darwin owns the outer evaluation. This gives access to system-level settings that Home Manager cannot touch:
-
-- **Touch ID for sudo** (`security.pam.services.sudo_local.touchIdAuth` + `reattach`)
-- **Networking** — sets `computerName`, `hostName`, and `localHostName`
-- **Homebrew** — the Homebrew install itself is managed declaratively by `nix-homebrew` (it installs and owns `/opt/homebrew`, adopting an existing install via `autoMigrate`), so a fresh Mac needs no manual `brew` bootstrap — `darwin-rebuild` sets it up. On top of that, the nix-darwin `homebrew` module installs GUI casks better delivered as native `.app` bundles (WezTerm, VS Code, Chrome, Slack, Spotify, DBeaver, Postman, Figma, Obsidian, Claude, ChatGPT, Bitwarden, etc.). `onActivation.cleanup = "zap"` removes any cask not listed on the next apply. Microsoft Office casks are gated by `custom.darwin.homebrew.microsoft-office.enable` (default `true`). Homebrew config lives in `hosts/darwin/homebrew.nix`.
-- **Dock, Finder, keyboard repeat, trackpad, Control Center** via `system.defaults`
-- **Startup chime** disabled
-- **Power settings** — the machine never sleeps when on power; auto-restart after freeze is enabled
-- **Siri** — status menu icon hidden
-- **Guest login** disabled
-- **nix-darwin version** pinned at `system.stateVersion = 6`
-
-The host config is split across `hosts/darwin/`: `default.nix` (flake/Home-Manager wiring, identity, per-host toggles), `system.nix` (the `system.defaults` above, Touch ID, power), and `homebrew.nix`. It also imports `modules/darwin/linearmouse.nix` (system-level: Homebrew install + trackpad natural scroll).
-
-#### Linux (`hosts/popos/`)
-
-On Pop!\_OS there is no system-level management — only Home Manager. Config is split across `hosts/popos/`: `default.nix` (targets, fonts, packages) and `desktop.nix` (dconf + wallpaper). Platform-specific config is purely user-space:
-
-- **dconf** settings drive all GNOME/Pop Shell behaviour: color scheme (light), wallpaper, lock screen, touchpad, keyboard shortcuts, app favorites, workspace navigation
-- **Wallpaper** files are synced from `media/wallpapers/w11/` into `~/.local/share/backgrounds/w11/` via `home.file`
-- **Docker** is added as a package directly (no VM needed on Linux)
-- Pop Shell tiling is intentionally disabled (`tile-by-default = false`)
-
----
-
-### 4. Feature Modules
-
-Each module lives at `modules/home/<name>/default.nix` and is imported by `modules/home/default.nix`, except the macOS-only ones (`colima`, `linearmouse`), which `hosts/darwin` imports. Modules are platform-gated by where they are imported, not by `isDarwin` checks inside them. They are self-contained: a module owns its program config, packages, activation scripts, and generated files.
-
-Packages are split by purpose. `modules/home/packages.nix` holds machine basics every host needs regardless of work (core CLI tools, secrets tooling). Dev tooling lives under `modules/home/dev/`, one module per stack: `node`, `php`, `k8s` (kubectl, helm, krew, plus the `k9s` and `kubeswitch` configs), `infra` (opentofu, openbao), and `tools.nix` for the rest (just, scc, lizard, codex, mysql client, platformio). Language runtimes stay global for ad-hoc use; project flakes pin their own versions via direnv.
-
-#### `zsh`
-
-The shell. Configures:
-
-- Syntax highlighting, autosuggestions, fzf-tab completion
-- `starship` prompt (time on right, direnv status visible)
-- `zoxide` (`cd` aliased to `z`), `eza` (`ls` aliased to `eza`), `fzf`
-- `fnm` for Node version management, `pnpm`
-- History search on `^p`/`^n`, word navigation keybindings
-- Aliases: `drb`, `hms`, `nix-cleanup`, `sail`, `neofetch`
-- Session path includes `~/.krew/bin`, `~/.local/share/pnpm`, `~/bin`, `~/.local/bin`
-
-#### `git`
-
-Git with SSH-based commit signing. Key behaviours:
-
-- **Personal identity** is the global default: `Jonas-D-M@users.noreply.github.com`, signing key `~/.ssh/id_ed25519`
-- **Work identity** activates automatically for any repo under `~/work/**` via a `gitdir:` conditional include. Work commits use `Jonas-PRF@users.noreply.github.com` and `~/.ssh/id_ed25519_work`, and `core.sshCommand` forces that specific key so agent negotiation cannot leak the wrong identity.
-- `pull.ff = only` — no surprise merge commits on pull
-- All commits and tags are signed (`commit.gpgSign = true`, `tag.gpgSign = true`)
-- The `allowed_signers` file (generated by the ssh module) tells Git which public keys are valid for signature verification
-- Ensures the `~/work` directory exists via the `createWorkDir` activation script (the same registry-derived path used by the `gitdir:` include)
-
-#### `ssh`
-
-Split into two files:
-
-**`config.nix`** — the SSH client config:
-
-- GitHub connections use `id_ed25519` by default
-- When the current working directory is inside `~/work/`, a `Match exec` block switches to `id_ed25519_work` (handles macOS path normalization via `sed`)
-- Azure DevOps (`ssh.dev.azure.com`) always uses `id_rsa_azure_devops`
-- Agent forwarding is off globally
-
-**`keys.nix`** — the SSH key registry: the single list of managed keys that drives generation, `allowed_signers`, host routing, and git signing. **`keygen.nix`** — one activation script (`sshKeys`) that generates any registry key not already present (never overwrite):
-
-- `id_ed25519` — personal (ed25519)
-- `id_ed25519_work` — work (ed25519)
-- `id_rsa_azure_devops` — Azure DevOps requires RSA, so this is 4096-bit RSA
-
-The same script then derives the `.pub` files and writes `~/.ssh/allowed_signers` — only the keys that sign commits (`id_ed25519`, `id_ed25519_work`) appear there.
-
-#### `wezterm`
-
-Terminal emulator configuration.
-
-#### `claude-code`
-
-Writes `~/.claude/settings.json`. The only setting is a `Stop` hook that plays a sound when Claude finishes — `afplay` on macOS, `paplay` on Linux.
-
-#### `dev/k8s` — `k9s`
-
-Kubernetes cluster TUI. Enabled with a transparent skin (`transparent.yaml`) so it blends with the terminal background.
-
-#### `dev/node`
-
-Node.js tooling:
-
-- `fnm` for Node version management (it owns `node` itself; there is no global Nix `nodejs`), `pnpm` as the package manager, `bun`
-- `PNPM_HOME` set and added to `sessionPath`
-- A default `~/.nvmrc` pinned to Node 22
-
-#### `vscode`
-
-Full VS Code configuration managed declaratively. On macOS the package itself is installed via Homebrew (the Nix package is replaced with an empty directory stub), while on Linux the Nix package is used directly.
-
-Key settings:
-
-- **Theme**: Tokyo Night Storm with Material Icon Theme
-- **Font**: JetBrainsMono Nerd Font with ligatures
-- **Editor**: format on save/paste, sidebar on right, minimap disabled, Vim keybindings
-- **Formatters**: Prettier for JS/TS/HTML/SCSS/JSON/Vue/Markdown, Intelephense for PHP
-- **Extensions**: ~60 extensions installed from `nix-vscode-extensions` marketplace — covers languages (TypeScript, PHP, Python, Nix, Lua, Bash, YAML, TOML), frameworks (React, Laravel, Tailwind, Helm), tools (Docker, Kubernetes, Git, GitHub Actions, Playwright), and AI (Copilot, Claude Code)
-- **Terminal**: uses Nix-managed `zsh` on macOS, login `zsh` on Linux
-- **Copilot**: enabled globally (disabled for YAML and Markdown)
-- **Custom keybindings**: `ctrl+tab`/`ctrl+shift+tab` for editor cycling, `ctrl+space` for suggestions
-
-An activation script makes `settings.json` mutable after Home Manager writes it, so VS Code can update settings at runtime without conflicts.
-
-#### `colima`
-
-Docker runtime for macOS via Lima VM (no Docker Desktop). Lives at `modules/home/colima`. Defined as a custom option (`custom.services.colima.enable`); imported and enabled from the darwin host (`hosts/darwin`), not `modules/home/default.nix`.
-
-When enabled:
-
-- Adds `colima`, `docker`, `docker-compose` to the user's packages
-- Sets `DOCKER_HOST` to the Colima socket path
-- Registers a launchd agent that starts Colima at login, with `colima stop --force` pre-run to clean up stale VM state from unclean shutdowns
-
-#### `linearmouse`
-
-Mouse configuration for macOS via LinearMouse. It has one half per module system:
-
-- **`modules/home/linearmouse`** (Home Manager): seeds a default config to `~/.config/linearmouse/linearmouse.json` if none exists, from the co-located `config.json`. Imported by the darwin host's `home-manager.users`. Launch-at-login is left to LinearMouse's own login item: a launchd agent that execs the app binary makes macOS attribute the Accessibility grant to the Nix-store bash wrapper rather than to `LinearMouse.app`, so the app re-prompts for permission after every rebuild.
-- **`modules/darwin/linearmouse.nix`** (nix-darwin): installs LinearMouse via Homebrew and sets trackpad natural scrolling. Controlled by `custom.services.linearmouse.enable`.
-
----
-
-### 5. Secrets and SSH Keys
-
-This config has **no declarative secret store**. There is no `sops-nix` integration, no `secrets.nix`, and no encrypted `secrets/*.enc` files in the repo. (An earlier version used SOPS; it was removed in favour of generating keys locally.)
-
-What exists instead:
-
-- **SSH keys are generated on the machine**, never stored or decrypted. The registry-driven `sshKeys` activation script (see the `ssh` module above) creates any missing key, derives its `.pub`, and writes `allowed_signers`. Keys are never overwritten, so each machine has its own key identity — losing a machine means re-registering its public keys with GitHub/Azure, not restoring a secret.
-- **The Age key is still restored from Bitwarden during bootstrap** and `SOPS_AGE_KEY_FILE` points at `~/.config/sops/age/keys.txt`. The `sops`, `age`, and `pass` CLIs are installed, so you can encrypt/decrypt by hand — but nothing in the Nix config depends on them.
-
-If you later want declarative secrets (decrypted automatically at activation), add `sops-nix` as a flake input and a `sops.secrets` module. That wiring is intentionally absent right now.
-
----
-
-### 6. The `config.custom` API
-
-Each feature module declares its own options under `config.custom.<feature>`; `modules/home/default.nix` declares none. Hosts append packages with `home.packages = lib.mkAfter [ ... ];` and set feature options directly.
-
-The username is not an option — it is a single `userName` constant in `flake.nix`, threaded into both configurations via `specialArgs`/`extraSpecialArgs`.
-
-Host files use `lib.mkAfter` when appending to lists to ensure merge ordering is respected. Examples of module namespaces: `custom.ssh`, `custom.claudeCode`, `custom.services.colima`, `custom.darwin.homebrew`.
-
----
-
-### 7. Activation Script Ordering
-
-Home Manager activation scripts run in a DAG (directed acyclic graph). `lib.hm.dag.entryAfter ["dep"]` declares that a script must run after `"dep"` completes.
-
-The SSH key chain:
-
-```
-writeBoundary
-  └─ sshKeys  (creates ~/.ssh, generates missing keys, derives .pub, writes allowed_signers)
-```
-
-`writeBoundary` is a built-in Home Manager marker meaning "all managed files have been written". `sshKeys` runs after this so `~/.ssh` exists; within it, key generation precedes `.pub` derivation by line order — no cross-script dependency to get wrong.
-
-If you add an activation script that needs the SSH keys, use `entryAfter [ "sshKeys" ]`. A missing dependency here means the script runs before its inputs are ready — the failure mode is a silent missing file, not a loud error. (There is no `sops-nix` node in this config; don't depend on one.)
-
----
-
-### 8. The Apply Loop
-
-1. **Edit** a `.nix` file
-2. **Dry-run** to check for errors before applying:
-   - macOS: `nix build .#darwinConfigurations.jonas-mac.system`
-   - Linux: `nix build .#homeConfigurations.jonas`
-3. **Apply**:
-   - macOS: `drb` (`sudo darwin-rebuild switch --flake ~/nix-config`)
-   - Linux: `hms` (`home-manager switch --flake ~/nix-config`)
-
-To update all flake inputs to their latest commits: `nix flake update`. After updating, dry-run first — nixpkgs-unstable occasionally breaks packages. Review what changed with `git diff flake.lock` before committing.
-
-Format Nix files with `nixfmt` (nixfmt-rfc-style: two-space indentation, opening brace on its own line).
+If you need declarative secrets later, add `sops-nix` as a flake input and a `sops.secrets` module.

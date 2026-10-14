@@ -1,3 +1,8 @@
+# modules/home/zsh/default.nix
+# The shell: zsh with syntax highlighting, autosuggestions and fzf-tab, plus
+# starship, zoxide (`cd` -> `z`), eza (`ls` -> `eza`) and fzf. Owns the shell
+# aliases (drb, hms, nix-cleanup, sail, git shorthands), keybindings, fnm init,
+# and session PATH additions (~/.krew/bin, ~/.local/bin, ~/bin).
 {
   pkgs,
   lib,
