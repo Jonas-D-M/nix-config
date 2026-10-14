@@ -2,7 +2,6 @@
   config,
   pkgs,
   lib,
-  vscode-marketplace-release,
   ...
 }:
 {
@@ -21,7 +20,7 @@
 
     profiles.default = {
       extensions =
-        (with vscode-marketplace-release; [
+        (with pkgs.vscode-marketplace-release; [
           aaron-bond.better-comments
           alexcvzz.vscode-sqlite
           anthropic.claude-code
@@ -94,8 +93,8 @@
           zobo.php-intellisense
         ])
         ++ [
-          vscode-marketplace-release."42crunch".vscode-openapi
-          vscode-marketplace-release."4ops".terraform
+          pkgs.vscode-marketplace-release."42crunch".vscode-openapi
+          pkgs.vscode-marketplace-release."4ops".terraform
         ];
       userSettings = {
         # Theme & UI

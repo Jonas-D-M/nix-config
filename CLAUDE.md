@@ -35,15 +35,7 @@ flake.nix
 
 ### Custom Options
 
-`modules/shared.nix` exposes a `config.custom` namespace:
-
-```nix
-config.custom = {
-  extraHomePackages   # per-host package additions
-  stateVersion        # base Home Manager state version (default "25.05")
-  homeStateVersion    # override home version (defaults to stateVersion)
-}
-```
+Feature modules declare their own options under `config.custom.<feature>` (e.g. `custom.ssh`, `custom.claudeCode`, `custom.services.colima`). `shared.nix` declares none.
 
 The username is a single flake-level constant (`userName` in `flake.nix`), threaded into both configs via `specialArgs`/`extraSpecialArgs` — it is not a `custom` option.
 
@@ -63,7 +55,7 @@ Scripts use `lib.hm.dag.entryAfter`. SSH key generation, `.pub` derivation, and 
 - **Host-specific packages**: use `lib.mkAfter` in the host file to append lists.
 - **Shell aliases**: add to `modules/zsh/default.nix`, not `shared.nix`.
 - **New shell helpers** (functions): add inside `programs.zsh.initContent` in `modules/zsh/default.nix`.
-- **`home.stateVersion`** is set in `shared.nix` via `config.custom.homeStateVersion` (default `"25.05"`).
+- **`home.stateVersion`** is set directly in `shared.nix` (`"25.05"`).
 - **Work vs personal git identity** is controlled by a conditional `gitdir:~/work/**` include in `modules/git/default.nix`.
 
 ## Adding an SSH Key

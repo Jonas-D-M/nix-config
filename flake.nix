@@ -69,10 +69,7 @@
       homeConfigurations.${userName} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
 
-        extraSpecialArgs = {
-          inherit userName;
-          vscode-marketplace-release = pkgs.vscode-marketplace-release;
-        };
+        extraSpecialArgs = { inherit userName; };
 
         modules = [
           ./modules/shared.nix

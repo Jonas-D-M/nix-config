@@ -75,7 +75,6 @@ This is where almost everything real happens. It:
 
 - Sets user identity (`home.username`, `home.homeDirectory` — resolved per-platform)
 - Imports all feature modules
-- Declares the `config.custom` option namespace (see section 6)
 - Defines the base package list (`baseHomePackages`)
 - Enables the `openfortivpn` program (`gh`, `direnv`, and `kubeswitch` each live in their own feature module)
 - Enables `xdg` and silences Home Manager news
@@ -239,17 +238,11 @@ If you later want declarative secrets (decrypted automatically at activation), a
 
 ### 6. The `config.custom` API
 
-`modules/shared.nix` exposes a small option namespace so host files can customize shared behaviour without editing the shared module:
-
-| Option                      | Type        | Default                 | Purpose                                                |
-| --------------------------- | ----------- | ----------------------- | ------------------------------------------------------ |
-| `custom.extraHomePackages`  | `[package]` | `[]`                    | Packages appended to the base list for a specific host |
-| `custom.stateVersion`       | `str`       | `"25.05"`               | Base Home Manager state version                        |
-| `custom.homeStateVersion`   | `str`       | inherits `stateVersion` | Override the home version independently                |
+Each feature module declares its own options under `config.custom.<feature>`; `modules/shared.nix` declares none. Hosts append packages with `home.packages = lib.mkAfter [ ... ];` and set feature options directly.
 
 The username is not an option — it is a single `userName` constant in `flake.nix`, threaded into both configurations via `specialArgs`/`extraSpecialArgs`.
 
-Host files use `lib.mkAfter` when appending to lists to ensure merge ordering is respected. Individual modules add their own sub-namespaces (e.g. `custom.services.colima`, `custom.darwin.homebrew`).
+Host files use `lib.mkAfter` when appending to lists to ensure merge ordering is respected. Examples of module namespaces: `custom.ssh`, `custom.claudeCode`, `custom.services.colima`, `custom.darwin.homebrew`.
 
 ---
 

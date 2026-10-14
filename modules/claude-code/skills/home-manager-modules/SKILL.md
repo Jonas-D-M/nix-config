@@ -31,17 +31,10 @@ user-invocable: false
 
 ## The `config.custom` Namespace
 
-Defined in `modules/shared.nix`. Available options:
-
-```nix
-config.custom = {
-  extraHomePackages   # per-host package additions
-  stateVersion        # base Home Manager state version (default "25.05")
-  homeStateVersion    # override home version (defaults to stateVersion)
-};
-```
-
-Extend with new options by adding to the `options.custom` block in `shared.nix`.
+Each feature module declares its own sub-namespace in the module that owns it
+(e.g. `options.custom.ssh` in `modules/ssh/keys.nix`, `options.custom.claudeCode`
+in `modules/claude-code/permissions.nix`). `shared.nix` declares no options;
+hosts append packages with `home.packages = lib.mkAfter [ ... ];`.
 
 ## Dotfile Management with `home.file`
 

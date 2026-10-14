@@ -2,7 +2,6 @@
 # The macOS host: flake/Home-Manager wiring, machine identity, and per-host
 # toggles. System preferences live in ./system.nix, Homebrew in ./homebrew.nix.
 {
-  pkgs,
   lib,
   nixpkgsConfig,
   sharedOverlays,
@@ -37,10 +36,7 @@ in
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
     home-manager.backupFileExtension = "hm-backup";
-    home-manager.extraSpecialArgs = {
-      inherit userName;
-      vscode-marketplace-release = pkgs.vscode-marketplace-release;
-    };
+    home-manager.extraSpecialArgs = { inherit userName; };
     home-manager.users.${userName} = {
       imports = [
         ../../modules/shared.nix

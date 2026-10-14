@@ -1,14 +1,11 @@
 # modules/shared.nix
 {
   pkgs,
-  lib,
   config,
   userName,
   ...
 }:
 let
-  cfg = config.custom;
-
   baseHomePackages = with pkgs; [
     nixfmt
 
@@ -81,28 +78,6 @@ in
     ./vscode
   ];
 
-  # Provide a small API to override/extend from the host file.
-  options.custom = {
-    extraHomePackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
-      default = [ ];
-      example = [ pkgs.ripgrep ];
-      description = "Additional per-host Home Manager packages to append.";
-    };
-
-    stateVersion = lib.mkOption {
-      type = lib.types.str;
-      default = "25.05";
-      example = "25.05";
-      description = "Base state version for both system/home unless overridden.";
-    };
-
-    homeStateVersion = lib.mkOption {
-      type = lib.types.str;
-      default = config.custom.stateVersion;
-    };
-  };
-
   config = {
     xdg.enable = true;
 
@@ -112,15 +87,15 @@ in
     news.display = "silent";
 
     # User-level config only
-    home.stateVersion = cfg.homeStateVersion;
+    home.stateVersion = "25.05";
     home.sessionVariables = {
       KUBECONFIG = "${config.home.homeDirectory}/.config/kube/config";
       SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
     };
     programs.home-manager.enable = true;
 
-    # Merge base + per-host extras
-    home.packages = baseHomePackages ++ cfg.extraHomePackages;
+    # Hosts append their own with lib.mkAfter
+    home.packages = baseHomePackages;
 
     programs.openfortivpn = {
       enable = true;
