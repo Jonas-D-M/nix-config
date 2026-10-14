@@ -1,6 +1,6 @@
 ---
 name: nix-check
-description: Run nixfmt and nix build dry-run to validate configuration changes.
+description: Run nix fmt and build the current platform's flake check to validate configuration changes.
 user-invocable: true
 ---
 
@@ -10,18 +10,17 @@ Validate the current nix-config by formatting and building.
 
 ## Steps
 
-1. Find changed `.nix` files:
-   ```
-   git diff --name-only HEAD && git diff --name-only --cached && git ls-files --others --exclude-standard '*.nix'
-   ```
+1. Run `nix fmt` (nixfmt-tree over the whole repo). If it modifies any files, report which ones (`git status --short`).
 
-2. If there are changed `.nix` files, run `nixfmt` on them. If `nixfmt` modifies any files, report which files were reformatted.
+2. Detect the platform and build that host's check:
+   - If `uname -s` is `Darwin`, run: `nix build .#checks.aarch64-darwin.darwin --no-link`
+   - If `uname -s` is `Linux`, run: `nix build .#checks.x86_64-linux.home --no-link`
 
-3. Detect the platform:
-   - If `uname -s` is `Darwin`, run: `nix build .#darwinConfigurations.jonas-mac.system --dry-run`
-   - If `uname -s` is `Linux`, run: `nix build .#homeConfigurations.jonas --dry-run`
+   Prefer this over `nix flake check`, which also evaluates the `devShells`
+   re-exported from the external nix-shells repo and so can fail for reasons
+   outside this config.
 
-4. Report results:
+3. Report results:
    - On success: confirm the build evaluated cleanly
    - On failure: show the error output and suggest a fix based on the error type:
      - **"undefined variable"** — likely a missing import or typo

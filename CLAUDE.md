@@ -12,12 +12,13 @@ Declarative macOS + Linux environment managed with Nix Flakes, Home Manager, and
 | ---------------- | --------------------------------------------------- | ----- |
 | Apply (macOS)    | `sudo darwin-rebuild switch --flake ~/nix-config`   | `drb` |
 | Apply (Linux)    | `home-manager switch --flake ~/nix-config`          | `hms` |
-| Dry-run (macOS)  | `nix build .#darwinConfigurations.jonas-mac.system` | —     |
-| Dry-run (Linux)  | `nix build .#homeConfigurations.jonas`              | —     |
+| Check (macOS)    | `nix build .#checks.aarch64-darwin.darwin --no-link` | —     |
+| Check (Linux)    | `nix build .#checks.x86_64-linux.home --no-link`     | —     |
+| Check everything | `nix flake check` (also evaluates `devShells`)       | —     |
 | Update inputs    | `nix flake update`                                  | —     |
-| Format Nix files | `nixfmt` (nixfmt-rfc-style)                         | —     |
+| Format repo      | `nix fmt` (nixfmt-tree; `nix fmt -- --ci` to verify) | —     |
 
-There are no tests beyond a successful `nix build` dry-run.
+There are no tests beyond the `checks` outputs, which build each host's full config.
 
 ## Architecture
 

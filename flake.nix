@@ -54,6 +54,15 @@
     {
       inherit (nix-shells) devShells;
 
+      # `nix fmt` formats the whole repo.
+      formatter = nixpkgs.lib.genAttrs [ linuxSystem darwinSystem ] (
+        system: nixpkgs.legacyPackages.${system}.nixfmt-tree
+      );
+
+      # `nix flake check` builds the config for the current platform.
+      checks.${darwinSystem}.darwin = self.darwinConfigurations."${userName}-mac".system;
+      checks.${linuxSystem}.home = self.homeConfigurations.${userName}.activationPackage;
+
       homeConfigurations.${userName} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
 

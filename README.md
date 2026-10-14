@@ -17,10 +17,12 @@ The bootstrap script installs Nix, restores your Age key from Bitwarden, and run
 | ----------------- | --------------------------------------------------- | ----- |
 | Rebuild (macOS)   | `sudo darwin-rebuild switch --flake ~/nix-config`   | `drb` |
 | Rebuild (Linux)   | `home-manager switch --flake ~/nix-config`          | `hms` |
-| Dry-run (macOS)   | `nix build .#darwinConfigurations.jonas-mac.system` | —     |
-| Dry-run (Linux)   | `nix build .#homeConfigurations.jonas`              | —     |
+| Check (macOS)     | `nix build .#checks.aarch64-darwin.darwin --no-link` | —     |
+| Check (Linux)     | `nix build .#checks.x86_64-linux.home --no-link`     | —     |
+| Check everything  | `nix flake check`                                   | —     |
+| Format            | `nix fmt`                                           | —     |
 | Update all inputs | `nix flake update`                                  | —     |
-| Garbage collect   | `nix-cleanup`                                       | —     |
+| Garbage collect   | `nix-cleanup` (also runs weekly, keeping 30 days)   | —     |
 
 ## Adding Things
 
