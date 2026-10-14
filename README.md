@@ -78,7 +78,6 @@ This is where almost everything real happens. It:
 - Sets user identity (`home.username`, `home.homeDirectory` — resolved per-platform)
 - Imports all shared feature modules
 - Imports the base package list (`packages.nix`)
-- Enables the `openfortivpn` program (`gh`, `direnv`, and `kubeswitch` each live in their own feature module)
 - Enables `xdg` and silences Home Manager news
 - Sets `home.stateVersion` and session variables (`KUBECONFIG`, `SOPS_AGE_KEY_FILE`)
 
@@ -201,10 +200,6 @@ Key settings:
 - **Custom keybindings**: `ctrl+tab`/`ctrl+shift+tab` for editor cycling, `ctrl+space` for suggestions
 
 An activation script makes `settings.json` mutable after Home Manager writes it, so VS Code can update settings at runtime without conflicts.
-
-#### `openfortivpn`
-
-Enables the `openfortivpn` Home Manager program and creates a shell alias.
 
 #### `colima`
 

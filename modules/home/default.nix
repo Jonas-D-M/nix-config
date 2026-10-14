@@ -19,7 +19,6 @@
     ./k9s
     ./kubeswitch
     ./node
-    ./openfortivpn
     ./ssh
     ./vscode
     ./wezterm
@@ -42,12 +41,5 @@
       SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
     };
     programs.home-manager.enable = true;
-
-    programs.openfortivpn = {
-      enable = true;
-      vpns = {
-        secondary = { };
-      };
-    };
   };
 }
