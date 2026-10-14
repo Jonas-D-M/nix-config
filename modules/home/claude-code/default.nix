@@ -30,7 +30,7 @@ let
 
   # Vendored, GSD-free statusline (model │ task │ dir │ context bar). Copied
   # into the Nix store so it survives removal of the GSD install under ~/.claude.
-  statuslineScript = ''node "${./hooks/statusline.js}"'';
+  statuslineScript = ''${pkgs.nodejs}/bin/node "${./hooks/statusline.js}"'';
 
   autoCommitScript = pkgs.writeShellScript "claude-auto-commit" ''
     git rev-parse --git-dir > /dev/null 2>&1 || exit 0

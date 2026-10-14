@@ -1,4 +1,4 @@
-# modules/home/k9s/default.nix
+# modules/home/dev/k8s/k9s.nix
 { ... }:
 {
   programs.k9s = {

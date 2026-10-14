@@ -1,5 +1,5 @@
-# modules/home/node/default.nix
-# Node.js tooling: fnm, pnpm, and default .nvmrc
+# modules/home/dev/node/default.nix
+# Node.js tooling: fnm (owns node itself, per .nvmrc), pnpm, bun, default .nvmrc
 {
   pkgs,
   config,
@@ -9,6 +9,7 @@
   home.packages = with pkgs; [
     fnm
     pnpm
+    bun
   ];
 
   home.sessionVariables = {

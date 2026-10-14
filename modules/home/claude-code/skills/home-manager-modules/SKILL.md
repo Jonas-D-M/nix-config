@@ -9,6 +9,7 @@ user-invocable: false
 
 1. Create `modules/home/<name>/default.nix` (macOS-only modules: import from `hosts/darwin` instead of step 2, with no `isDarwin` guard)
 2. Add `./<name>` to the `imports` list in `modules/home/default.nix`
+   (dev-stack modules go in `modules/home/dev/<stack>/` and are imported from `modules/home/dev/default.nix` instead)
 3. Run `nixfmt` on both files
 
 ## Standard Module Skeleton

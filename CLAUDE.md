@@ -29,9 +29,10 @@ flake.nix
        └─ hosts/darwin/  or  hosts/popos/  (platform-specific overrides)
 ```
 
-- **`modules/home/default.nix`** is the main hub. User identity, stateVersion, and all shared feature modules are imported from here; the base package list is `modules/home/packages.nix`.
+- **`modules/home/default.nix`** is the main hub. User identity, stateVersion, and all shared feature modules are imported from here; machine-basics packages are in `modules/home/packages.nix`.
 - **`hosts/`** contains platform-specific config. macOS uses nix-darwin for system-level settings (Dock, Finder, Homebrew, Touch ID sudo). Linux uses Home Manager alone.
 - **`modules/` is split by module system**: `modules/home/<name>/` holds Home Manager modules, `modules/darwin/` holds nix-darwin modules. A feature needing both (LinearMouse) has one half in each.
+- **Machine basics vs dev work**: `modules/home/packages.nix` is only for tools every host needs regardless of work (core CLI, secrets tooling). Dev tooling goes in a stack module under `modules/home/dev/` (`node`, `php`, `k8s`, `infra`) or `dev/tools.nix`; a new stack gets its own `dev/<stack>/default.nix`, imported from `dev/default.nix`.
 - **Platform-only Home Manager modules** (`colima`, `linearmouse`) are imported by `hosts/darwin`, not `modules/home/default.nix`, and carry no `isDarwin` guard. Inline `stdenv.hostPlatform.isDarwin` checks are only for small differences inside shared modules.
 
 ### Custom Options

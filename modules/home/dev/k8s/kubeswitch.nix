@@ -1,4 +1,4 @@
-# modules/home/kubeswitch/default.nix
+# modules/home/dev/k8s/kubeswitch.nix
 # kubeswitch: fast kubeconfig context switching, integrated into zsh.
 { ... }:
 {

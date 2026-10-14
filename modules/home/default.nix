@@ -13,12 +13,10 @@
   imports = [
     ./packages.nix
     ./claude-code
+    ./dev
     ./direnv
     ./gh
     ./git
-    ./k9s
-    ./kubeswitch
-    ./node
     ./ssh
     ./vscode
     ./wezterm
@@ -37,7 +35,6 @@
     # User-level config only
     home.stateVersion = "25.05";
     home.sessionVariables = {
-      KUBECONFIG = "${config.home.homeDirectory}/.config/kube/config";
       SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
     };
     programs.home-manager.enable = true;

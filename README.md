@@ -24,7 +24,8 @@ The bootstrap script installs Nix, restores your Age key from Bitwarden, and run
 
 ## Adding Things
 
-- **Shared packages** — add to `modules/home/packages.nix`
+- **Machine basics** (needed regardless of dev work) — add to `modules/home/packages.nix`
+- **Dev tooling** — add to the matching stack in `modules/home/dev/` (`node`, `php`, `k8s`, `infra`), or `dev/tools.nix` if it fits none
 - **New module** — create `modules/home/<name>/default.nix`, import it in `modules/home/default.nix` (macOS-only modules: import from `hosts/darwin` instead)
 - **Host-specific packages** — use `lib.mkAfter` in the host file
 - **Shell aliases** — add to `modules/home/zsh/default.nix`
@@ -79,9 +80,9 @@ This is where almost everything real happens. It:
 
 - Sets user identity (`home.username`, `home.homeDirectory` — resolved per-platform)
 - Imports all shared feature modules
-- Imports the base package list (`packages.nix`)
+- Imports the machine-basics package list (`packages.nix`) and the dev stacks (`dev/`)
 - Enables `xdg` and silences Home Manager news
-- Sets `home.stateVersion` and session variables (`KUBECONFIG`, `SOPS_AGE_KEY_FILE`)
+- Sets `home.stateVersion` and session variables (`SOPS_AGE_KEY_FILE`; `KUBECONFIG` is set by `dev/k8s`)
 
 `modules/home` is imported under `home-manager.users.jonas.imports` on macOS and directly in the `modules` list on Linux. Either way it evaluates in Home Manager context and may only contain user-level options.
 
@@ -123,6 +124,8 @@ On Pop!\_OS there is no system-level management — only Home Manager. Config is
 ### 4. Feature Modules
 
 Each module lives at `modules/home/<name>/default.nix` and is imported by `modules/home/default.nix`, except the macOS-only ones (`colima`, `linearmouse`), which `hosts/darwin` imports. Modules are platform-gated by where they are imported, not by `isDarwin` checks inside them. They are self-contained: a module owns its program config, packages, activation scripts, and generated files.
+
+Packages are split by purpose. `modules/home/packages.nix` holds machine basics every host needs regardless of work (core CLI tools, secrets tooling). Dev tooling lives under `modules/home/dev/`, one module per stack: `node`, `php`, `k8s` (kubectl, helm, krew, plus the `k9s` and `kubeswitch` configs), `infra` (opentofu, openbao), and `tools.nix` for the rest (just, scc, lizard, codex, mysql client, platformio). Language runtimes stay global for ad-hoc use; project flakes pin their own versions via direnv.
 
 #### `zsh`
 
@@ -174,17 +177,17 @@ Terminal emulator configuration.
 
 Writes `~/.claude/settings.json`. The only setting is a `Stop` hook that plays a sound when Claude finishes — `afplay` on macOS, `paplay` on Linux.
 
-#### `k9s`
+#### `dev/k8s` — `k9s`
 
 Kubernetes cluster TUI. Enabled with a transparent skin (`transparent.yaml`) so it blends with the terminal background.
 
-#### `node`
+#### `dev/node`
 
 Node.js tooling:
 
-- `fnm` for Node version management, `pnpm` as the package manager
+- `fnm` for Node version management (it owns `node` itself; there is no global Nix `nodejs`), `pnpm` as the package manager, `bun`
 - `PNPM_HOME` set and added to `sessionPath`
-- A default `~/.nvmrc` pinned to Node 20
+- A default `~/.nvmrc` pinned to Node 22
 
 #### `vscode`
 
