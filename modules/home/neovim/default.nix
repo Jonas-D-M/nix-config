@@ -25,5 +25,5 @@
 
   # Live symlink so config edits don't need a rebuild.
   xdg.configFile."nvim".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-config/modules/neovim/config";
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-config/modules/home/neovim/config";
 }

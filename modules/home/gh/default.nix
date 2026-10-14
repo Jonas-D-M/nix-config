@@ -1,4 +1,4 @@
-# modules/gh/default.nix
+# modules/home/gh/default.nix
 # GitHub CLI, configured to use SSH for git operations.
 { ... }:
 {

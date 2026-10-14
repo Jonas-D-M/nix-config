@@ -1,4 +1,4 @@
-# modules/direnv/default.nix
+# modules/home/direnv/default.nix
 # direnv with nix-direnv, integrated into zsh.
 { ... }:
 {

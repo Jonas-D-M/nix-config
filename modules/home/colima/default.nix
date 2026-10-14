@@ -1,6 +1,6 @@
-# modules/darwin/colima/default.nix
+# modules/home/colima/default.nix
 # Darwin-only HM module: Colima Docker runtime + launchd auto-start.
-# Imported via hosts/darwin's home-manager.users (not shared.nix).
+# Imported only by hosts/darwin's home-manager.users.
 {
   config,
   lib,
@@ -70,7 +70,7 @@ in
     };
   };
 
-  config = lib.mkIf (cfg.enable && pkgs.stdenv.hostPlatform.isDarwin) {
+  config = lib.mkIf cfg.enable {
     home.packages = with pkgs; [
       colima
       docker

@@ -72,7 +72,7 @@
         extraSpecialArgs = { inherit userName; };
 
         modules = [
-          ./modules/shared.nix
+          ./modules/home
           ./hosts/popos
         ];
       };

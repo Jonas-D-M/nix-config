@@ -1,5 +1,5 @@
 ---
-description: Home Manager module patterns for this nix-config repo. Use when creating or modifying modules in the modules/ directory.
+description: Home Manager module patterns for this nix-config repo. Use when creating or modifying modules in the modules/home/ directory.
 user-invocable: false
 ---
 
@@ -7,8 +7,8 @@ user-invocable: false
 
 ## Module Creation Checklist
 
-1. Create `modules/<name>/default.nix`
-2. Add `./<name>` to the `imports` list in `modules/shared.nix`
+1. Create `modules/home/<name>/default.nix` (macOS-only modules: import from `hosts/darwin` instead of step 2, with no `isDarwin` guard)
+2. Add `./<name>` to the `imports` list in `modules/home/default.nix`
 3. Run `nixfmt` on both files
 
 ## Standard Module Skeleton
@@ -32,8 +32,8 @@ user-invocable: false
 ## The `config.custom` Namespace
 
 Each feature module declares its own sub-namespace in the module that owns it
-(e.g. `options.custom.ssh` in `modules/ssh/keys.nix`, `options.custom.claudeCode`
-in `modules/claude-code/permissions.nix`). `shared.nix` declares no options;
+(e.g. `options.custom.ssh` in `modules/home/ssh/keys.nix`, `options.custom.claudeCode`
+in `modules/home/claude-code/permissions.nix`). `modules/home/default.nix` declares no options;
 hosts append packages with `home.packages = lib.mkAfter [ ... ];`.
 
 ## Dotfile Management with `home.file`
@@ -70,23 +70,23 @@ home.activation.myScript = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
 
 Key ordering constraints in this repo:
 - `writeBoundary` (built-in) — all files written
-- `sshKeys` — generates any missing SSH keys, their `.pub` files, and `allowed_signers` (one script, driven by the SSH key registry in `modules/ssh/keys.nix`)
+- `sshKeys` — generates any missing SSH keys, their `.pub` files, and `allowed_signers` (one script, driven by the SSH key registry in `modules/home/ssh/keys.nix`)
 
 Always use `entryAfter` to declare dependencies.
 
 ## Shell Configuration
 
-- **Aliases**: add to `modules/zsh/default.nix` in the aliases attrset
-- **Functions/init code**: add inside `programs.zsh.initContent` in `modules/zsh/default.nix`
+- **Aliases**: add to `modules/home/zsh/default.nix` in the aliases attrset
+- **Functions/init code**: add inside `programs.zsh.initContent` in `modules/home/zsh/default.nix`
 - **Environment variables**: use `home.sessionVariables` or `programs.zsh.sessionVariables`
 
 ## Secrets and SSH Keys
 
-There is no declarative secret store (no `sops-nix`, no `secrets/*.enc`). SSH keys are generated locally by the registry-driven `sshKeys` activation script — to add one, append to the registry in `modules/ssh/keys.nix`; don't hand-write a keygen script. The Age key at `~/.config/sops/age/keys.txt` (restored from Bitwarden during bootstrap) and the `sops`/`age` CLIs are available for ad-hoc manual use only.
+There is no declarative secret store (no `sops-nix`, no `secrets/*.enc`). SSH keys are generated locally by the registry-driven `sshKeys` activation script — to add one, append to the registry in `modules/home/ssh/keys.nix`; don't hand-write a keygen script. The Age key at `~/.config/sops/age/keys.txt` (restored from Bitwarden during bootstrap) and the `sops`/`age` CLIs are available for ad-hoc manual use only.
 
 ## Work vs Personal Git Identity
 
-Controlled by conditional include in `modules/git/default.nix`:
+Controlled by conditional include in `modules/home/git/default.nix`:
 
 ```nix
 includes = [

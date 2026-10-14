@@ -1,4 +1,4 @@
-# modules/openfortivpn/default.nix
+# modules/home/openfortivpn/default.nix
 {
   config,
   lib,

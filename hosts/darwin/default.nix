@@ -19,7 +19,7 @@ in
   imports = [
     ./system.nix
     ./homebrew.nix
-    ../../modules/darwin/linearmouse
+    ../../modules/darwin/linearmouse.nix
   ];
 
   config = {
@@ -39,11 +39,11 @@ in
     home-manager.extraSpecialArgs = { inherit userName; };
     home-manager.users.${userName} = {
       imports = [
-        ../../modules/shared.nix
+        ../../modules/home
         # colima and linearmouse are macOS-only HM modules, imported here
-        # rather than in shared.nix.
-        ../../modules/darwin/colima
-        ../../modules/darwin/linearmouse/home.nix
+        # rather than in modules/home.
+        ../../modules/home/colima
+        ../../modules/home/linearmouse
       ];
       # mkForce needed: useUserPackages makes nix-darwin common.nix set homeDirectory = null
       home.homeDirectory = lib.mkForce "/Users/${userName}";

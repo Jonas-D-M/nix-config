@@ -1,4 +1,4 @@
-# modules/ssh/keys.nix
+# modules/home/ssh/keys.nix
 # The SSH key registry: the single declarative list of every managed key.
 # Key generation, .pub, allowed_signers, git commit-signing (../git), and the
 # work-context dir all derive fully from this list. SSH host routing

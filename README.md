@@ -24,11 +24,11 @@ The bootstrap script installs Nix, restores your Age key from Bitwarden, and run
 
 ## Adding Things
 
-- **Shared packages** — add to `baseHomePackages` in `modules/shared.nix`
-- **New module** — create `modules/<name>/default.nix`, import it in `modules/shared.nix`
+- **Shared packages** — add to `modules/home/packages.nix`
+- **New module** — create `modules/home/<name>/default.nix`, import it in `modules/home/default.nix` (macOS-only modules: import from `hosts/darwin` instead)
 - **Host-specific packages** — use `lib.mkAfter` in the host file
-- **Shell aliases** — add to `modules/zsh/default.nix`
-- **Shell functions** — add inside `programs.zsh.initContent` in `modules/zsh/default.nix`
+- **Shell aliases** — add to `modules/home/zsh/default.nix`
+- **Shell functions** — add inside `programs.zsh.initContent` in `modules/home/zsh/default.nix`
 
 ---
 
@@ -50,10 +50,12 @@ The configuration is layered. Each layer adds specificity:
 
 ```
 flake.nix
-  └─ modules/shared.nix   (identity, packages, programs, all feature modules)
+  └─ modules/home/        (Home Manager: identity, packages, all shared feature modules)
        └─ hosts/darwin/   (macOS-only: system settings, Homebrew, launchd)
-       └─ hosts/popos/   (Linux-only: GNOME/dconf settings)
+       └─ hosts/popos/    (Linux-only: GNOME/dconf settings)
 ```
+
+`modules/` is split by module system: `modules/home/` holds every Home Manager module, `modules/darwin/` holds nix-darwin (system-level) modules. A feature that needs both, like LinearMouse, has one half in each.
 
 #### `flake.nix` — the entry point
 
@@ -69,22 +71,22 @@ Additional flake inputs:
 - **`nix-shells`** — reusable dev shells from a separate repo, re-exported as `devShells`
 - **`nix-vscode-extensions`** — overlay that provides `vscode-marketplace` and `vscode-marketplace-release` attrs, used by the VS Code module to install extensions from the marketplace
 
-#### `modules/shared.nix` — the hub
+#### `modules/home/default.nix` — the hub
 
 This is where almost everything real happens. It:
 
 - Sets user identity (`home.username`, `home.homeDirectory` — resolved per-platform)
-- Imports all feature modules
-- Defines the base package list (`baseHomePackages`)
+- Imports all shared feature modules
+- Imports the base package list (`packages.nix`)
 - Enables the `openfortivpn` program (`gh`, `direnv`, and `kubeswitch` each live in their own feature module)
 - Enables `xdg` and silences Home Manager news
 - Sets `home.stateVersion` and session variables (`KUBECONFIG`, `SOPS_AGE_KEY_FILE`)
 
-`shared.nix` is imported under `home-manager.users.jonas.imports` on macOS and directly in the `modules` list on Linux. Either way it evaluates in Home Manager context and may only contain user-level options.
+`modules/home` is imported under `home-manager.users.jonas.imports` on macOS and directly in the `modules` list on Linux. Either way it evaluates in Home Manager context and may only contain user-level options.
 
 #### `hosts/` — platform overrides
 
-Host files sit on top of `shared.nix` and add what is platform-specific. They cannot replace what shared defines, but they can extend it (e.g. appending packages with `lib.mkAfter`).
+Host files sit on top of `modules/home` and add what is platform-specific. They cannot replace what the shared modules define, but they can extend it (e.g. appending packages with `lib.mkAfter`).
 
 ---
 
@@ -104,7 +106,7 @@ On macOS, nix-darwin owns the outer evaluation. This gives access to system-leve
 - **Guest login** disabled
 - **nix-darwin version** pinned at `system.stateVersion = 6`
 
-The host config is split across `hosts/darwin/`: `default.nix` (flake/Home-Manager wiring, identity, per-host toggles), `system.nix` (the `system.defaults` above, Touch ID, power), and `homebrew.nix`. It also imports `modules/darwin/linearmouse` (system-level: Homebrew install + trackpad natural scroll).
+The host config is split across `hosts/darwin/`: `default.nix` (flake/Home-Manager wiring, identity, per-host toggles), `system.nix` (the `system.defaults` above, Touch ID, power), and `homebrew.nix`. It also imports `modules/darwin/linearmouse.nix` (system-level: Homebrew install + trackpad natural scroll).
 
 #### Linux (`hosts/popos/`)
 
@@ -119,7 +121,7 @@ On Pop!\_OS there is no system-level management — only Home Manager. Config is
 
 ### 4. Feature Modules
 
-Each module lives at `modules/<name>/default.nix` and is imported by `shared.nix`. They are self-contained: a module owns its program config, packages, activation scripts, and generated files.
+Each module lives at `modules/home/<name>/default.nix` and is imported by `modules/home/default.nix`, except the macOS-only ones (`colima`, `linearmouse`), which `hosts/darwin` imports. Modules are platform-gated by where they are imported, not by `isDarwin` checks inside them. They are self-contained: a module owns its program config, packages, activation scripts, and generated files.
 
 #### `zsh`
 
@@ -206,7 +208,7 @@ Enables the `openfortivpn` Home Manager program and creates a shell alias.
 
 #### `colima`
 
-Docker runtime for macOS via Lima VM (no Docker Desktop). Lives at `modules/darwin/colima` and is guarded by `mkIf (cfg.enable && pkgs.stdenv.hostPlatform.isDarwin)`. Defined as a custom option (`custom.services.colima.enable`); imported and enabled from the darwin host (`hosts/darwin`), not `shared.nix`.
+Docker runtime for macOS via Lima VM (no Docker Desktop). Lives at `modules/home/colima`. Defined as a custom option (`custom.services.colima.enable`); imported and enabled from the darwin host (`hosts/darwin`), not `modules/home/default.nix`.
 
 When enabled:
 
@@ -216,10 +218,10 @@ When enabled:
 
 #### `linearmouse`
 
-Mouse configuration for macOS via LinearMouse. Both halves live under `modules/darwin/linearmouse/`:
+Mouse configuration for macOS via LinearMouse. It has one half per module system:
 
-- **`home.nix`** (Home Manager): seeds a default config to `~/.config/linearmouse/linearmouse.json` if none exists, from the co-located `config.json`. Imported by the darwin host's `home-manager.users`. Launch-at-login is left to LinearMouse's own login item: a launchd agent that execs the app binary makes macOS attribute the Accessibility grant to the Nix-store bash wrapper rather than to `LinearMouse.app`, so the app re-prompts for permission after every rebuild.
-- **`default.nix`** (nix-darwin): installs LinearMouse via Homebrew and sets trackpad natural scrolling. Controlled by `custom.services.linearmouse.enable`.
+- **`modules/home/linearmouse`** (Home Manager): seeds a default config to `~/.config/linearmouse/linearmouse.json` if none exists, from the co-located `config.json`. Imported by the darwin host's `home-manager.users`. Launch-at-login is left to LinearMouse's own login item: a launchd agent that execs the app binary makes macOS attribute the Accessibility grant to the Nix-store bash wrapper rather than to `LinearMouse.app`, so the app re-prompts for permission after every rebuild.
+- **`modules/darwin/linearmouse.nix`** (nix-darwin): installs LinearMouse via Homebrew and sets trackpad natural scrolling. Controlled by `custom.services.linearmouse.enable`.
 
 ---
 
@@ -238,7 +240,7 @@ If you later want declarative secrets (decrypted automatically at activation), a
 
 ### 6. The `config.custom` API
 
-Each feature module declares its own options under `config.custom.<feature>`; `modules/shared.nix` declares none. Hosts append packages with `home.packages = lib.mkAfter [ ... ];` and set feature options directly.
+Each feature module declares its own options under `config.custom.<feature>`; `modules/home/default.nix` declares none. Hosts append packages with `home.packages = lib.mkAfter [ ... ];` and set feature options directly.
 
 The username is not an option — it is a single `userName` constant in `flake.nix`, threaded into both configurations via `specialArgs`/`extraSpecialArgs`.
 

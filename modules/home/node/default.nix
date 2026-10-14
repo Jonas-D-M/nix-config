@@ -1,4 +1,4 @@
-# modules/node/default.nix
+# modules/home/node/default.nix
 # Node.js tooling: fnm, pnpm, and default .nvmrc
 {
   pkgs,

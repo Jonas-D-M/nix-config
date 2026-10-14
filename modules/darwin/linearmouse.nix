@@ -1,6 +1,6 @@
-# modules/darwin/linearmouse/default.nix
+# modules/darwin/linearmouse.nix
 # System-level (nix-darwin): Homebrew install + trackpad defaults.
-# Companion to ./home.nix (the Home Manager LaunchAgent module).
+# Companion to modules/home/linearmouse (the Home Manager config-seeding module).
 {
   config,
   lib,

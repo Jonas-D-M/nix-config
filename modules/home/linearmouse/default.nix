@@ -1,6 +1,6 @@
-# modules/darwin/linearmouse/home.nix
-# Darwin-only HM module: seeds the default LinearMouse config.
-# Companion to ./default.nix (the system-level Homebrew/trackpad module).
+# modules/home/linearmouse/default.nix
+# Darwin-only HM module: seeds the default LinearMouse config. Imported only by
+# hosts/darwin. Companion to modules/darwin/linearmouse.nix (Homebrew/trackpad).
 #
 # Launch-at-login is deliberately NOT managed here. A launchd agent that execs
 # /Applications/LinearMouse.app/Contents/MacOS/LinearMouse makes TCC attribute
@@ -14,14 +14,13 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
   defaultConfigSrc = ./config.json;
 in
 {
-  config = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+  config = {
     # Seed default config if user doesn't have one yet
     home.activation.ensureLinearmouseConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       CONFIG_DIR="${config.home.homeDirectory}/.config/linearmouse"
