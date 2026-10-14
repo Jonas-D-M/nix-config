@@ -28,14 +28,13 @@
   };
 
   outputs =
-    {
+    inputs@{
       self,
       nixpkgs,
       home-manager,
       nix-darwin,
       nix-homebrew,
       nix-shells,
-      nix-vscode-extensions,
       ...
     }:
     let
@@ -44,24 +43,13 @@
       darwinSystem = "aarch64-darwin";
       # Single source for the username; threaded into both configs.
       userName = "jonas";
-      nixpkgsConfig = {
-        allowUnfree = true;
+      # nixpkgs settings for both hosts: Linux instantiates pkgs from them here,
+      # nix-darwin receives them as nixpkgs.* options below.
+      nixpkgsArgs = {
+        config.allowUnfree = true;
+        overlays = import ./overlays { inherit inputs; };
       };
-      sharedOverlays = [
-        nix-vscode-extensions.overlays.default
-        # TEMPORARY: fix lima/colima build on aarch64-darwin (cctools ld64
-        # SIGTRAP). Remove once nixpkgs includes nixpkgs#541023. See the file.
-        (import ./overlays/lima-darwin-lld.nix)
-        # TEMPORARY: skip debugpy's failing test_lldb_command on aarch64-darwin,
-        # which blocks ms-python.python. Remove once fixed upstream. See the file.
-        (import ./overlays/debugpy-darwin-lldb-test.nix)
-      ];
-      # Import pkgs for Linux with vscode-extensions overlay so allowUnfree applies
-      pkgs = import nixpkgs {
-        system = linuxSystem;
-        config = nixpkgsConfig;
-        overlays = sharedOverlays;
-      };
+      pkgs = import nixpkgs (nixpkgsArgs // { system = linuxSystem; });
     in
     {
       inherit (nix-shells) devShells;
@@ -78,18 +66,14 @@
       };
 
       darwinConfigurations."${userName}-mac" = nix-darwin.lib.darwinSystem {
-        system = darwinSystem;
-
-        specialArgs = {
-          inherit
-            nixpkgsConfig
-            sharedOverlays
-            darwinSystem
-            userName
-            ;
-        };
+        specialArgs = { inherit userName; };
 
         modules = [
+          {
+            nixpkgs = nixpkgsArgs // {
+              hostPlatform = darwinSystem;
+            };
+          }
           ./hosts/darwin
           home-manager.darwinModules.home-manager
           nix-homebrew.darwinModules.nix-homebrew

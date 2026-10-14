@@ -66,6 +66,8 @@ The flake declares two outputs:
 
 The two evaluation strategies differ. On macOS, `home-manager.useGlobalPkgs = true` means nixpkgs is instantiated once at the nix-darwin level and shared with Home Manager — hence why `pkgs` is _not_ pre-instantiated in the flake for darwin. On Linux there is no outer nix-darwin, so the flake instantiates `pkgs` directly.
 
+The nixpkgs settings themselves (`allowUnfree` and the overlay list from `overlays/default.nix`) are defined once in `flake.nix` as `nixpkgsArgs`: Linux passes them to `import nixpkgs`, macOS sets them as `nixpkgs.*` options through a small inline module. `userName` is the only special argument either config receives.
+
 Additional flake inputs:
 
 - **`nix-shells`** — reusable dev shells from a separate repo, re-exported as `devShells`

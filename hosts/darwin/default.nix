@@ -3,9 +3,6 @@
 # toggles. System preferences live in ./system.nix, Homebrew in ./homebrew.nix.
 {
   lib,
-  nixpkgsConfig,
-  sharedOverlays,
-  darwinSystem,
   userName,
   ...
 }:
@@ -23,10 +20,7 @@ in
   ];
 
   config = {
-    # nixpkgs + nix flake wiring (values passed from flake.nix via specialArgs)
-    nixpkgs.hostPlatform = darwinSystem;
-    nixpkgs.config = nixpkgsConfig;
-    nixpkgs.overlays = sharedOverlays;
+    # nixpkgs.* (platform, allowUnfree, overlays) is set in flake.nix.
     nix.settings.experimental-features = [
       "nix-command"
       "flakes"
