@@ -7,7 +7,7 @@
 {
   home.sessionVariables = {
     _ZO_DOCTOR = "0";
-    # EDITOR is owned by the neovim module.
+    # EDITOR is owned by the vscode module.
   };
 
   home.sessionPath = [

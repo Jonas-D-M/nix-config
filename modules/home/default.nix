@@ -18,7 +18,6 @@
     ./git
     ./k9s
     ./kubeswitch
-    ./neovim
     ./node
     ./openfortivpn
     ./ssh

@@ -5,6 +5,9 @@
   ...
 }:
 {
+  # `code` is on PATH on both hosts (Homebrew cask on macOS, HM on Linux).
+  home.sessionVariables.EDITOR = "code --wait";
+
   programs.vscode = {
     enable = true;
     package = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
