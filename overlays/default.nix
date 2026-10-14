@@ -12,4 +12,7 @@
   # TEMPORARY: skip kubernetes-helm's failing checkPhase. Remove once
   # `nix build nixpkgs#kubernetes-helm` succeeds without it. See the file.
   (import ./kubernetes-helm-skip-tests.nix)
+  # TEMPORARY: correct typescript-language-server 6.0.2's wrong pnpmDeps hash.
+  # Inert on other versions; remove once nixpkgs fixes it. See the file.
+  (import ./typescript-language-server-pnpm-hash.nix)
 ]
