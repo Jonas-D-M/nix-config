@@ -19,9 +19,12 @@ if it has any of:
 
 So, from the working directory:
 
-- **Commit messages**: write the message to a file with the Write tool, e.g.
-  `/tmp/claude/commit-msg.txt`, then `git commit -F /tmp/claude/commit-msg.txt`.
-  For a one-line message, `git commit -m "subject"` is fine.
+- **Commit messages**: pass one `-m` per paragraph:
+  `git commit -m "type(scope): subject" -m "Body paragraph."`. A paragraph
+  can span lines inside its quotes. If you need a file instead, write a new
+  one in your session scratchpad directory, never a fixed shared path like
+  `/tmp/claude/commit-msg.txt`: if the Write fails, `git commit -F` silently
+  commits whatever an earlier session left there.
 - **Push** with a bare `git push` / `git push -u origin <branch>`.
 
 `gh` runs inside the sandbox and needs none of this; `gh pr create --body
