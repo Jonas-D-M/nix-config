@@ -3,6 +3,7 @@
 # the Nix package is stubbed out and only the config is managed; shell
 # integration is sourced from the app bundle instead of the package.
 {
+  config,
   pkgs,
   lib,
   ...
@@ -14,13 +15,21 @@ in
   programs.wezterm = {
     enable = true;
     package = lib.mkIf isDarwin (lib.mkForce pkgs.emptyDirectory);
-    enableZshIntegration = !isDarwin;
+    # Home Manager's integration is unconditional; sourced from the zsh
+    # interactive layer instead.
+    enableZshIntegration = false;
     extraConfig = builtins.readFile ./wezterm.lua;
   };
 
-  programs.zsh.initContent = lib.mkIf isDarwin ''
-    if [[ -r /Applications/WezTerm.app/Contents/Resources/wezterm.sh ]]; then
-      source /Applications/WezTerm.app/Contents/Resources/wezterm.sh
-    fi
-  '';
+  custom.zsh.interactiveInit =
+    if isDarwin then
+      ''
+        if [[ -r /Applications/WezTerm.app/Contents/Resources/wezterm.sh ]]; then
+          source /Applications/WezTerm.app/Contents/Resources/wezterm.sh
+        fi
+      ''
+    else
+      ''
+        source "${config.programs.wezterm.package}/etc/profile.d/wezterm.sh"
+      '';
 }
